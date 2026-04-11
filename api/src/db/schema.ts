@@ -214,8 +214,8 @@ export const guildMembers = pgTable('guild_members', {
   joinedAt: timestamp('joined_at').defaultNow().notNull(),
 }, (table) => [
   uniqueIndex('idx_guild_members_unique').on(table.guildId, table.userId),
+  uniqueIndex('idx_guild_members_user_unique').on(table.userId),
   index('idx_guild_members_guild').on(table.guildId),
-  index('idx_guild_members_user').on(table.userId),
 ]);
 
 // ============================================

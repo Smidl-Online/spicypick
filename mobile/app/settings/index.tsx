@@ -12,19 +12,19 @@ export default function SettingsScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'This will permanently delete your account and all data. This cannot be undone.',
+      t('settings.delete_account'),
+      t('settings.delete_confirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
               await api('/api/auth/account', { method: 'DELETE' });
               await logout();
             } catch (err: any) {
-              Alert.alert('Error', err.message);
+              Alert.alert(t('common.error'), err.message);
             }
           },
         },
@@ -43,13 +43,13 @@ export default function SettingsScreen() {
       <TouchableOpacity style={styles.row} onPress={() => router.push('/settings/premium')}>
         <Text style={styles.rowIcon}>👑</Text>
         <Text style={styles.rowText}>{t('settings.premium')}</Text>
-        {user?.isPremium && <Text style={styles.badge}>Active</Text>}
+        {user?.isPremium && <Text style={styles.badge}>{t('settings.premium_active')}</Text>}
         <Text style={styles.chevron}>›</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.row} onPress={() => router.push('/scenario/archive')}>
         <Text style={styles.rowIcon}>📚</Text>
-        <Text style={styles.rowText}>Scenario Archive</Text>
+        <Text style={styles.rowText}>{t('settings.archive')}</Text>
         <Text style={styles.chevron}>›</Text>
       </TouchableOpacity>
 

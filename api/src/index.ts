@@ -13,6 +13,7 @@ import submissionRoutes from './routes/submissions.js';
 import premiumRoutes from './routes/premium.js';
 import reportRoutes from './routes/reports.js';
 import guildRoutes from './routes/guilds.js';
+import adminRoutes from './routes/admin.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 
@@ -37,6 +38,7 @@ app.route('/api/submissions', submissionRoutes);
 app.route('/api/premium', premiumRoutes);
 app.route('/api/reports', reportRoutes);
 app.route('/api/guilds', guildRoutes);
+app.route('/admin', adminRoutes);
 
 // 404
 app.notFound((c) => c.json({ error: 'Not Found' }, 404));

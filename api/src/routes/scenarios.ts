@@ -143,7 +143,6 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
     return c.json({ error: 'Premium subscription required' }, 403);
   }
 
-  const category = c.req.query('category');
   const today = todayDate();
   const offset = (page - 1) * limit;
 

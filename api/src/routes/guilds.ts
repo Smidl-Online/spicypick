@@ -25,42 +25,49 @@ guildRoutes.post('/', authMiddleware, async (c) => {
     return c.json({ error: 'Invalid input. Name must be 2-50 characters.' }, 400);
   }
 
-  // All checks + inserts inside transaction to prevent race conditions
-  const result = await db.transaction(async (tx) => {
-    const existingMembership = await tx.query.guildMembers.findFirst({
-      where: eq(guildMembers.userId, userId),
+  try {
+    const result = await db.transaction(async (tx) => {
+      const existingMembership = await tx.query.guildMembers.findFirst({
+        where: eq(guildMembers.userId, userId),
+      });
+      if (existingMembership) {
+        return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+      }
+
+      const existingGuild = await tx.query.guilds.findFirst({
+        where: eq(guilds.name, parsed.data.name),
+      });
+      if (existingGuild) {
+        return { error: 'Guild name already taken', status: 409 as const };
+      }
+
+      const [newGuild] = await tx.insert(guilds).values({
+        name: parsed.data.name,
+        description: parsed.data.description || null,
+        leaderId: userId,
+      }).returning();
+
+      await tx.insert(guildMembers).values({
+        guildId: newGuild.id,
+        userId,
+        role: 'leader',
+      });
+
+      return { guild: newGuild };
     });
-    if (existingMembership) {
-      return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+
+    if ('error' in result) {
+      return c.json({ error: result.error }, result.status);
     }
 
-    const existingGuild = await tx.query.guilds.findFirst({
-      where: eq(guilds.name, parsed.data.name),
-    });
-    if (existingGuild) {
-      return { error: 'Guild name already taken', status: 409 as const };
+    return c.json({ guild: result.guild }, 201);
+  } catch (err: any) {
+    // Catch unique constraint violation from concurrent create race
+    if (err?.code === '23505') {
+      return c.json({ error: 'Guild name already taken' }, 409);
     }
-
-    const [newGuild] = await tx.insert(guilds).values({
-      name: parsed.data.name,
-      description: parsed.data.description || null,
-      leaderId: userId,
-    }).returning();
-
-    await tx.insert(guildMembers).values({
-      guildId: newGuild.id,
-      userId,
-      role: 'leader',
-    });
-
-    return { guild: newGuild };
-  });
-
-  if ('error' in result) {
-    return c.json({ error: result.error }, result.status);
+    throw err;
   }
-
-  return c.json({ guild: result.guild }, 201);
 });
 
 // GET /api/guilds — top guilds leaderboard
@@ -155,43 +162,52 @@ guildRoutes.post('/:id/join', authMiddleware, async (c) => {
     return c.json({ error: 'Invalid guild ID format' }, 400);
   }
 
-  // All checks + inserts inside transaction to prevent race conditions
-  const result = await db.transaction(async (tx) => {
-    const existingMembership = await tx.query.guildMembers.findFirst({
-      where: eq(guildMembers.userId, userId),
+  try {
+    const result = await db.transaction(async (tx) => {
+      const existingMembership = await tx.query.guildMembers.findFirst({
+        where: eq(guildMembers.userId, userId),
+      });
+      if (existingMembership) {
+        return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+      }
+
+      // Atomically increment memberCount only if below maxMembers
+      const [updated] = await tx.update(guilds).set({
+        memberCount: sql`${guilds.memberCount} + 1`,
+      }).where(
+        and(
+          eq(guilds.id, guildId),
+          sql`${guilds.memberCount} < ${guilds.maxMembers}`,
+        ),
+      ).returning();
+
+      if (!updated) {
+        const guild = await tx.query.guilds.findFirst({ where: eq(guilds.id, guildId) });
+        if (!guild) return { error: 'Guild not found', status: 404 as const };
+        return { error: 'Guild is full', status: 409 as const };
+      }
+
+      await tx.insert(guildMembers).values({
+        guildId,
+        userId,
+        role: 'member',
+      });
+
+      return { success: true };
     });
-    if (existingMembership) {
-      return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+
+    if ('error' in result) {
+      return c.json({ error: result.error }, result.status);
     }
 
-    // Atomically increment memberCount only if below maxMembers
-    const [updated] = await tx.update(guilds).set({
-      memberCount: sql`${guilds.memberCount} + 1`,
-    }).where(
-      and(
-        eq(guilds.id, guildId),
-        sql`${guilds.memberCount} < ${guilds.maxMembers}`,
-      ),
-    ).returning();
-
-    if (!updated) {
-      return { error: 'Guild not found or full', status: 409 as const };
+    return c.json({ message: 'Joined guild successfully' });
+  } catch (err: any) {
+    // Catch unique constraint violation from concurrent join race
+    if (err?.code === '23505') {
+      return c.json({ error: 'You are already in a guild. Leave first.' }, 409);
     }
-
-    await tx.insert(guildMembers).values({
-      guildId,
-      userId,
-      role: 'member',
-    });
-
-    return { success: true };
-  });
-
-  if ('error' in result) {
-    return c.json({ error: result.error }, result.status);
+    throw err;
   }
-
-  return c.json({ message: 'Joined guild successfully' });
 });
 
 // POST /api/guilds/:id/leave
@@ -203,34 +219,41 @@ guildRoutes.post('/:id/leave', authMiddleware, async (c) => {
     return c.json({ error: 'Invalid guild ID format' }, 400);
   }
 
-  const membership = await db.query.guildMembers.findFirst({
-    where: and(
-      eq(guildMembers.guildId, guildId),
-      eq(guildMembers.userId, userId),
-    ),
-  });
-  if (!membership) {
-    return c.json({ error: 'You are not a member of this guild' }, 404);
-  }
+  const result = await db.transaction(async (tx) => {
+    const membership = await tx.query.guildMembers.findFirst({
+      where: and(
+        eq(guildMembers.guildId, guildId),
+        eq(guildMembers.userId, userId),
+      ),
+    });
+    if (!membership) {
+      return { error: 'You are not a member of this guild', status: 404 as const };
+    }
 
-  // Leaders cannot leave — they must transfer leadership or disband
-  if (membership.role === 'leader') {
-    return c.json({ error: 'Leaders cannot leave. Transfer leadership first.' }, 400);
-  }
+    if (membership.role === 'leader') {
+      return { error: 'Leaders cannot leave. Transfer leadership first.', status: 400 as const };
+    }
 
-  // Wrap delete + decrement in a transaction
-  await db.transaction(async (tx) => {
-    await tx.delete(guildMembers).where(
+    const deleted = await tx.delete(guildMembers).where(
       and(
         eq(guildMembers.guildId, guildId),
         eq(guildMembers.userId, userId),
       ),
-    );
+    ).returning({ id: guildMembers.id });
 
-    await tx.update(guilds).set({
-      memberCount: sql`${guilds.memberCount} - 1`,
-    }).where(eq(guilds.id, guildId));
+    // Only decrement if a row was actually deleted
+    if (deleted.length > 0) {
+      await tx.update(guilds).set({
+        memberCount: sql`GREATEST(${guilds.memberCount} - 1, 0)`,
+      }).where(eq(guilds.id, guildId));
+    }
+
+    return { success: true };
   });
+
+  if ('error' in result) {
+    return c.json({ error: result.error }, result.status);
+  }
 
   return c.json({ message: 'Left guild successfully' });
 });
