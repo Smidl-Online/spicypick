@@ -5,7 +5,9 @@ const globalStore = new Map<string, { count: number; resetAt: number }>();
 export const rateLimit = (maxRequests: number = 60, windowMs: number = 60_000, store?: Map<string, { count: number; resetAt: number }>) => {
   const requests = store ?? globalStore;
   return async (c: Context, next: Next) => {
-    const key = c.req.header('x-forwarded-for') || 'unknown';
+    const key = c.req.header('x-forwarded-for')?.split(',')[0]?.trim()
+      || c.req.header('x-real-ip')
+      || 'unknown';
     const now = Date.now();
     const entry = requests.get(key);
 

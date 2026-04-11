@@ -10,12 +10,10 @@ import { VALID_CATEGORIES } from '../constants.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) {
-    // Compare against self to keep constant time
-    crypto.timingSafeEqual(Buffer.from(a), Buffer.from(a));
-    return false;
-  }
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  // Hash both inputs to ensure constant-length comparison — prevents length-based timing leak
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -86,54 +86,7 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
   });
 });
 
-// GET /api/scenarios/:id
-scenarioRoutes.get('/:id', authMiddleware, async (c) => {
-  const scenarioId = c.req.param('id')!;
-  const userId = c.get('userId');
-  if (!uuidSchema.safeParse(scenarioId).success) {
-    return c.json({ error: 'Invalid scenario ID format' }, 400);
-  }
-
-  const scenario = await db.query.scenarios.findFirst({
-    where: eq(scenarios.id, scenarioId),
-  });
-
-  if (!scenario) {
-    return c.json({ error: 'Scenario not found' }, 404);
-  }
-
-  const existingVote = await db.query.votes.findFirst({
-    where: and(
-      eq(votes.userId, userId),
-      eq(votes.scenarioId, scenarioId),
-    ),
-  });
-
-  return c.json({
-    scenario: {
-      id: scenario.id,
-      title: scenario.title,
-      body: scenario.body,
-      category: scenario.category,
-      expertAnalysis: existingVote ? scenario.expertAnalysis : null,
-      outcome: existingVote ? scenario.outcome : null,
-      publishDate: scenario.publishDate,
-    },
-    voted: !!existingVote,
-    userVerdict: existingVote?.verdict || null,
-    communityStats: existingVote
-      ? {
-          total: scenario.totalVotes,
-          guilty: scenario.votesGuilty,
-          notGuilty: scenario.votesNotGuilty,
-          complicated: scenario.votesComplicated,
-          bothWrong: scenario.votesBothWrong,
-        }
-      : null,
-  });
-});
-
-// GET /api/scenarios/archive (premium only)
+// GET /api/scenarios/archive (premium only) — must be registered BEFORE /:id to avoid being caught by param route
 scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const parsedPage = parseInt(c.req.query('page') || '1');
@@ -179,6 +132,53 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
     })),
     page,
     limit,
+  });
+});
+
+// GET /api/scenarios/:id
+scenarioRoutes.get('/:id', authMiddleware, async (c) => {
+  const scenarioId = c.req.param('id')!;
+  const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
+
+  const scenario = await db.query.scenarios.findFirst({
+    where: eq(scenarios.id, scenarioId),
+  });
+
+  if (!scenario) {
+    return c.json({ error: 'Scenario not found' }, 404);
+  }
+
+  const existingVote = await db.query.votes.findFirst({
+    where: and(
+      eq(votes.userId, userId),
+      eq(votes.scenarioId, scenarioId),
+    ),
+  });
+
+  return c.json({
+    scenario: {
+      id: scenario.id,
+      title: scenario.title,
+      body: scenario.body,
+      category: scenario.category,
+      expertAnalysis: existingVote ? scenario.expertAnalysis : null,
+      outcome: existingVote ? scenario.outcome : null,
+      publishDate: scenario.publishDate,
+    },
+    voted: !!existingVote,
+    userVerdict: existingVote?.verdict || null,
+    communityStats: existingVote
+      ? {
+          total: scenario.totalVotes,
+          guilty: scenario.votesGuilty,
+          notGuilty: scenario.votesNotGuilty,
+          complicated: scenario.votesComplicated,
+          bothWrong: scenario.votesBothWrong,
+        }
+      : null,
   });
 });
 
