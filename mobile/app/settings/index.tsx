@@ -20,7 +20,7 @@ export default function SettingsScreen() {
     setLangPickerVisible(false);
     try {
       await saveLocale(code);
-      await api('/api/users/me', { method: 'PATCH', body: JSON.stringify({ locale: code }) });
+      await api('/api/users/me', { method: 'PATCH', body: { locale: code } });
     } catch (err) {
       console.warn('Failed to persist locale:', err);
       await i18n.changeLanguage(previousLang);

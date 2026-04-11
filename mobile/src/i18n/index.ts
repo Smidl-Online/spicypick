@@ -33,25 +33,30 @@ export async function saveLocale(code: string): Promise<void> {
   await AsyncStorage.setItem(LOCALE_STORAGE_KEY, code);
 }
 
-i18n.use(initReactI18next).init({
-  resources: {
-    en: { translation: en },
-    cs: { translation: cs },
-    de: { translation: de },
-    es: { translation: es },
-    pt: { translation: pt },
-    fr: { translation: fr },
-    ja: { translation: ja },
-  },
-  lng: supportedCodes.includes(deviceLang) ? deviceLang : 'en',
-  fallbackLng: 'en',
-  interpolation: { escapeValue: false },
-});
+const resources = {
+  en: { translation: en },
+  cs: { translation: cs },
+  de: { translation: de },
+  es: { translation: es },
+  pt: { translation: pt },
+  fr: { translation: fr },
+  ja: { translation: ja },
+};
 
-getSavedLocale().then((saved) => {
-  if (saved && supportedCodes.includes(saved)) {
-    i18n.changeLanguage(saved);
-  }
-});
+async function initI18n() {
+  const saved = await getSavedLocale();
+  const lng = saved && supportedCodes.includes(saved)
+    ? saved
+    : supportedCodes.includes(deviceLang) ? deviceLang : 'en';
+
+  await i18n.use(initReactI18next).init({
+    resources,
+    lng,
+    fallbackLng: 'en',
+    interpolation: { escapeValue: false },
+  });
+}
+
+export const i18nReady = initI18n();
 
 export default i18n;
