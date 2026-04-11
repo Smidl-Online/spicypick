@@ -131,14 +131,20 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
     return c.json({ error: 'Premium subscription required' }, 403);
   }
 
+  const category = c.req.query('category');
   const today = todayDate();
   const offset = (page - 1) * limit;
 
+  const conditions = [
+    eq(scenarios.status, 'published'),
+    lte(scenarios.publishDate, today),
+  ];
+  if (category) {
+    conditions.push(eq(scenarios.category, category));
+  }
+
   const archived = await db.query.scenarios.findMany({
-    where: and(
-      eq(scenarios.status, 'published'),
-      lte(scenarios.publishDate, today),
-    ),
+    where: and(...conditions),
     orderBy: [desc(scenarios.publishDate)],
     limit,
     offset,
