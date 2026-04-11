@@ -29,8 +29,11 @@ export default function HomeScreen() {
     if (!todayScenario || voting) return;
     setVoting(true);
     try {
-      await vote(todayScenario.id, verdict);
-      await fetchProfile();
+      const result = await vote(todayScenario.id, verdict);
+      // Skip fetchProfile when offline (vote returns null)
+      if (result) {
+        await fetchProfile();
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
