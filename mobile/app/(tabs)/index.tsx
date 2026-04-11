@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp, SlideInDown } from 'react-native-reanimated';
@@ -22,6 +22,23 @@ export default function HomeScreen() {
   const [voting, setVoting] = useState(false);
   const [showReveal, setShowReveal] = useState(false);
 
+  const ds = useMemo(() => ({
+    container: { flex: 1 as const, backgroundColor: colors.bg },
+    title: { fontSize: 24, fontWeight: '800' as const, color: colors.primary },
+    emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center' as const, marginBottom: 24 },
+    card: { backgroundColor: colors.bgCard, borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1, borderColor: colors.border },
+    category: { fontSize: 12, fontWeight: '700' as const, color: colors.primary, letterSpacing: 1, marginBottom: 8 },
+    scenarioTitle: { fontSize: 20, fontWeight: '700' as const, color: colors.text, marginBottom: 12 },
+    scenarioBody: { fontSize: 16, color: colors.text, lineHeight: 24 },
+    xpBanner: { backgroundColor: colors.bgLight, borderRadius: 12, padding: 16, alignItems: 'center' as const, marginVertical: 8, borderWidth: 1, borderColor: colors.xp },
+    xpText: { fontSize: 20, fontWeight: '800' as const, color: colors.xp },
+    majorityText: { fontSize: 14, color: colors.xp, marginTop: 4 },
+    analysisCard: { backgroundColor: colors.bgCard, borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: colors.accent },
+    analysisTitle: { fontSize: 16, fontWeight: '700' as const, color: colors.accent, marginBottom: 8 },
+    analysisText: { fontSize: 14, color: colors.text, lineHeight: 22 },
+    verdictPrompt: { fontSize: 18, fontWeight: '700' as const, color: colors.text, textAlign: 'center' as const, marginVertical: 16 },
+  }), [colors]);
+
   useEffect(() => {
     fetchToday();
   }, []);
@@ -42,42 +59,42 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <SafeAreaView style={ds.container}>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView style={ds.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: colors.primary }}>🌶️ SpicyPick</Text>
+          <Text style={ds.title}>🌶️ SpicyPick</Text>
           {user && <StreakBadge count={user.currentStreak} />}
         </View>
 
         {!todayScenario ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>😴</Text>
-            <Text style={{ fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }}>{t('home.no_scenario')}</Text>
+            <Text style={ds.emptyText}>{t('home.no_scenario')}</Text>
             <CountdownTimer />
           </View>
         ) : hasVoted && communityStats ? (
           /* Already voted — show results */
           <Animated.View entering={FadeIn.duration(500)}>
-            <View style={{ backgroundColor: colors.bgCard, borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1, borderColor: colors.border }}>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 }}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{todayScenario.title}</Text>
-              <Text style={{ fontSize: 16, color: colors.text, lineHeight: 24 }}>{todayScenario.body}</Text>
+            <View style={ds.card}>
+              <Text style={ds.category}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={ds.scenarioTitle}>{todayScenario.title}</Text>
+              <Text style={ds.scenarioBody}>{todayScenario.body}</Text>
             </View>
 
             {/* XP earned */}
             {voteResult && (
-              <Animated.View entering={SlideInDown.delay(200)} style={{ backgroundColor: colors.bgLight, borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1, borderColor: colors.xp }}>
-                <Text style={{ fontSize: 20, fontWeight: '800', color: colors.xp }}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
+              <Animated.View entering={SlideInDown.delay(200)} style={ds.xpBanner}>
+                <Text style={ds.xpText}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
                 {voteResult.majorityMatch && (
-                  <Text style={{ fontSize: 14, color: colors.xp, marginTop: 4 }}>{t('reveal.majority_match')}</Text>
+                  <Text style={ds.majorityText}>{t('reveal.majority_match')}</Text>
                 )}
               </Animated.View>
             )}
@@ -86,9 +103,9 @@ export default function HomeScreen() {
 
             {/* Expert analysis */}
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
-              <Animated.View entering={FadeInUp.delay(800)} style={{ backgroundColor: colors.bgCard, borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: colors.accent }}>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 }}>{t('reveal.expert')}</Text>
-                <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>
+              <Animated.View entering={FadeInUp.delay(800)} style={ds.analysisCard}>
+                <Text style={ds.analysisTitle}>{t('reveal.expert')}</Text>
+                <Text style={ds.analysisText}>
                   {todayScenario.expertAnalysis || voteResult?.expertAnalysis}
                 </Text>
               </Animated.View>
@@ -110,13 +127,13 @@ export default function HomeScreen() {
         ) : (
           /* Show scenario + voting buttons */
           <Animated.View entering={FadeInUp.duration(600)}>
-            <View style={{ backgroundColor: colors.bgCard, borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1, borderColor: colors.border }}>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 }}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{todayScenario.title}</Text>
-              <Text style={{ fontSize: 16, color: colors.text, lineHeight: 24 }}>{todayScenario.body}</Text>
+            <View style={ds.card}>
+              <Text style={ds.category}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={ds.scenarioTitle}>{todayScenario.title}</Text>
+              <Text style={ds.scenarioBody}>{todayScenario.body}</Text>
             </View>
 
-            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center', marginVertical: 16 }}>{t('home.verdict_prompt')}</Text>
+            <Text style={ds.verdictPrompt}>{t('home.verdict_prompt')}</Text>
 
             {VERDICTS.map((v) => (
               <VerdictButton

@@ -57,7 +57,7 @@ export default function SettingsScreen() {
         <Text style={rowText}>{t('settings.premium')}</Text>
         {user?.isPremium && (
           <Text style={{ fontSize: 12, fontWeight: '700', color: colors.accent, backgroundColor: colors.bgCard, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, marginRight: 8 }}>
-            Active
+            {t('settings.premium_active')}
           </Text>
         )}
         <Text style={chevron}>›</Text>

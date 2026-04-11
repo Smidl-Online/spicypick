@@ -68,7 +68,8 @@
     "language": "Jazyk",
     "delete_account": "Smazat účet",
     "logout": "Odhlásit se",
-    "archive": "Archiv scénářů"
+    "archive": "Archiv scénářů",
+    "premium_active": "Aktivní"
   },
   "premium": {
     "title": "SpicyPick Premium",

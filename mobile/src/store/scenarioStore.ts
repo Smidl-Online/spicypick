@@ -120,18 +120,23 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       return null;
     }
 
-    const result = await api<VoteResult>(`/api/scenarios/${scenarioId}/vote`, {
-      method: 'POST',
-      body: { verdict },
-    });
-    set({
-      hasVoted: true,
-      userVerdict: verdict,
-      communityStats: result.communityStats,
-      voteResult: result,
-      isOffline: false,
-    });
-    return result;
+    try {
+      const result = await api<VoteResult>(`/api/scenarios/${scenarioId}/vote`, {
+        method: 'POST',
+        body: { verdict },
+      });
+      set({
+        hasVoted: true,
+        userVerdict: verdict,
+        communityStats: result.communityStats,
+        voteResult: result,
+        isOffline: false,
+      });
+      return result;
+    } catch (err: any) {
+      set({ error: err.message });
+      throw err;
+    }
   },
 
   reset: () => set({

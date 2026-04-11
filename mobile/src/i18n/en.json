@@ -68,7 +68,8 @@
     "language": "Language",
     "delete_account": "Delete Account",
     "logout": "Log Out",
-    "archive": "Scenario Archive"
+    "archive": "Scenario Archive",
+    "premium_active": "Active"
   },
   "premium": {
     "title": "SpicyPick Premium",
