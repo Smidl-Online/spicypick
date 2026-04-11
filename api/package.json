@@ -28,6 +28,7 @@
     "node-cron": "^3.0.3",
     "pg": "^8.13.0",
     "postgres": "^3.4.5",
+    "resend": "^6.10.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {

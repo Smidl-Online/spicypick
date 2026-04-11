@@ -1,0 +1,158 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { Hono } from 'hono';
+
+vi.mock('../db/index.js', () => ({
+  db: {
+    query: {
+      users: { findFirst: vi.fn() },
+    },
+    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
+  },
+}));
+
+vi.mock('../services/revenueCat.js', () => ({
+  validateReceipt: vi.fn(),
+  getSubscriptionStatus: vi.fn(),
+}));
+
+vi.mock('jsonwebtoken', () => ({
+  default: {
+    verify: vi.fn(() => ({ userId: 'user-1', email: 'test@test.com' })),
+  },
+}));
+
+process.env.JWT_SECRET = 'test-secret';
+
+import { db } from '../db/index.js';
+import { validateReceipt, getSubscriptionStatus } from '../services/revenueCat.js';
+
+describe('premium routes', () => {
+  let app: Hono;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    delete process.env.REVENUECAT_API_KEY;
+    const { default: premiumRoutes } = await import('../routes/premium.js');
+    app = new Hono();
+    app.route('/api/premium', premiumRoutes);
+  });
+
+  describe('POST /api/premium/subscribe', () => {
+    it('should return 401 without auth', async () => {
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'r', platform: 'ios' }),
+      });
+      expect(res.status).toBe(401);
+    });
+
+    it('should return 400 for missing receipt', async () => {
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform: 'ios' }),
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 for invalid platform', async () => {
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'token', platform: 'windows' }),
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('should auto-activate in dev mode (no REVENUECAT_API_KEY)', async () => {
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'dev-receipt', platform: 'ios' }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.message).toContain('dev mode');
+      expect(body.premiumUntil).toBeDefined();
+    });
+
+    it('should validate via RevenueCat when configured', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      (validateReceipt as any).mockResolvedValueOnce({
+        isActive: true,
+        expiresAt,
+        productId: 'premium_monthly',
+      });
+
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'real-receipt', platform: 'ios' }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.productId).toBe('premium_monthly');
+    });
+
+    it('should return 402 when subscription is not active', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      (validateReceipt as any).mockResolvedValueOnce({
+        isActive: false,
+        expiresAt: null,
+        productId: null,
+      });
+
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'expired-receipt', platform: 'android' }),
+      });
+      expect(res.status).toBe(402);
+    });
+  });
+
+  describe('GET /api/premium/status', () => {
+    it('should return premium status from DB', async () => {
+      (db.query.users.findFirst as any).mockResolvedValueOnce({
+        id: 'user-1',
+        isPremium: true,
+        premiumUntil: new Date(Date.now() + 86400000),
+      });
+
+      const res = await app.request('/api/premium/status', {
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.isPremium).toBe(true);
+      expect(body.features).toContain('archive_access');
+    });
+
+    it('should return false for expired premium', async () => {
+      (db.query.users.findFirst as any).mockResolvedValueOnce({
+        id: 'user-1',
+        isPremium: true,
+        premiumUntil: new Date(Date.now() - 86400000), // expired yesterday
+      });
+
+      const res = await app.request('/api/premium/status', {
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.isPremium).toBe(false);
+      expect(body.features).toHaveLength(0);
+    });
+
+    it('should return 404 for non-existent user', async () => {
+      (db.query.users.findFirst as any).mockResolvedValueOnce(null);
+
+      const res = await app.request('/api/premium/status', {
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(res.status).toBe(404);
+    });
+  });
+});

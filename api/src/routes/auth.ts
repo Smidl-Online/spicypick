@@ -2,11 +2,13 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { db } from '../db/index.js';
-import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds, reports } from '../db/schema.js';
-import { eq, or, and, ne, sql } from 'drizzle-orm';
+import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds, reports, passwordResetTokens } from '../db/schema.js';
+import { eq, or, and, ne, sql, lt } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
+import { sendPasswordResetEmail } from '../services/email.js';
 
 const auth = new Hono<AppEnv>();
 
@@ -150,15 +152,84 @@ auth.post('/refresh', async (c) => {
 });
 
 // POST /api/auth/forgot-password
-// TODO: Implement actual password reset via email (Resend)
 auth.post('/forgot-password', async (c) => {
   let reqBody: unknown;
   try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const { email } = reqBody as { email?: string };
   if (!email) return c.json({ error: 'Email required' }, 400);
 
-  // Stub: always return success to not reveal if email exists
-  return c.json({ message: 'If account exists, password reset email sent' });
+  // Always return success to not reveal if email exists
+  const successResponse = { message: 'If account exists, password reset email sent' };
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('RESEND_API_KEY not set — password reset emails disabled');
+    return c.json(successResponse);
+  }
+
+  const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!user) return c.json(successResponse);
+
+  // Generate secure token
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  // Invalidate previous tokens for this user
+  await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
+
+  // Store hashed token (expires in 1 hour)
+  await db.insert(passwordResetTokens).values({
+    userId: user.id,
+    tokenHash,
+    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+  });
+
+  try {
+    await sendPasswordResetEmail(email, rawToken);
+  } catch (err) {
+    console.error('Password reset email failed:', err);
+  }
+
+  return c.json(successResponse);
+});
+
+// POST /api/auth/reset-password
+auth.post('/reset-password', async (c) => {
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  const schema = z.object({
+    token: z.string().min(1),
+    password: z.string().min(8).max(100),
+  });
+  const parsed = schema.safeParse(reqBody);
+  if (!parsed.success) return c.json({ error: 'Invalid input', details: parsed.error.flatten() }, 400);
+
+  const { token, password } = parsed.data;
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+  // Find valid, unused token
+  const resetToken = await db.query.passwordResetTokens.findFirst({
+    where: and(
+      eq(passwordResetTokens.tokenHash, tokenHash),
+      sql`${passwordResetTokens.expiresAt} > NOW()`,
+      sql`${passwordResetTokens.usedAt} IS NULL`,
+    ),
+  });
+
+  if (!resetToken) return c.json({ error: 'Invalid or expired reset token' }, 400);
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await db.transaction(async (tx) => {
+    // Update password
+    await tx.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, resetToken.userId));
+    // Mark token as used
+    await tx.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, resetToken.id));
+    // Revoke all refresh tokens for security
+    await tx.delete(refreshTokens).where(eq(refreshTokens.userId, resetToken.userId));
+  });
+
+  return c.json({ message: 'Password reset successful. Please login with your new password.' });
 });
 
 // GET /api/auth/export (GDPR data export)

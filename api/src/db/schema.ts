@@ -190,6 +190,20 @@ export const refreshTokens = pgTable('refresh_tokens', {
 ]);
 
 // ============================================
+// PASSWORD RESET TOKENS
+// ============================================
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 255 }).notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('idx_password_reset_user').on(table.userId),
+]);
+
+// ============================================
 // GUILDS (team competitions)
 // ============================================
 export const guilds = pgTable('guilds', {
