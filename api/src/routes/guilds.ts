@@ -8,6 +8,8 @@ import { AppEnv } from '../types.js';
 
 const guildRoutes = new Hono<AppEnv>();
 
+const uuidSchema = z.string().uuid();
+
 const createGuildSchema = z.object({
   name: z.string().min(2).max(50),
   description: z.string().max(500).optional(),
@@ -23,41 +25,50 @@ guildRoutes.post('/', authMiddleware, async (c) => {
     return c.json({ error: 'Invalid input. Name must be 2-50 characters.' }, 400);
   }
 
-  // Check if user is already in a guild
-  const existingMembership = await db.query.guildMembers.findFirst({
-    where: eq(guildMembers.userId, userId),
+  // All checks + inserts inside transaction to prevent race conditions
+  const result = await db.transaction(async (tx) => {
+    const existingMembership = await tx.query.guildMembers.findFirst({
+      where: eq(guildMembers.userId, userId),
+    });
+    if (existingMembership) {
+      return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+    }
+
+    const existingGuild = await tx.query.guilds.findFirst({
+      where: eq(guilds.name, parsed.data.name),
+    });
+    if (existingGuild) {
+      return { error: 'Guild name already taken', status: 409 as const };
+    }
+
+    const [newGuild] = await tx.insert(guilds).values({
+      name: parsed.data.name,
+      description: parsed.data.description || null,
+      leaderId: userId,
+    }).returning();
+
+    await tx.insert(guildMembers).values({
+      guildId: newGuild.id,
+      userId,
+      role: 'leader',
+    });
+
+    return { guild: newGuild };
   });
-  if (existingMembership) {
-    return c.json({ error: 'You are already in a guild. Leave first.' }, 409);
+
+  if ('error' in result) {
+    return c.json({ error: result.error }, result.status);
   }
 
-  // Check if guild name is taken
-  const existingGuild = await db.query.guilds.findFirst({
-    where: eq(guilds.name, parsed.data.name),
-  });
-  if (existingGuild) {
-    return c.json({ error: 'Guild name already taken' }, 409);
-  }
-
-  const [guild] = await db.insert(guilds).values({
-    name: parsed.data.name,
-    description: parsed.data.description || null,
-    leaderId: userId,
-  }).returning();
-
-  await db.insert(guildMembers).values({
-    guildId: guild.id,
-    userId,
-    role: 'leader',
-  });
-
-  return c.json({ guild }, 201);
+  return c.json({ guild: result.guild }, 201);
 });
 
 // GET /api/guilds — top guilds leaderboard
 guildRoutes.get('/', authMiddleware, async (c) => {
-  const page = parseInt(c.req.query('page') || '1');
-  const limit = parseInt(c.req.query('limit') || '20');
+  const parsedPage = parseInt(c.req.query('page') || '1');
+  const page = Math.max(Number.isFinite(parsedPage) ? parsedPage : 1, 1);
+  const rawLimit = parseInt(c.req.query('limit') || '20');
+  const limit = Math.min(Math.max(rawLimit || 20, 1), 50);
   const offset = (page - 1) * limit;
 
   const topGuilds = await db.query.guilds.findMany({
@@ -98,13 +109,18 @@ guildRoutes.get('/mine', authMiddleware, async (c) => {
     return c.json({ guild: null, message: 'You are not in a guild' });
   }
 
-  const members = await db.query.guildMembers.findMany({
-    where: eq(guildMembers.guildId, membership.guildId),
-    orderBy: [desc(guildMembers.weeklyXp)],
-    with: {
-      user: true,
-    },
-  });
+  // Select only needed user columns instead of full user object
+  const members = await db.select({
+    userId: guildMembers.userId,
+    role: guildMembers.role,
+    weeklyXp: guildMembers.weeklyXp,
+    username: users.username,
+    avatarUrl: users.avatarUrl,
+  })
+    .from(guildMembers)
+    .innerJoin(users, eq(guildMembers.userId, users.id))
+    .where(eq(guildMembers.guildId, membership.guildId))
+    .orderBy(desc(guildMembers.weeklyXp));
 
   return c.json({
     guild: {
@@ -121,8 +137,8 @@ guildRoutes.get('/mine', authMiddleware, async (c) => {
     members: members.map((m, idx) => ({
       rank: idx + 1,
       userId: m.userId,
-      username: m.user.username,
-      avatarUrl: m.user.avatarUrl,
+      username: m.username,
+      avatarUrl: m.avatarUrl,
       role: m.role,
       weeklyXp: m.weeklyXp,
       isCurrentUser: m.userId === userId,
@@ -135,33 +151,45 @@ guildRoutes.post('/:id/join', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const guildId = c.req.param('id')!;
 
-  // Check if user is already in a guild
-  const existingMembership = await db.query.guildMembers.findFirst({
-    where: eq(guildMembers.userId, userId),
-  });
-  if (existingMembership) {
-    return c.json({ error: 'You are already in a guild. Leave first.' }, 409);
+  if (!uuidSchema.safeParse(guildId).success) {
+    return c.json({ error: 'Invalid guild ID format' }, 400);
   }
 
-  const guild = await db.query.guilds.findFirst({
-    where: eq(guilds.id, guildId),
-  });
-  if (!guild) {
-    return c.json({ error: 'Guild not found' }, 404);
-  }
-  if (guild.memberCount >= guild.maxMembers) {
-    return c.json({ error: 'Guild is full' }, 409);
-  }
+  // All checks + inserts inside transaction to prevent race conditions
+  const result = await db.transaction(async (tx) => {
+    const existingMembership = await tx.query.guildMembers.findFirst({
+      where: eq(guildMembers.userId, userId),
+    });
+    if (existingMembership) {
+      return { error: 'You are already in a guild. Leave first.', status: 409 as const };
+    }
 
-  await db.insert(guildMembers).values({
-    guildId,
-    userId,
-    role: 'member',
+    // Atomically increment memberCount only if below maxMembers
+    const [updated] = await tx.update(guilds).set({
+      memberCount: sql`${guilds.memberCount} + 1`,
+    }).where(
+      and(
+        eq(guilds.id, guildId),
+        sql`${guilds.memberCount} < ${guilds.maxMembers}`,
+      ),
+    ).returning();
+
+    if (!updated) {
+      return { error: 'Guild not found or full', status: 409 as const };
+    }
+
+    await tx.insert(guildMembers).values({
+      guildId,
+      userId,
+      role: 'member',
+    });
+
+    return { success: true };
   });
 
-  await db.update(guilds).set({
-    memberCount: sql`${guilds.memberCount} + 1`,
-  }).where(eq(guilds.id, guildId));
+  if ('error' in result) {
+    return c.json({ error: result.error }, result.status);
+  }
 
   return c.json({ message: 'Joined guild successfully' });
 });
@@ -170,6 +198,10 @@ guildRoutes.post('/:id/join', authMiddleware, async (c) => {
 guildRoutes.post('/:id/leave', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const guildId = c.req.param('id')!;
+
+  if (!uuidSchema.safeParse(guildId).success) {
+    return c.json({ error: 'Invalid guild ID format' }, 400);
+  }
 
   const membership = await db.query.guildMembers.findFirst({
     where: and(
@@ -186,16 +218,19 @@ guildRoutes.post('/:id/leave', authMiddleware, async (c) => {
     return c.json({ error: 'Leaders cannot leave. Transfer leadership first.' }, 400);
   }
 
-  await db.delete(guildMembers).where(
-    and(
-      eq(guildMembers.guildId, guildId),
-      eq(guildMembers.userId, userId),
-    ),
-  );
+  // Wrap delete + decrement in a transaction
+  await db.transaction(async (tx) => {
+    await tx.delete(guildMembers).where(
+      and(
+        eq(guildMembers.guildId, guildId),
+        eq(guildMembers.userId, userId),
+      ),
+    );
 
-  await db.update(guilds).set({
-    memberCount: sql`${guilds.memberCount} - 1`,
-  }).where(eq(guilds.id, guildId));
+    await tx.update(guilds).set({
+      memberCount: sql`${guilds.memberCount} - 1`,
+    }).where(eq(guilds.id, guildId));
+  });
 
   return c.json({ message: 'Left guild successfully' });
 });
@@ -205,6 +240,10 @@ guildRoutes.get('/:id', authMiddleware, async (c) => {
   const guildId = c.req.param('id')!;
   const userId = c.get('userId');
 
+  if (!uuidSchema.safeParse(guildId).success) {
+    return c.json({ error: 'Invalid guild ID format' }, 400);
+  }
+
   const guild = await db.query.guilds.findFirst({
     where: eq(guilds.id, guildId),
   });
@@ -212,13 +251,18 @@ guildRoutes.get('/:id', authMiddleware, async (c) => {
     return c.json({ error: 'Guild not found' }, 404);
   }
 
-  const members = await db.query.guildMembers.findMany({
-    where: eq(guildMembers.guildId, guildId),
-    orderBy: [desc(guildMembers.weeklyXp)],
-    with: {
-      user: true,
-    },
-  });
+  // Select only needed user columns instead of full user object
+  const members = await db.select({
+    userId: guildMembers.userId,
+    role: guildMembers.role,
+    weeklyXp: guildMembers.weeklyXp,
+    username: users.username,
+    avatarUrl: users.avatarUrl,
+  })
+    .from(guildMembers)
+    .innerJoin(users, eq(guildMembers.userId, users.id))
+    .where(eq(guildMembers.guildId, guildId))
+    .orderBy(desc(guildMembers.weeklyXp));
 
   return c.json({
     guild: {
@@ -235,8 +279,8 @@ guildRoutes.get('/:id', authMiddleware, async (c) => {
     members: members.map((m, idx) => ({
       rank: idx + 1,
       userId: m.userId,
-      username: m.user.username,
-      avatarUrl: m.user.avatarUrl,
+      username: m.username,
+      avatarUrl: m.avatarUrl,
       role: m.role,
       weeklyXp: m.weeklyXp,
       isCurrentUser: m.userId === userId,
