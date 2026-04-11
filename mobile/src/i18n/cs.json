@@ -6,7 +6,10 @@
     "already_voted": "Dnes už jsi hlasoval!",
     "next_scenario": "Další scénář za",
     "share": "Sdílej svůj verdikt",
-    "streak": "{{count}} dní v řadě"
+    "streak": "{{count}} dní v řadě",
+    "verdict_prompt": "Jaký je tvůj verdikt?",
+    "offline": "Offline",
+    "offline_hint": "Jsi offline. Tvůj hlas bude synchronizován po připojení."
   },
   "verdicts": {
     "guilty": "Vinen",
@@ -64,7 +67,10 @@
     "premium": "Premium",
     "language": "Jazyk",
     "delete_account": "Smazat účet",
-    "logout": "Odhlásit se"
+    "delete_confirm": "Tímto trvale smažeš svůj účet a všechna data. Tuto akci nelze vrátit zpět.",
+    "premium_active": "Aktivní",
+    "logout": "Odhlásit se",
+    "archive": "Archiv scénářů"
   },
   "premium": {
     "title": "SpicyPick Premium",
@@ -84,6 +90,7 @@
     "error": "Něco se pokazilo",
     "retry": "Zkusit znovu",
     "cancel": "Zrušit",
+    "delete": "Smazat",
     "save": "Uložit",
     "hours": "h",
     "minutes": "m",
