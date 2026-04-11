@@ -22,8 +22,8 @@ export async function syncPendingVotes(): Promise<number> {
         await offlineCache.removePendingVote(vote.scenarioId);
         synced++;
       } catch (err: any) {
-        // If 409 (already voted), remove from queue
-        if (err.status === 409 || err.status === 400) {
+        // Only remove on 409 (already voted) — 400 could be transient validation, keep in queue
+        if (err.status === 409) {
           await offlineCache.removePendingVote(vote.scenarioId);
         }
         // Otherwise keep in queue for next sync

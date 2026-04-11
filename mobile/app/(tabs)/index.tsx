@@ -80,8 +80,8 @@ export default function HomeScreen() {
             <Text style={ds.emptyText}>{t('home.no_scenario')}</Text>
             <CountdownTimer />
           </View>
-        ) : hasVoted && communityStats ? (
-          /* Already voted — show results */
+        ) : hasVoted ? (
+          /* Already voted — show results or offline confirmation */
           <Animated.View entering={FadeIn.duration(500)}>
             <View style={ds.card}>
               <Text style={ds.category}>{todayScenario.category.toUpperCase()}</Text>
@@ -89,7 +89,7 @@ export default function HomeScreen() {
               <Text style={ds.scenarioBody}>{todayScenario.body}</Text>
             </View>
 
-            {/* XP earned */}
+            {/* XP earned (online only) */}
             {voteResult && (
               <Animated.View entering={SlideInDown.delay(200)} style={ds.xpBanner}>
                 <Text style={ds.xpText}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
@@ -99,7 +99,17 @@ export default function HomeScreen() {
               </Animated.View>
             )}
 
-            <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            {/* Offline vote confirmation — no communityStats yet */}
+            {!communityStats && (
+              <Animated.View entering={FadeInUp.delay(200)} style={ds.xpBanner}>
+                <Text style={ds.category}>{t('home.offline')}</Text>
+                <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginTop: 4 }}>
+                  {t('home.offline_hint')}
+                </Text>
+              </Animated.View>
+            )}
+
+            {communityStats && <CommunityStats stats={communityStats} userVerdict={userVerdict} />}
 
             {/* Expert analysis */}
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
@@ -111,7 +121,7 @@ export default function HomeScreen() {
               </Animated.View>
             )}
 
-            {/* Share card */}
+            {/* Share card (online only) */}
             {userVerdict && communityStats && (
               <ShareCard
                 scenarioNumber={1}

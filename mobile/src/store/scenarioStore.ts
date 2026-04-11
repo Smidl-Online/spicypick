@@ -116,6 +116,15 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
     const online = await isOnline();
     if (!online) {
       await offlineCache.queueVote(scenarioId, verdict);
+      // Persist voted state to cache so app restart while offline shows correct state
+      const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+      if (cached) {
+        await offlineCache.cacheTodayScenario({
+          ...cached,
+          voted: true,
+          userVerdict: verdict,
+        });
+      }
       set({ hasVoted: true, userVerdict: verdict, isOffline: true });
       return null;
     }
