@@ -190,118 +190,136 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
 
   const { verdict } = parsed.data;
 
-  // Check scenario exists and is published
-  const scenario = await db.query.scenarios.findFirst({
-    where: eq(scenarios.id, scenarioId),
-  });
-  if (!scenario || scenario.status !== 'published') {
-    return c.json({ error: 'Scenario not found or not published' }, 404);
+  try {
+    const result = await db.transaction(async (tx) => {
+      // Check scenario exists and is published
+      const scenario = await tx.query.scenarios.findFirst({
+        where: eq(scenarios.id, scenarioId),
+      });
+      if (!scenario || scenario.status !== 'published') {
+        return { error: 'Scenario not found or not published', status: 404 as const };
+      }
+
+      // Check if already voted
+      const existingVote = await tx.query.votes.findFirst({
+        where: and(
+          eq(votes.userId, userId),
+          eq(votes.scenarioId, scenarioId),
+        ),
+      });
+      if (existingVote) {
+        return { error: 'Already voted on this scenario', status: 409 as const };
+      }
+
+      // Get user for streak calculation
+      const user = await tx.query.users.findFirst({ where: eq(users.id, userId) });
+      if (!user) return { error: 'User not found', status: 404 as const };
+
+      // Update scenario vote counts
+      const verdictColumn = {
+        guilty: scenarios.votesGuilty,
+        not_guilty: scenarios.votesNotGuilty,
+        complicated: scenarios.votesComplicated,
+        both_wrong: scenarios.votesBothWrong,
+      }[verdict];
+
+      await tx.update(scenarios).set({
+        totalVotes: sql`${scenarios.totalVotes} + 1`,
+        [verdictColumn.name]: sql`${verdictColumn} + 1`,
+      }).where(eq(scenarios.id, scenarioId));
+
+      // Get updated scenario for majority check
+      const updatedScenario = await tx.query.scenarios.findFirst({
+        where: eq(scenarios.id, scenarioId),
+      });
+
+      // Check if user voted with majority
+      const verdictCounts: Record<string, number> = {
+        guilty: updatedScenario!.votesGuilty,
+        not_guilty: updatedScenario!.votesNotGuilty,
+        complicated: updatedScenario!.votesComplicated,
+        both_wrong: updatedScenario!.votesBothWrong,
+      };
+      const maxVotes = Math.max(...Object.values(verdictCounts));
+      const majorityMatch = verdictCounts[verdict] === maxVotes;
+
+      // Calculate streak
+      const today = todayDate();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      let newStreak = user.currentStreak;
+      if (user.lastPlayedAt === today) {
+        // Already played today — no streak change
+      } else if (user.lastPlayedAt === yesterdayStr) {
+        newStreak = user.currentStreak + 1;
+      } else if (!user.lastPlayedAt) {
+        newStreak = 1;
+      } else {
+        // Streak broken
+        newStreak = 1;
+      }
+
+      // Calculate XP
+      const xpEarned = calculateVoteXp(newStreak, majorityMatch);
+
+      // Insert vote
+      await tx.insert(votes).values({
+        userId,
+        scenarioId,
+        verdict,
+        xpEarned,
+      });
+
+      // Update user
+      const newTotalXp = user.xp + xpEarned;
+      const newLevel = calculateLevel(newTotalXp);
+
+      await tx.update(users).set({
+        xp: newTotalXp,
+        level: newLevel,
+        currentStreak: newStreak,
+        longestStreak: Math.max(newStreak, user.longestStreak),
+        lastPlayedAt: today,
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId));
+
+      // Check achievements
+      const newAchievements = await checkAchievements(userId);
+
+      return {
+        data: {
+          xpEarned,
+          totalXp: newTotalXp,
+          level: newLevel,
+          streak: newStreak,
+          majorityMatch,
+          newAchievements,
+          communityStats: {
+            total: updatedScenario!.totalVotes,
+            guilty: updatedScenario!.votesGuilty,
+            notGuilty: updatedScenario!.votesNotGuilty,
+            complicated: updatedScenario!.votesComplicated,
+            bothWrong: updatedScenario!.votesBothWrong,
+          },
+          expertAnalysis: updatedScenario!.expertAnalysis,
+        },
+      };
+    });
+
+    if ('error' in result) {
+      return c.json({ error: result.error }, result.status);
+    }
+
+    return c.json(result.data);
+  } catch (err: any) {
+    // Catch unique constraint violation from concurrent vote race
+    if (err?.code === '23505') {
+      return c.json({ error: 'Already voted on this scenario' }, 409);
+    }
+    throw err;
   }
-
-  // Check if already voted
-  const existingVote = await db.query.votes.findFirst({
-    where: and(
-      eq(votes.userId, userId),
-      eq(votes.scenarioId, scenarioId),
-    ),
-  });
-  if (existingVote) {
-    return c.json({ error: 'Already voted on this scenario' }, 409);
-  }
-
-  // Get user for streak calculation
-  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
-  if (!user) return c.json({ error: 'User not found' }, 404);
-
-  // Update scenario vote counts
-  const verdictColumn = {
-    guilty: scenarios.votesGuilty,
-    not_guilty: scenarios.votesNotGuilty,
-    complicated: scenarios.votesComplicated,
-    both_wrong: scenarios.votesBothWrong,
-  }[verdict];
-
-  await db.update(scenarios).set({
-    totalVotes: sql`${scenarios.totalVotes} + 1`,
-    [verdictColumn.name]: sql`${verdictColumn} + 1`,
-  }).where(eq(scenarios.id, scenarioId));
-
-  // Get updated scenario for majority check
-  const updatedScenario = await db.query.scenarios.findFirst({
-    where: eq(scenarios.id, scenarioId),
-  });
-
-  // Check if user voted with majority
-  const verdictCounts: Record<string, number> = {
-    guilty: updatedScenario!.votesGuilty,
-    not_guilty: updatedScenario!.votesNotGuilty,
-    complicated: updatedScenario!.votesComplicated,
-    both_wrong: updatedScenario!.votesBothWrong,
-  };
-  const maxVotes = Math.max(...Object.values(verdictCounts));
-  const majorityMatch = verdictCounts[verdict] === maxVotes;
-
-  // Calculate streak
-  const today = todayDate();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  let newStreak = user.currentStreak;
-  if (user.lastPlayedAt === today) {
-    // Already played today — no streak change
-  } else if (user.lastPlayedAt === yesterdayStr) {
-    newStreak = user.currentStreak + 1;
-  } else if (!user.lastPlayedAt) {
-    newStreak = 1;
-  } else {
-    // Streak broken
-    newStreak = 1;
-  }
-
-  // Calculate XP
-  const xpEarned = calculateVoteXp(newStreak, majorityMatch);
-
-  // Insert vote
-  await db.insert(votes).values({
-    userId,
-    scenarioId,
-    verdict,
-    xpEarned,
-  });
-
-  // Update user
-  const newTotalXp = user.xp + xpEarned;
-  const newLevel = calculateLevel(newTotalXp);
-
-  await db.update(users).set({
-    xp: newTotalXp,
-    level: newLevel,
-    currentStreak: newStreak,
-    longestStreak: Math.max(newStreak, user.longestStreak),
-    lastPlayedAt: today,
-    updatedAt: new Date(),
-  }).where(eq(users.id, userId));
-
-  // Check achievements
-  const newAchievements = await checkAchievements(userId);
-
-  return c.json({
-    xpEarned,
-    totalXp: newTotalXp,
-    level: newLevel,
-    streak: newStreak,
-    majorityMatch,
-    newAchievements,
-    communityStats: {
-      total: updatedScenario!.totalVotes,
-      guilty: updatedScenario!.votesGuilty,
-      notGuilty: updatedScenario!.votesNotGuilty,
-      complicated: updatedScenario!.votesComplicated,
-      bothWrong: updatedScenario!.votesBothWrong,
-    },
-    expertAnalysis: updatedScenario!.expertAnalysis,
-  });
 });
 
 export default scenarioRoutes;
