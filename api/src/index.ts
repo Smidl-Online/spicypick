@@ -17,10 +17,20 @@ import adminRoutes from './routes/admin.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 
+// Validate required env variables at startup
+const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ADMIN_TOKEN'] as const;
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) {
+    console.error(`FATAL: Missing required environment variable: ${key}`);
+    process.exit(1);
+  }
+}
+
 const app = new Hono();
 
 // Global middleware
-app.use('*', cors({ origin: process.env.CORS_ORIGIN || '*' }));
+const corsOrigin = process.env.CORS_ORIGIN;
+app.use('*', cors({ origin: corsOrigin || 'http://localhost:3000' }));
 app.use('*', logger());
 app.use('/api/*', rateLimit(100, 60_000));
 

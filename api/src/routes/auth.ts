@@ -146,13 +146,12 @@ auth.post('/refresh', async (c) => {
 });
 
 // POST /api/auth/forgot-password
+// TODO: Implement actual password reset via email (Resend)
 auth.post('/forgot-password', async (c) => {
   const { email } = await c.req.json();
   if (!email) return c.json({ error: 'Email required' }, 400);
 
-  // Always return success to prevent email enumeration
-  // In production, send email via Resend
-  return c.json({ message: 'If account exists, password reset email sent' });
+  return c.json({ error: 'Password reset is not yet implemented' }, 501);
 });
 
 // GET /api/auth/export (GDPR data export)

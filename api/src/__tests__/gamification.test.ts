@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateLevel, calculateVoteXp, xpForLevel, LEAGUE_TIERS } from '../services/gamification.js';
+import { calculateLevel, calculateVoteXp, xpForLevel, LEAGUE_TIERS, checkAchievements } from '../services/gamification.js';
 
 describe('gamification', () => {
   describe('xpForLevel', () => {
@@ -70,6 +70,12 @@ describe('gamification', () => {
 
     it('should combine streak bonus and majority match', () => {
       expect(calculateVoteXp(5, true)).toBe(10 + 5 + 10); // 25
+    });
+  });
+
+  describe('checkAchievements', () => {
+    it('should be exported as a function', () => {
+      expect(typeof checkAchievements).toBe('function');
     });
   });
 

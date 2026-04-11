@@ -21,7 +21,7 @@ export async function generateScenario(category?: string) {
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
       max_tokens: 500,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: `Generate a ${cat} scenario.` }],

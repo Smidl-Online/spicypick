@@ -4,8 +4,9 @@ import { rateLimit } from '../middleware/rateLimit.js';
 
 describe('rate limiting', () => {
   it('should allow requests under the limit', async () => {
+    const store = new Map();
     const app = new Hono();
-    app.use('*', rateLimit(5, 60000));
+    app.use('*', rateLimit(5, 60000, store));
     app.get('/test', (c) => c.json({ ok: true }));
 
     for (let i = 0; i < 5; i++) {
@@ -15,8 +16,9 @@ describe('rate limiting', () => {
   });
 
   it('should block requests over the limit', async () => {
+    const store = new Map();
     const app = new Hono();
-    app.use('*', rateLimit(3, 60000));
+    app.use('*', rateLimit(3, 60000, store));
     app.get('/test', (c) => c.json({ ok: true }));
 
     // Exhaust limit

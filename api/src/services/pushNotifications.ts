@@ -21,8 +21,8 @@ export async function sendPushNotification(
 
   try {
     const [ticket] = await expo.sendPushNotificationsAsync([message]);
-    if ((ticket as any).status === 'error') {
-      console.error(`[PUSH] Error sending to ${pushToken}:`, (ticket as any).message);
+    if (ticket.status === 'error') {
+      console.error(`[PUSH] Error sending to ${pushToken}:`, 'message' in ticket ? ticket.message : 'Unknown error');
     }
   } catch (err) {
     console.error(`[PUSH] Failed to send notification:`, err);
@@ -55,7 +55,7 @@ export async function sendBulkPushNotifications(
   for (const chunk of chunks) {
     try {
       const tickets = await expo.sendPushNotificationsAsync(chunk);
-      sent += tickets.filter((t: ExpoPushTicket) => (t as any).status === 'ok').length;
+      sent += tickets.filter((t: ExpoPushTicket) => t.status === 'ok').length;
     } catch (err) {
       console.error(`[PUSH] Chunk send failed:`, err);
     }

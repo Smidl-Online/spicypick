@@ -16,14 +16,22 @@ const verdictSchema = z.object({
   verdict: z.enum(VALID_VERDICTS),
 });
 
-function todayDate(): string {
+function todayDate(timezone?: string): string {
+  if (timezone) {
+    try {
+      return new Date().toLocaleDateString('en-CA', { timeZone: timezone });
+    } catch {
+      // Invalid timezone — fall back to UTC
+    }
+  }
   return new Date().toISOString().split('T')[0];
 }
 
 // GET /api/scenarios/today
 scenarioRoutes.get('/today', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const today = todayDate();
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const today = todayDate(user?.timezone ?? undefined);
 
   const scenario = await db.query.scenarios.findFirst({
     where: and(
@@ -241,11 +249,13 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const maxVotes = Math.max(...Object.values(verdictCounts));
   const majorityMatch = verdictCounts[verdict] === maxVotes;
 
-  // Calculate streak
-  const today = todayDate();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  // Calculate streak (use user timezone)
+  const today = todayDate(user?.timezone ?? undefined);
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayStr = user?.timezone
+    ? yesterdayDate.toLocaleDateString('en-CA', { timeZone: user.timezone })
+    : yesterdayDate.toISOString().split('T')[0];
 
   let newStreak = user.currentStreak;
   if (user.lastPlayedAt === today) {

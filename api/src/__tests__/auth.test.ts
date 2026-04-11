@@ -132,15 +132,15 @@ describe('auth routes', () => {
   });
 
   describe('POST /api/auth/forgot-password', () => {
-    it('should always return success to prevent enumeration', async () => {
+    it('should return 501 (not implemented)', async () => {
       const res = await app.request('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: 'any@test.com' }),
       });
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(501);
       const body = await res.json();
-      expect(body.message).toContain('password reset');
+      expect(body.error).toContain('not yet implemented');
     });
   });
 

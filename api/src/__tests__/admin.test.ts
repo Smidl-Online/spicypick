@@ -15,6 +15,11 @@ vi.mock('../db/index.js', () => ({
     insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn(() => [{ id: 'new-id' }]) })) })),
     update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
     transaction: vi.fn(async (fn: Function) => fn({
+      query: {
+        scenarioSubmissions: {
+          findFirst: vi.fn(() => Promise.resolve({ id: 'sub-1', status: 'approved' })),
+        },
+      },
       insert: vi.fn(() => ({ values: vi.fn() })),
       update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
     })),

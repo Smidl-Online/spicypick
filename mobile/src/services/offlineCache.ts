@@ -19,8 +19,13 @@ export const offlineCache = {
   },
 
   async getCachedTodayScenario<T>(): Promise<T | null> {
-    const raw = await AsyncStorage.getItem(CACHE_KEYS.todayScenario);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = await AsyncStorage.getItem(CACHE_KEYS.todayScenario);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      await AsyncStorage.removeItem(CACHE_KEYS.todayScenario);
+      return null;
+    }
   },
 
   async cacheUserProfile(data: unknown) {
@@ -28,8 +33,13 @@ export const offlineCache = {
   },
 
   async getCachedUserProfile<T>(): Promise<T | null> {
-    const raw = await AsyncStorage.getItem(CACHE_KEYS.userProfile);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = await AsyncStorage.getItem(CACHE_KEYS.userProfile);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      await AsyncStorage.removeItem(CACHE_KEYS.userProfile);
+      return null;
+    }
   },
 
   async cacheLeague(data: unknown) {
@@ -37,8 +47,13 @@ export const offlineCache = {
   },
 
   async getCachedLeague<T>(): Promise<T | null> {
-    const raw = await AsyncStorage.getItem(CACHE_KEYS.league);
-    return raw ? JSON.parse(raw) : null;
+    try {
+      const raw = await AsyncStorage.getItem(CACHE_KEYS.league);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      await AsyncStorage.removeItem(CACHE_KEYS.league);
+      return null;
+    }
   },
 
   async queueVote(scenarioId: string, verdict: string) {
@@ -48,8 +63,13 @@ export const offlineCache = {
   },
 
   async getPendingVotes(): Promise<PendingVote[]> {
-    const raw = await AsyncStorage.getItem(CACHE_KEYS.pendingVotes);
-    return raw ? JSON.parse(raw) : [];
+    try {
+      const raw = await AsyncStorage.getItem(CACHE_KEYS.pendingVotes);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      await AsyncStorage.removeItem(CACHE_KEYS.pendingVotes);
+      return [];
+    }
   },
 
   async clearPendingVotes() {
