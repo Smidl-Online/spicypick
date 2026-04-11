@@ -9,13 +9,14 @@ import { CommunityStats } from '../../src/components/CommunityStats';
 import { CountdownTimer } from '../../src/components/CountdownTimer';
 import { ShareCard } from '../../src/components/ShareCard';
 import { StreakBadge } from '../../src/components/StreakBadge';
-import { colors } from '../../src/theme/colors';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
 const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const { todayScenario, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading } = useScenarioStore();
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
@@ -41,42 +42,42 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>🌶️ SpicyPick</Text>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: colors.primary }}>🌶️ SpicyPick</Text>
           {user && <StreakBadge count={user.currentStreak} />}
         </View>
 
         {!todayScenario ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>😴</Text>
-            <Text style={styles.emptyText}>{t('home.no_scenario')}</Text>
+            <Text style={{ fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }}>{t('home.no_scenario')}</Text>
             <CountdownTimer />
           </View>
         ) : hasVoted && communityStats ? (
           /* Already voted — show results */
           <Animated.View entering={FadeIn.duration(500)}>
-            <View style={styles.scenarioCard}>
-              <Text style={styles.category}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={styles.scenarioTitle}>{todayScenario.title}</Text>
-              <Text style={styles.scenarioBody}>{todayScenario.body}</Text>
+            <View style={{ backgroundColor: colors.bgCard, borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1, borderColor: colors.border }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 }}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{todayScenario.title}</Text>
+              <Text style={{ fontSize: 16, color: colors.text, lineHeight: 24 }}>{todayScenario.body}</Text>
             </View>
 
             {/* XP earned */}
             {voteResult && (
-              <Animated.View entering={SlideInDown.delay(200)} style={styles.xpBanner}>
-                <Text style={styles.xpText}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
+              <Animated.View entering={SlideInDown.delay(200)} style={{ backgroundColor: colors.bgLight, borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1, borderColor: colors.xp }}>
+                <Text style={{ fontSize: 20, fontWeight: '800', color: colors.xp }}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
                 {voteResult.majorityMatch && (
-                  <Text style={styles.majorityText}>{t('reveal.majority_match')}</Text>
+                  <Text style={{ fontSize: 14, color: colors.xp, marginTop: 4 }}>{t('reveal.majority_match')}</Text>
                 )}
               </Animated.View>
             )}
@@ -85,9 +86,9 @@ export default function HomeScreen() {
 
             {/* Expert analysis */}
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
-              <Animated.View entering={FadeInUp.delay(800)} style={styles.analysisCard}>
-                <Text style={styles.analysisTitle}>{t('reveal.expert')}</Text>
-                <Text style={styles.analysisText}>
+              <Animated.View entering={FadeInUp.delay(800)} style={{ backgroundColor: colors.bgCard, borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: colors.accent }}>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 }}>{t('reveal.expert')}</Text>
+                <Text style={{ fontSize: 14, color: colors.text, lineHeight: 22 }}>
                   {todayScenario.expertAnalysis || voteResult?.expertAnalysis}
                 </Text>
               </Animated.View>
@@ -109,13 +110,13 @@ export default function HomeScreen() {
         ) : (
           /* Show scenario + voting buttons */
           <Animated.View entering={FadeInUp.duration(600)}>
-            <View style={styles.scenarioCard}>
-              <Text style={styles.category}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={styles.scenarioTitle}>{todayScenario.title}</Text>
-              <Text style={styles.scenarioBody}>{todayScenario.body}</Text>
+            <View style={{ backgroundColor: colors.bgCard, borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1, borderColor: colors.border }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 }}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 }}>{todayScenario.title}</Text>
+              <Text style={{ fontSize: 16, color: colors.text, lineHeight: 24 }}>{todayScenario.body}</Text>
             </View>
 
-            <Text style={styles.verdictPrompt}>What's your verdict?</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center', marginVertical: 16 }}>{t('home.verdict_prompt')}</Text>
 
             {VERDICTS.map((v) => (
               <VerdictButton
@@ -149,44 +150,8 @@ function getMajorityPct(stats: { total: number; guilty: number; notGuilty: numbe
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: colors.primary },
   emptyState: { alignItems: 'center', marginTop: 60 },
   emptyEmoji: { fontSize: 64, marginBottom: 16 },
-  emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 24 },
-  scenarioCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: 20,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  category: { fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 },
-  scenarioTitle: { fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 },
-  scenarioBody: { fontSize: 16, color: colors.text, lineHeight: 24 },
-  verdictPrompt: { fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center', marginVertical: 16 },
-  xpBanner: {
-    backgroundColor: colors.bgLight,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.xp,
-  },
-  xpText: { fontSize: 20, fontWeight: '800', color: colors.xp },
-  majorityText: { fontSize: 14, color: colors.xp, marginTop: 4 },
-  analysisCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  analysisTitle: { fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 },
-  analysisText: { fontSize: 14, color: colors.text, lineHeight: 22 },
 });
