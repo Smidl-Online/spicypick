@@ -5,6 +5,7 @@ import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
+import { VALID_CATEGORIES } from '../constants.js';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -70,8 +71,38 @@ ${content}
 </body></html>`;
 }
 
+// --- Login route (before auth middleware, so it can accept POST with token in body) ---
+adminRoutes.post('/login', async (c) => {
+  const envToken = process.env.ADMIN_TOKEN;
+  if (!envToken) {
+    return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
+  }
+  const formData = await c.req.parseBody();
+  const token = formData.token as string;
+  if (token !== envToken) {
+    return c.html(layout('Login', `
+      <div class="flash flash-error">Invalid token</div>
+      <h1>Admin Login</h1>
+      <div class="card">
+        <form method="POST" action="/admin/login">
+          <div style="margin-bottom:8px;"><label>Admin Token</label><input name="token" type="password" required></div>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    `), 403);
+  }
+  setCookie(c, 'admin_token', envToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 60 * 60 * 24,
+    path: '/admin',
+  });
+  return c.redirect('/admin');
+});
+
 // --- Auth middleware ---
-// Accepts token via: header "ADMIN_TOKEN", query param "token", or cookie "admin_token"
+// Accepts token via: header "ADMIN_TOKEN" or cookie "admin_token"
 adminRoutes.use('*', async (c, next) => {
   const envToken = process.env.ADMIN_TOKEN;
   if (!envToken) {
@@ -84,14 +115,13 @@ adminRoutes.use('*', async (c, next) => {
   }
   const token =
     c.req.header('ADMIN_TOKEN') ||
-    c.req.query('token') ||
     getCookie(c, 'admin_token');
   if (token !== envToken) {
-    if (c.req.method === 'GET' && !token) {
+    if (c.req.method === 'GET') {
       return c.html(layout('Login', `
         <h1>Admin Login</h1>
         <div class="card">
-          <form method="GET" action="${escapeHtml(c.req.path)}">
+          <form method="POST" action="/admin/login">
             <div style="margin-bottom:8px;"><label>Admin Token</label><input name="token" type="password" required></div>
             <button type="submit">Login</button>
           </form>
@@ -100,9 +130,10 @@ adminRoutes.use('*', async (c, next) => {
     }
     return c.html('<h1>403 — Forbidden</h1>', 403);
   }
-  // Set cookie so subsequent browser navigations work without query param
+  // Refresh cookie on each authenticated request
   setCookie(c, 'admin_token', envToken, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
     maxAge: 60 * 60 * 24,
     path: '/admin',
@@ -242,12 +273,14 @@ adminRoutes.get('/scenarios', async (c) => {
 // ============================
 // POST /admin/scenarios — Create
 // ============================
+const VALID_STATUSES = ['draft', 'scheduled', 'published'] as const;
+
 const createScenarioSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1),
-  category: z.string().min(1),
+  category: z.enum(VALID_CATEGORIES as unknown as [string, ...string[]]),
   publishDate: z.string().optional(),
-  status: z.string().default('draft'),
+  status: z.enum(VALID_STATUSES as unknown as [string, ...string[]]).default('draft'),
 });
 
 adminRoutes.post('/scenarios', async (c) => {
@@ -275,6 +308,9 @@ adminRoutes.post('/scenarios/generate', async (c) => {
   try {
     const formData = await c.req.parseBody();
     const category = (formData.category as string) || undefined;
+    if (category && !(VALID_CATEGORIES as readonly string[]).includes(category)) {
+      return c.html(layout('Error', `<div class="flash flash-error">Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}</div><a href="/admin/scenarios">Back</a>`), 400);
+    }
     const saved = await generateAndSaveScenario(category);
     return c.html(layout('Generated', `
       <div class="flash flash-success">AI scenario generated successfully!</div>
@@ -324,6 +360,9 @@ adminRoutes.get('/submissions', async (c) => {
       <td>
         ${s.status === 'pending' ? `
           <form method="POST" action="/admin/submissions/${s.id}/approve" style="display:inline;margin:0;">
+            <select name="category" style="width:auto;display:inline;padding:4px;">
+              ${VALID_CATEGORIES.map((cat) => `<option value="${cat}">${cat}</option>`).join('')}
+            </select>
             <button type="submit" class="success" style="padding:4px 10px;font-size:0.85rem;">Approve</button>
           </form>
           <form method="POST" action="/admin/submissions/${s.id}/reject" style="display:inline;margin:0;">
@@ -352,6 +391,12 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
   const id = c.req.param('id');
   if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
 
+  const formData = await c.req.parseBody();
+  const category = formData.category as string;
+  if (!category || !(VALID_CATEGORIES as readonly string[]).includes(category)) {
+    return c.html(layout('Error', `<div class="flash flash-error">Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}</div><a href="/admin/submissions">Back</a>`), 400);
+  }
+
   const submission = await db.query.scenarioSubmissions.findFirst({
     where: eq(scenarioSubmissions.id, id),
   });
@@ -364,7 +409,7 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
     await tx.insert(scenarios).values({
       title: submission.body.substring(0, 120),
       body: submission.body,
-      category: 'friends',
+      category,
       source: 'user_submission',
       status: 'draft',
     });
@@ -384,6 +429,15 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
 adminRoutes.post('/submissions/:id/reject', async (c) => {
   const id = c.req.param('id');
   if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
+
+  const submission = await db.query.scenarioSubmissions.findFirst({
+    where: eq(scenarioSubmissions.id, id),
+  });
+  if (!submission) return c.html(layout('Error', '<div class="flash flash-error">Submission not found</div>'), 404);
+  if (submission.status !== 'pending') {
+    return c.html(layout('Error', `<div class="flash flash-error">Submission already ${escapeHtml(submission.status)}</div><a href="/admin/submissions">Back</a>`), 409);
+  }
+
   const formData = await c.req.parseBody();
   const moderatorNotes = (formData.moderatorNotes as string) || 'Rejected by moderator.';
 

@@ -6,12 +6,12 @@ import { eq, sql, and, desc, lte } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
 import { AppEnv } from '../types.js';
+import { VALID_CATEGORIES } from '../constants.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
 const uuidSchema = z.string().uuid();
 const VALID_VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
-const VALID_CATEGORIES = ['workplace', 'relationship', 'family', 'friends', 'money', 'neighbors'] as const;
 const verdictSchema = z.object({
   verdict: z.enum(VALID_VERDICTS),
 });

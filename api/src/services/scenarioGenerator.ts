@@ -39,6 +39,9 @@ export async function generateScenario(category?: string) {
   } catch {
     throw new Error(`AI returned invalid JSON: ${text.substring(0, 200)}`);
   }
+  if (!parsed.title || !parsed.body) {
+    throw new Error('AI response missing required fields (title, body)');
+  }
   return { title: parsed.title, body: parsed.body, category: cat };
 }
 

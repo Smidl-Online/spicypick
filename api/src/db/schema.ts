@@ -197,7 +197,7 @@ export const guilds = pgTable('guilds', {
   name: varchar('name', { length: 50 }).unique().notNull(),
   description: text('description'),
   avatarUrl: text('avatar_url'),
-  leaderId: uuid('leader_id').notNull().references(() => users.id),
+  leaderId: uuid('leader_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   weeklyXp: integer('weekly_xp').default(0).notNull(),
   totalXp: integer('total_xp').default(0).notNull(),
   memberCount: integer('member_count').default(1).notNull(),
@@ -207,8 +207,8 @@ export const guilds = pgTable('guilds', {
 
 export const guildMembers = pgTable('guild_members', {
   id: uuid('id').defaultRandom().primaryKey(),
-  guildId: uuid('guild_id').notNull().references(() => guilds.id),
-  userId: uuid('user_id').notNull().references(() => users.id),
+  guildId: uuid('guild_id').notNull().references(() => guilds.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   role: varchar('role', { length: 20 }).default('member').notNull(), // 'leader', 'officer', 'member'
   weeklyXp: integer('weekly_xp').default(0).notNull(),
   joinedAt: timestamp('joined_at').defaultNow().notNull(),
