@@ -1,0 +1,92 @@
+{
+  "app_name": "SpicyPick",
+  "home": {
+    "title": "Dnešní scénář",
+    "no_scenario": "Dnes zatím žádný scénář. Zkus to později!",
+    "already_voted": "Dnes už jsi hlasoval!",
+    "next_scenario": "Další scénář za",
+    "share": "Sdílej svůj verdikt",
+    "streak": "{{count}} dní v řadě"
+  },
+  "verdicts": {
+    "guilty": "Vinen",
+    "not_guilty": "Nevinen",
+    "complicated": "Je to složité",
+    "both_wrong": "Oba chybují"
+  },
+  "reveal": {
+    "community": "Komunita hlasovala",
+    "expert": "Expertní analýza",
+    "majority_match": "Hlasoval jsi s většinou!",
+    "xp_earned": "+{{xp}} XP"
+  },
+  "league": {
+    "title": "Liga",
+    "not_in_league": "Hlasuj a připoj se do ligy!",
+    "rank": "Pořadí #{{rank}}",
+    "weekly_xp": "{{xp}} XP tento týden",
+    "promotion_zone": "Zóna postupu",
+    "demotion_zone": "Zóna sestupu",
+    "ends_in": "Týden končí za"
+  },
+  "profile": {
+    "title": "Profil",
+    "level": "Level {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{count}} dní v řadě",
+    "longest_streak": "Nejdelší: {{count}} dní",
+    "total_votes": "{{count}} verdiktů",
+    "achievements": "Úspěchy",
+    "history": "Historie verdiktů",
+    "settings": "Nastavení"
+  },
+  "challenges": {
+    "title": "Výzvy",
+    "empty": "Zatím žádné výzvy",
+    "send": "Vyzvi přítele",
+    "pending": "Čeká na odpověď",
+    "completed": "Dokončeno",
+    "respond": "Dej svůj verdikt"
+  },
+  "auth": {
+    "login": "Přihlásit se",
+    "register": "Registrace",
+    "email": "E-mail",
+    "password": "Heslo",
+    "username": "Uživatelské jméno",
+    "forgot_password": "Zapomněl jsi heslo?",
+    "no_account": "Nemáš účet?",
+    "has_account": "Už máš účet?"
+  },
+  "settings": {
+    "title": "Nastavení",
+    "notifications": "Notifikace",
+    "premium": "Premium",
+    "language": "Jazyk",
+    "delete_account": "Smazat účet",
+    "logout": "Odhlásit se"
+  },
+  "premium": {
+    "title": "SpicyPick Premium",
+    "price": "74 Kč/měsíc",
+    "features": [
+      "3 scénáře denně",
+      "Kompletní archiv scénářů",
+      "Rozšířená expertní analýza",
+      "Bez reklam",
+      "3 streak freeze měsíčně"
+    ],
+    "subscribe": "Předplatit",
+    "active": "Premium aktivní do {{date}}"
+  },
+  "common": {
+    "loading": "Načítání...",
+    "error": "Něco se pokazilo",
+    "retry": "Zkusit znovu",
+    "cancel": "Zrušit",
+    "save": "Uložit",
+    "hours": "h",
+    "minutes": "m",
+    "seconds": "s"
+  }
+}

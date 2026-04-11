@@ -1,0 +1,92 @@
+{
+  "app_name": "SpicyPick",
+  "home": {
+    "title": "Today's Scenario",
+    "no_scenario": "No scenario today yet. Check back soon!",
+    "already_voted": "You already voted today!",
+    "next_scenario": "Next scenario in",
+    "share": "Share your pick",
+    "streak": "{{count}} day streak"
+  },
+  "verdicts": {
+    "guilty": "Guilty",
+    "not_guilty": "Not Guilty",
+    "complicated": "It's Complicated",
+    "both_wrong": "Both Wrong"
+  },
+  "reveal": {
+    "community": "Community voted",
+    "expert": "Expert Analysis",
+    "majority_match": "You voted with the majority!",
+    "xp_earned": "+{{xp}} XP"
+  },
+  "league": {
+    "title": "League",
+    "not_in_league": "Vote to join a league!",
+    "rank": "Rank #{{rank}}",
+    "weekly_xp": "{{xp}} XP this week",
+    "promotion_zone": "Promotion Zone",
+    "demotion_zone": "Demotion Zone",
+    "ends_in": "Week ends in"
+  },
+  "profile": {
+    "title": "Profile",
+    "level": "Level {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{count}} day streak",
+    "longest_streak": "Longest: {{count}} days",
+    "total_votes": "{{count}} verdicts",
+    "achievements": "Achievements",
+    "history": "Verdict History",
+    "settings": "Settings"
+  },
+  "challenges": {
+    "title": "Challenges",
+    "empty": "No challenges yet",
+    "send": "Challenge a friend",
+    "pending": "Pending",
+    "completed": "Completed",
+    "respond": "Give your verdict"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account?",
+    "has_account": "Already have an account?"
+  },
+  "settings": {
+    "title": "Settings",
+    "notifications": "Notifications",
+    "premium": "Premium",
+    "language": "Language",
+    "delete_account": "Delete Account",
+    "logout": "Log Out"
+  },
+  "premium": {
+    "title": "SpicyPick Premium",
+    "price": "$2.99/month",
+    "features": [
+      "3 scenarios per day",
+      "Full scenario archive",
+      "Extended expert analysis",
+      "Ad-free experience",
+      "3 streak freezes per month"
+    ],
+    "subscribe": "Subscribe",
+    "active": "Premium active until {{date}}"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "hours": "h",
+    "minutes": "m",
+    "seconds": "s"
+  }
+}
