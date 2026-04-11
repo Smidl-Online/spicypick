@@ -3,7 +3,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
-import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges } from '../db/schema.js';
+import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
@@ -167,6 +167,9 @@ auth.delete('/account', authMiddleware, async (c) => {
   await db.delete(challenges).where(eq(challenges.challengerId, userId));
   await db.delete(challenges).where(eq(challenges.challengedId, userId));
   await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
+  // Guild cleanup: remove memberships, delete guilds where user is leader
+  await db.delete(guildMembers).where(eq(guildMembers.userId, userId));
+  await db.delete(guilds).where(eq(guilds.leaderId, userId));
   await db.delete(users).where(eq(users.id, userId));
 
   return c.json({ message: 'Account deleted' });

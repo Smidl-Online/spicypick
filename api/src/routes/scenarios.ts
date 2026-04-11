@@ -6,9 +6,11 @@ import { eq, sql, and, desc, lte } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
 import { AppEnv } from '../types.js';
+import { VALID_CATEGORIES } from '../constants.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
+const uuidSchema = z.string().uuid();
 const VALID_VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 const verdictSchema = z.object({
   verdict: z.enum(VALID_VERDICTS),
@@ -80,6 +82,9 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
 scenarioRoutes.get('/:id', authMiddleware, async (c) => {
   const scenarioId = c.req.param('id')!;
   const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
 
   const scenario = await db.query.scenarios.findFirst({
     where: eq(scenarios.id, scenarioId),
@@ -123,8 +128,15 @@ scenarioRoutes.get('/:id', authMiddleware, async (c) => {
 // GET /api/scenarios/archive (premium only)
 scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const page = parseInt(c.req.query('page') || '1');
-  const limit = parseInt(c.req.query('limit') || '20');
+  const parsedPage = parseInt(c.req.query('page') || '1');
+  const page = Math.max(Number.isFinite(parsedPage) ? parsedPage : 1, 1);
+  const rawLimit = parseInt(c.req.query('limit') || '20');
+  const limit = Math.min(Math.max(rawLimit || 20, 1), 50);
+  const category = c.req.query('category');
+
+  if (category && !(VALID_CATEGORIES as readonly string[]).includes(category)) {
+    return c.json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}` }, 400);
+  }
 
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user?.isPremium) {
@@ -134,11 +146,16 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   const today = todayDate();
   const offset = (page - 1) * limit;
 
+  const conditions = [
+    eq(scenarios.status, 'published'),
+    lte(scenarios.publishDate, today),
+  ];
+  if (category) {
+    conditions.push(eq(scenarios.category, category));
+  }
+
   const archived = await db.query.scenarios.findMany({
-    where: and(
-      eq(scenarios.status, 'published'),
-      lte(scenarios.publishDate, today),
-    ),
+    where: and(...conditions),
     orderBy: [desc(scenarios.publishDate)],
     limit,
     offset,
@@ -161,6 +178,9 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
 scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const scenarioId = c.req.param('id')!;
   const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
   const body = await c.req.json();
 
   const parsed = verdictSchema.safeParse(body);
