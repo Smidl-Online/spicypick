@@ -112,9 +112,14 @@ challengeRoutes.get('/', authMiddleware, async (c) => {
   });
 });
 
+const uuidSchema = z.string().uuid();
+
 // POST /api/challenges/:id/respond
 challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
   const challengeId = c.req.param('id')!;
+  if (!uuidSchema.safeParse(challengeId).success) {
+    return c.json({ error: 'Invalid challenge ID format' }, 400);
+  }
   const userId = c.get('userId');
   let body: unknown;
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }

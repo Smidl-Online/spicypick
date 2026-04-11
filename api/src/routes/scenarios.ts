@@ -234,11 +234,11 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
 
   // Calculate streak (use user timezone)
   const today = todayDate(user?.timezone ?? undefined);
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const yesterdayStr = user?.timezone
-    ? yesterdayDate.toLocaleDateString('en-CA', { timeZone: user.timezone })
-    : yesterdayDate.toISOString().split('T')[0];
+  // Compute "yesterday" from today string to avoid UTC/timezone mismatch
+  const todayParts = today.split('-').map(Number);
+  const todayDateObj = new Date(Date.UTC(todayParts[0], todayParts[1] - 1, todayParts[2]));
+  todayDateObj.setUTCDate(todayDateObj.getUTCDate() - 1);
+  const yesterdayStr = todayDateObj.toISOString().split('T')[0];
 
   let newStreak = user.currentStreak;
   if (user.lastPlayedAt === today) {
@@ -307,11 +307,11 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     );
   }
 
-  // Atomic XP update to prevent race condition with concurrent votes
+  // Atomic updates to prevent race condition with concurrent votes
   const [updatedUser] = await db.update(users).set({
     xp: sql`${users.xp} + ${finalXpEarned}`,
-    currentStreak: newStreak,
-    longestStreak: Math.max(newStreak, user.longestStreak),
+    currentStreak: sql`${newStreak}`,
+    longestStreak: sql`GREATEST(${newStreak}, ${users.longestStreak})`,
     lastPlayedAt: today,
     updatedAt: new Date(),
   }).where(eq(users.id, userId)).returning({ xp: users.xp });

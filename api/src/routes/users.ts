@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, votes, scenarios } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
+
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
 
@@ -78,8 +79,10 @@ userRoutes.patch('/me', authMiddleware, async (c) => {
 // GET /api/users/me/history
 userRoutes.get('/me/history', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const page = parseInt(c.req.query('page') || '1');
-  const limit = parseInt(c.req.query('limit') || '20');
+  const parsedPage = parseInt(c.req.query('page') || '1');
+  const page = Math.max(Number.isFinite(parsedPage) ? parsedPage : 1, 1);
+  const rawLimit = parseInt(c.req.query('limit') || '20');
+  const limit = Math.min(Math.max(Number.isFinite(rawLimit) ? rawLimit : 20, 1), 50);
   const offset = (page - 1) * limit;
 
   const userVotes = await db.query.votes.findMany({
@@ -124,15 +127,20 @@ userRoutes.post('/me/streak-freeze', authMiddleware, async (c) => {
     return c.json({ error: 'No streak freezes available' }, 400);
   }
 
-  await db.update(users).set({
-    streakFreezes: user.streakFreezes - 1,
+  // Atomic decrement with guard to prevent race condition (double-spend)
+  const result = await db.update(users).set({
+    streakFreezes: sql`${users.streakFreezes} - 1`,
     lastPlayedAt: new Date().toISOString().split('T')[0],
     updatedAt: new Date(),
-  }).where(eq(users.id, userId));
+  }).where(and(eq(users.id, userId), sql`${users.streakFreezes} > 0`)).returning({ remaining: users.streakFreezes });
+
+  if (result.length === 0) {
+    return c.json({ error: 'No streak freezes available' }, 400);
+  }
 
   return c.json({
     message: 'Streak freeze used',
-    remainingFreezes: user.streakFreezes - 1,
+    remainingFreezes: result[0].remaining,
     currentStreak: user.currentStreak,
   });
 });

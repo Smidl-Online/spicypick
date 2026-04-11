@@ -36,6 +36,7 @@ const corsOrigin = process.env.CORS_ORIGIN || '*';
 app.use('*', cors({ origin: corsOrigin }));
 app.use('*', logger());
 app.use('/api/*', rateLimit(100, 60_000));
+app.use('/admin/*', rateLimit(30, 60_000));
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));

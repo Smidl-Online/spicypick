@@ -31,7 +31,10 @@ export async function generateScenario(category?: string) {
   if (!res.ok) throw new Error(`AI API error: ${res.status}`);
   const data = await res.json() as any;
   if (!data.content?.[0]?.text) throw new Error('AI returned unexpected response format');
-  const text = data.content[0].text;
+  let text: string = data.content[0].text;
+  // Strip markdown code fences if AI wraps response in ```json ... ```
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) text = fenceMatch[1].trim();
   let parsed: { title: string; body: string };
   try {
     parsed = JSON.parse(text);
