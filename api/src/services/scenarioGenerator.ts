@@ -1,7 +1,6 @@
 import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
-
-const CATEGORIES = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'];
+import { VALID_CATEGORIES } from '../constants.js';
 
 const SYSTEM_PROMPT = `You are a scenario writer for SpicyPick, a social judgment game.
 Write a realistic, morally ambiguous scenario from first person perspective.
@@ -10,7 +9,7 @@ No politics, religion, racism, sexism.
 Return JSON: {"title": "...", "body": "..."}`;
 
 export async function generateScenario(category?: string) {
-  const cat = category || CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+  const cat = category || VALID_CATEGORIES[Math.floor(Math.random() * VALID_CATEGORIES.length)];
   const apiKey = process.env.AI_API_KEY;
   if (!apiKey) throw new Error('AI_API_KEY not configured');
 
