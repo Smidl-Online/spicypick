@@ -18,19 +18,22 @@ import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 
 // Validate required env variables at startup
-const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ADMIN_TOKEN'] as const;
+const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
 for (const key of REQUIRED_ENV) {
   if (!process.env[key]) {
     console.error(`FATAL: Missing required environment variable: ${key}`);
     process.exit(1);
   }
 }
+if (!process.env.ADMIN_TOKEN) {
+  console.warn('WARNING: ADMIN_TOKEN not set — admin panel will be disabled');
+}
 
 const app = new Hono();
 
 // Global middleware
-const corsOrigin = process.env.CORS_ORIGIN;
-app.use('*', cors({ origin: corsOrigin || 'http://localhost:3000' }));
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+app.use('*', cors({ origin: corsOrigin }));
 app.use('*', logger());
 app.use('/api/*', rateLimit(100, 60_000));
 

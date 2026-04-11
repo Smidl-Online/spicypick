@@ -221,34 +221,6 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user) return c.json({ error: 'User not found' }, 404);
 
-  // Update scenario vote counts
-  const verdictColumn = {
-    guilty: scenarios.votesGuilty,
-    not_guilty: scenarios.votesNotGuilty,
-    complicated: scenarios.votesComplicated,
-    both_wrong: scenarios.votesBothWrong,
-  }[verdict];
-
-  await db.update(scenarios).set({
-    totalVotes: sql`${scenarios.totalVotes} + 1`,
-    [verdictColumn.name]: sql`${verdictColumn} + 1`,
-  }).where(eq(scenarios.id, scenarioId));
-
-  // Get updated scenario for majority check
-  const updatedScenario = await db.query.scenarios.findFirst({
-    where: eq(scenarios.id, scenarioId),
-  });
-
-  // Check if user voted with majority
-  const verdictCounts: Record<string, number> = {
-    guilty: updatedScenario!.votesGuilty,
-    not_guilty: updatedScenario!.votesNotGuilty,
-    complicated: updatedScenario!.votesComplicated,
-    both_wrong: updatedScenario!.votesBothWrong,
-  };
-  const maxVotes = Math.max(...Object.values(verdictCounts));
-  const majorityMatch = verdictCounts[verdict] === maxVotes;
-
   // Calculate streak (use user timezone)
   const today = todayDate(user?.timezone ?? undefined);
   const yesterdayDate = new Date();
@@ -269,10 +241,16 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     newStreak = 1;
   }
 
-  // Calculate XP
-  const xpEarned = calculateVoteXp(newStreak, majorityMatch);
+  // Verdict column mapping
+  const verdictColumn = {
+    guilty: scenarios.votesGuilty,
+    not_guilty: scenarios.votesNotGuilty,
+    complicated: scenarios.votesComplicated,
+    both_wrong: scenarios.votesBothWrong,
+  }[verdict];
 
-  // Insert vote (catch unique constraint violation from concurrent requests)
+  // Insert vote FIRST, then update counts — prevents drift on unique constraint violation
+  const xpEarned = calculateVoteXp(newStreak, false); // majorityMatch calculated after insert
   try {
     await db.insert(votes).values({
       userId,
@@ -287,9 +265,40 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     throw err;
   }
 
+  // Update scenario vote counts AFTER successful insert (no drift on race condition)
+  await db.update(scenarios).set({
+    totalVotes: sql`${scenarios.totalVotes} + 1`,
+    [verdictColumn.name]: sql`${verdictColumn} + 1`,
+  }).where(eq(scenarios.id, scenarioId));
+
+  // Get updated scenario for majority check
+  const updatedScenario = await db.query.scenarios.findFirst({
+    where: eq(scenarios.id, scenarioId),
+  });
+
+  // Check if user voted with majority
+  const verdictCounts: Record<string, number> = {
+    guilty: updatedScenario!.votesGuilty,
+    not_guilty: updatedScenario!.votesNotGuilty,
+    complicated: updatedScenario!.votesComplicated,
+    both_wrong: updatedScenario!.votesBothWrong,
+  };
+  const maxVotes = Math.max(...Object.values(verdictCounts));
+  const majorityMatch = verdictCounts[verdict] === maxVotes;
+
+  // Recalculate XP with actual majorityMatch
+  const finalXpEarned = calculateVoteXp(newStreak, majorityMatch);
+
   // Update user
-  const newTotalXp = user.xp + xpEarned;
+  const newTotalXp = user.xp + finalXpEarned;
   const newLevel = calculateLevel(newTotalXp);
+
+  // Update vote XP if majority bonus changed it
+  if (finalXpEarned !== xpEarned) {
+    await db.update(votes).set({ xpEarned: finalXpEarned }).where(
+      and(eq(votes.userId, userId), eq(votes.scenarioId, scenarioId))
+    );
+  }
 
   await db.update(users).set({
     xp: newTotalXp,
@@ -304,7 +313,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const newAchievements = await checkAchievements(userId);
 
   return c.json({
-    xpEarned,
+    xpEarned: finalXpEarned,
     totalXp: newTotalXp,
     level: newLevel,
     streak: newStreak,
