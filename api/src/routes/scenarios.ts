@@ -272,13 +272,20 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   // Calculate XP
   const xpEarned = calculateVoteXp(newStreak, majorityMatch);
 
-  // Insert vote
-  await db.insert(votes).values({
-    userId,
-    scenarioId,
-    verdict,
-    xpEarned,
-  });
+  // Insert vote (catch unique constraint violation from concurrent requests)
+  try {
+    await db.insert(votes).values({
+      userId,
+      scenarioId,
+      verdict,
+      xpEarned,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && 'code' in err && (err as { code: string }).code === '23505') {
+      return c.json({ error: 'Already voted on this scenario' }, 409);
+    }
+    throw err;
+  }
 
   // Update user
   const newTotalXp = user.xp + xpEarned;

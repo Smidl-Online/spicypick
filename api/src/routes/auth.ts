@@ -225,18 +225,20 @@ auth.get('/export', authMiddleware, async (c) => {
 auth.delete('/account', authMiddleware, async (c) => {
   const userId = c.get('userId');
 
-  // Delete all user data
-  await db.delete(votes).where(eq(votes.userId, userId));
-  await db.delete(userAchievements).where(eq(userAchievements.userId, userId));
-  await db.delete(leagueMembers).where(eq(leagueMembers.userId, userId));
-  await db.delete(scenarioSubmissions).where(eq(scenarioSubmissions.userId, userId));
-  await db.delete(challenges).where(eq(challenges.challengerId, userId));
-  await db.delete(challenges).where(eq(challenges.challengedId, userId));
-  await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
-  // Guild cleanup: remove memberships, delete guilds where user is leader
-  await db.delete(guildMembers).where(eq(guildMembers.userId, userId));
-  await db.delete(guilds).where(eq(guilds.leaderId, userId));
-  await db.delete(users).where(eq(users.id, userId));
+  // Delete all user data in a transaction to prevent partial deletion
+  await db.transaction(async (tx) => {
+    await tx.delete(votes).where(eq(votes.userId, userId));
+    await tx.delete(userAchievements).where(eq(userAchievements.userId, userId));
+    await tx.delete(leagueMembers).where(eq(leagueMembers.userId, userId));
+    await tx.delete(scenarioSubmissions).where(eq(scenarioSubmissions.userId, userId));
+    await tx.delete(challenges).where(eq(challenges.challengerId, userId));
+    await tx.delete(challenges).where(eq(challenges.challengedId, userId));
+    await tx.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
+    // Guild cleanup: remove memberships, delete guilds where user is leader
+    await tx.delete(guildMembers).where(eq(guildMembers.userId, userId));
+    await tx.delete(guilds).where(eq(guilds.leaderId, userId));
+    await tx.delete(users).where(eq(users.id, userId));
+  });
 
   return c.json({ message: 'Account deleted' });
 });

@@ -20,6 +20,11 @@ function safeEqual(a: string, b: string): boolean {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const COOKIE_SALT = 'spicypick-admin-v1';
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token + COOKIE_SALT).digest('hex');
+}
+
 const adminRoutes = new Hono();
 
 function escapeHtml(s: string): string {
@@ -102,7 +107,7 @@ adminRoutes.post('/login', rateLimit(5, 60_000), async (c) => {
       </div>
     `), 403);
   }
-  setCookie(c, 'admin_token', envToken, {
+  setCookie(c, 'admin_token', hashToken(envToken), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
@@ -119,10 +124,15 @@ adminRoutes.use('*', async (c, next) => {
   if (!envToken) {
     return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
   }
-  const token =
-    c.req.header('ADMIN_TOKEN') ||
-    getCookie(c, 'admin_token');
-  if (!token || !safeEqual(token, envToken)) {
+  const headerToken = c.req.header('ADMIN_TOKEN');
+  const cookieToken = getCookie(c, 'admin_token');
+  // Header: compare raw token; Cookie: compare hashed token
+  const authenticated = headerToken
+    ? safeEqual(headerToken, envToken)
+    : cookieToken
+      ? safeEqual(cookieToken, hashToken(envToken))
+      : false;
+  if (!authenticated) {
     if (c.req.method === 'GET') {
       return c.html(layout('Login', `
         <h1>Admin Login</h1>
@@ -137,7 +147,7 @@ adminRoutes.use('*', async (c, next) => {
     return c.html('<h1>403 — Forbidden</h1>', 403);
   }
   // Refresh cookie on each authenticated request
-  setCookie(c, 'admin_token', envToken, {
+  setCookie(c, 'admin_token', hashToken(envToken), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
