@@ -67,13 +67,19 @@ export default function HomeScreen() {
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('home.no_scenario')}</Text>
             <CountdownTimer />
           </View>
-        ) : hasVoted && communityStats ? (
+        ) : hasVoted ? (
           <Animated.View entering={FadeIn.duration(500)}>
             <View style={[styles.scenarioCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
               <Text style={[styles.category, { color: colors.primary }]}>{todayScenario.category.toUpperCase()}</Text>
               <Text style={[styles.scenarioTitle, { color: colors.text }]}>{todayScenario.title}</Text>
               <Text style={[styles.scenarioBody, { color: colors.text }]}>{todayScenario.body}</Text>
             </View>
+
+            {isOffline && !communityStats && (
+              <View style={[styles.offlineVotedBanner, { backgroundColor: colors.bgLight, borderColor: colors.warning }]}>
+                <Text style={[styles.offlineVotedText, { color: colors.text }]}>{t('home.offline_voted')}</Text>
+              </View>
+            )}
 
             {voteResult && (
               <Animated.View entering={SlideInDown.delay(200)} style={[styles.xpBanner, { backgroundColor: colors.bgLight, borderColor: colors.xp }]}>
@@ -84,7 +90,9 @@ export default function HomeScreen() {
               </Animated.View>
             )}
 
-            <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            {communityStats && (
+              <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            )}
 
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
               <Animated.View entering={FadeInUp.delay(800)} style={[styles.analysisCard, { backgroundColor: colors.bgCard, borderColor: colors.accent }]}>
@@ -177,4 +185,6 @@ const styles = StyleSheet.create({
   analysisCard: { borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1 },
   analysisTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
   analysisText: { fontSize: 14, lineHeight: 22 },
+  offlineVotedBanner: { borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1 },
+  offlineVotedText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
 });

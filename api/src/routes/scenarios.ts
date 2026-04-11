@@ -189,7 +189,8 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   if (!uuidSchema.safeParse(scenarioId).success) {
     return c.json({ error: 'Invalid scenario ID format' }, 400);
   }
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = verdictSchema.safeParse(body);
   if (!parsed.success) {

@@ -20,7 +20,8 @@ const respondSchema = z.object({
 // POST /api/challenges
 challengeRoutes.post('/', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = createChallengeSchema.safeParse(body);
   if (!parsed.success) {
@@ -115,7 +116,8 @@ challengeRoutes.get('/', authMiddleware, async (c) => {
 challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
   const challengeId = c.req.param('id')!;
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = respondSchema.safeParse(body);
   if (!parsed.success) {

@@ -15,7 +15,8 @@ const submitSchema = z.object({
 // POST /api/submissions
 submissionRoutes.post('/', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = submitSchema.safeParse(body);
   if (!parsed.success) {

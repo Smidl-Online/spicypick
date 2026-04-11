@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
 import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds, reports } from '../db/schema.js';
-import { eq, or } from 'drizzle-orm';
+import { eq, or, and, ne, sql } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
 
@@ -37,7 +37,8 @@ function generateTokens(userId: string, email: string) {
 
 // POST /api/auth/register
 auth.post('/register', async (c) => {
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ error: 'Invalid input', details: parsed.error.flatten() }, 400);
@@ -81,7 +82,8 @@ auth.post('/register', async (c) => {
 
 // POST /api/auth/login
 auth.post('/login', async (c) => {
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
     return c.json({ error: 'Invalid input' }, 400);
@@ -115,7 +117,9 @@ auth.post('/login', async (c) => {
 
 // POST /api/auth/refresh
 auth.post('/refresh', async (c) => {
-  const { refreshToken } = await c.req.json();
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+  const { refreshToken } = reqBody as { refreshToken?: string };
   if (!refreshToken) return c.json({ error: 'Refresh token required' }, 400);
 
   try {
@@ -148,7 +152,9 @@ auth.post('/refresh', async (c) => {
 // POST /api/auth/forgot-password
 // TODO: Implement actual password reset via email (Resend)
 auth.post('/forgot-password', async (c) => {
-  const { email } = await c.req.json();
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+  const { email } = reqBody as { email?: string };
   if (!email) return c.json({ error: 'Email required' }, 400);
 
   return c.json({ error: 'Password reset is not yet implemented' }, 501);
@@ -234,9 +240,19 @@ auth.delete('/account', authMiddleware, async (c) => {
     await tx.delete(challenges).where(eq(challenges.challengerId, userId));
     await tx.delete(challenges).where(eq(challenges.challengedId, userId));
     await tx.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
-    // Guild cleanup: remove memberships, delete guilds where user is leader
     await tx.delete(reports).where(eq(reports.userId, userId));
+    // Guild cleanup: decrement memberCount for guilds where user is regular member
+    const memberships = await tx.query.guildMembers.findMany({
+      where: and(eq(guildMembers.userId, userId), ne(guildMembers.role, 'leader')),
+      columns: { guildId: true },
+    });
+    for (const m of memberships) {
+      await tx.update(guilds).set({
+        memberCount: sql`GREATEST(${guilds.memberCount} - 1, 0)`,
+      }).where(eq(guilds.id, m.guildId));
+    }
     await tx.delete(guildMembers).where(eq(guildMembers.userId, userId));
+    // Delete guilds where user is leader (cascade deletes guild members)
     await tx.delete(guilds).where(eq(guilds.leaderId, userId));
     await tx.delete(users).where(eq(users.id, userId));
   });

@@ -9,7 +9,8 @@
     "streak": "{{count}} dias seguidos",
     "verdict_prompt": "Qual é o seu veredicto?",
     "offline": "Offline",
-    "offline_hint": "Você está offline. Seu voto será sincronizado quando reconectar."
+    "offline_hint": "Você está offline. Seu voto será sincronizado quando reconectar.",
+    "offline_voted": "Seu voto foi salvo! Os resultados aparecerão quando você estiver online novamente."
   },
   "verdicts": {
     "guilty": "Culpado",

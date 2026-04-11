@@ -47,7 +47,8 @@ userRoutes.get('/me', authMiddleware, async (c) => {
 // PATCH /api/users/me
 userRoutes.patch('/me', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = updateProfileSchema.safeParse(body);
   if (!parsed.success) {
@@ -139,7 +140,9 @@ userRoutes.post('/me/streak-freeze', authMiddleware, async (c) => {
 // PUT /api/users/me/push-token
 userRoutes.put('/me/push-token', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const { token } = await c.req.json();
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+  const { token } = reqBody as { token?: string };
 
   if (!token || typeof token !== 'string') {
     return c.json({ error: 'Push token required' }, 400);

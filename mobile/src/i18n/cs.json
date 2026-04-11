@@ -9,7 +9,8 @@
     "streak": "{{count}} dní v řadě",
     "verdict_prompt": "Jaký je tvůj verdikt?",
     "offline": "Offline",
-    "offline_hint": "Jsi offline. Tvůj hlas bude synchronizován po připojení."
+    "offline_hint": "Jsi offline. Tvůj hlas bude synchronizován po připojení.",
+    "offline_voted": "Tvůj hlas byl uložen! Výsledky se zobrazí po připojení k internetu."
   },
   "verdicts": {
     "guilty": "Vinen",

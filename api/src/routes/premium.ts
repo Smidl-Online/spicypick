@@ -10,11 +10,12 @@ const premiumRoutes = new Hono<AppEnv>();
 // POST /api/premium/subscribe
 premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   // In production, validate receipt from App Store / Google Play via RevenueCat
   // For now, accept a receipt and activate premium
-  const { receipt, platform } = body;
+  const { receipt, platform } = body as { receipt?: string; platform?: string };
 
   if (!receipt || !platform) {
     return c.json({ error: 'Receipt and platform required' }, 400);

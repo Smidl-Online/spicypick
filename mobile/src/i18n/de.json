@@ -9,7 +9,8 @@
     "streak": "{{count}} Tage in Folge",
     "verdict_prompt": "Wie lautet dein Urteil?",
     "offline": "Offline",
-    "offline_hint": "Du bist offline. Deine Stimme wird synchronisiert, sobald du wieder verbunden bist."
+    "offline_hint": "Du bist offline. Deine Stimme wird synchronisiert, sobald du wieder verbunden bist.",
+    "offline_voted": "Deine Stimme wurde gespeichert! Die Ergebnisse erscheinen, wenn du wieder online bist."
   },
   "verdicts": {
     "guilty": "Schuldig",
