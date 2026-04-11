@@ -106,12 +106,7 @@ adminRoutes.post('/login', async (c) => {
 adminRoutes.use('*', async (c, next) => {
   const envToken = process.env.ADMIN_TOKEN;
   if (!envToken) {
-    if (process.env.NODE_ENV === 'production') {
-      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
-    }
-    console.warn('[admin] WARNING: ADMIN_TOKEN not set — admin panel is open without authentication');
-    await next();
-    return;
+    return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
   }
   const token =
     c.req.header('ADMIN_TOKEN') ||
@@ -338,7 +333,14 @@ adminRoutes.post('/scenarios/:id/status', async (c) => {
   if (!['draft', 'scheduled', 'published', 'archived'].includes(status)) {
     return c.html(layout('Error', '<div class="flash flash-error">Invalid status</div>'), 400);
   }
-  await db.update(scenarios).set({ status }).where(eq(scenarios.id, id));
+  const updateData: Record<string, unknown> = { status };
+  if (status === 'published') {
+    const existing = await db.query.scenarios.findFirst({ where: eq(scenarios.id, id) });
+    if (existing && !existing.publishDate) {
+      updateData.publishDate = new Date().toISOString().split('T')[0];
+    }
+  }
+  await db.update(scenarios).set(updateData).where(eq(scenarios.id, id));
   return c.redirect('/admin/scenarios');
 });
 
