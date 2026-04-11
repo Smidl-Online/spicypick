@@ -33,6 +33,7 @@ type VoteResult = {
 
 type ScenarioState = {
   todayScenario: Scenario | null;
+  scenarioNumber: number | null;
   hasVoted: boolean;
   userVerdict: string | null;
   communityStats: CommunityStats | null;
@@ -48,6 +49,7 @@ type ScenarioState = {
 
 type TodayResponse = {
   scenario: Scenario | null;
+  scenarioNumber?: number;
   voted?: boolean;
   userVerdict?: string;
   communityStats?: CommunityStats;
@@ -55,6 +57,7 @@ type TodayResponse = {
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
   todayScenario: null,
+  scenarioNumber: null,
   hasVoted: false,
   userVerdict: null,
   communityStats: null,
@@ -72,6 +75,7 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
         if (cached) {
           set({
             todayScenario: cached.scenario,
+            scenarioNumber: cached.scenarioNumber || null,
             hasVoted: cached.voted || false,
             userVerdict: cached.userVerdict || null,
             communityStats: cached.communityStats || null,
@@ -89,6 +93,7 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
 
       set({
         todayScenario: data.scenario,
+        scenarioNumber: data.scenarioNumber || null,
         hasVoted: data.voted || false,
         userVerdict: data.userVerdict || null,
         communityStats: data.communityStats || null,
@@ -100,6 +105,7 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       if (cached) {
         set({
           todayScenario: cached.scenario,
+          scenarioNumber: cached.scenarioNumber || null,
           hasVoted: cached.voted || false,
           userVerdict: cached.userVerdict || null,
           communityStats: cached.communityStats || null,
@@ -146,6 +152,7 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
 
   reset: () => set({
     todayScenario: null,
+    scenarioNumber: null,
     hasVoted: false,
     userVerdict: null,
     communityStats: null,

@@ -17,7 +17,7 @@ const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { todayScenario, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading, isOffline } = useScenarioStore();
+  const { todayScenario, scenarioNumber, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading, isOffline } = useScenarioStore();
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
 
@@ -108,7 +108,7 @@ export default function HomeScreen() {
 
             {userVerdict && communityStats && (
               <ShareCard
-                scenarioNumber={1}
+                scenarioNumber={scenarioNumber || 1}
                 userVerdict={userVerdict}
                 communityMajority={getMajority(communityStats)}
                 communityPct={getMajorityPct(communityStats)}

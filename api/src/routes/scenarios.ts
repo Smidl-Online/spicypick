@@ -44,6 +44,14 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
     return c.json({ scenario: null, message: 'No scenario today yet' });
   }
 
+  // Scenario number = count of published scenarios up to and including today
+  const [{ count: scenarioNumber }] = await db.select({ count: sql<number>`count(*)::int` })
+    .from(scenarios)
+    .where(and(
+      eq(scenarios.status, 'published'),
+      lte(scenarios.publishDate, today),
+    ));
+
   // Check if user already voted
   const existingVote = await db.query.votes.findFirst({
     where: and(
@@ -62,6 +70,7 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
         expertAnalysis: scenario.expertAnalysis,
         publishDate: scenario.publishDate,
       },
+      scenarioNumber,
       voted: true,
       userVerdict: existingVote.verdict,
       communityStats: {
@@ -82,6 +91,7 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
       category: scenario.category,
       publishDate: scenario.publishDate,
     },
+    scenarioNumber,
     voted: false,
   });
 });
