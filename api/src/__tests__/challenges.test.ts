@@ -160,7 +160,7 @@ describe('challenge routes', () => {
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
         body: JSON.stringify({ verdict: 'guilty' }),
       });
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(404);
     });
 
     it('should return 400 for already completed challenge', async () => {

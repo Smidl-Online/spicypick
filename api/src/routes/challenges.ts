@@ -133,8 +133,7 @@ challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
     where: eq(challenges.id, challengeId),
   });
 
-  if (!challenge) return c.json({ error: 'Challenge not found' }, 404);
-  if (challenge.challengedId !== userId) return c.json({ error: 'Not your challenge' }, 403);
+  if (!challenge || challenge.challengedId !== userId) return c.json({ error: 'Challenge not found' }, 404);
   if (challenge.status !== 'pending') return c.json({ error: 'Challenge already completed' }, 400);
 
   await db.update(challenges).set({

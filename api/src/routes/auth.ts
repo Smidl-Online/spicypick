@@ -7,6 +7,7 @@ import { db } from '../db/index.js';
 import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds, reports, passwordResetTokens } from '../db/schema.js';
 import { eq, or, and, ne, sql, lt } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
+import { rateLimit } from '../middleware/rateLimit.js';
 import { AppEnv } from '../types.js';
 import { sendPasswordResetEmail } from '../services/email.js';
 
@@ -151,12 +152,37 @@ auth.post('/refresh', async (c) => {
   }
 });
 
+// POST /api/auth/logout
+auth.post('/logout', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { reqBody = {}; }
+  const { refreshToken } = (reqBody as { refreshToken?: string });
+
+  if (refreshToken) {
+    // Delete specific refresh token
+    await db.delete(refreshTokens).where(
+      and(eq(refreshTokens.userId, userId), eq(refreshTokens.token, refreshToken)),
+    );
+  } else {
+    // Delete all refresh tokens for this user
+    await db.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
+  }
+
+  return c.json({ message: 'Logged out' });
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
 // POST /api/auth/forgot-password
-auth.post('/forgot-password', async (c) => {
+auth.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
   let reqBody: unknown;
   try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
-  const { email } = reqBody as { email?: string };
-  if (!email) return c.json({ error: 'Email required' }, 400);
+  const parsed = forgotPasswordSchema.safeParse(reqBody);
+  if (!parsed.success) return c.json({ error: 'Invalid input', details: parsed.error.flatten() }, 400);
+  const { email } = parsed.data;
 
   // Always return success to not reveal if email exists
   const successResponse = { message: 'If account exists, password reset email sent' };

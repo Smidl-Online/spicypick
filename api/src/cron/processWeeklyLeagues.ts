@@ -82,8 +82,12 @@ export async function processWeeklyLeagues() {
 
   // Create leagues of LEAGUE_SIZE
   for (const [tier, userIds] of tierGroups) {
-    // Shuffle users for fair distribution
-    const shuffled = userIds.sort(() => Math.random() - 0.5);
+    // Fisher-Yates shuffle for fair distribution
+    const shuffled = [...userIds];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
 
     for (let i = 0; i < shuffled.length; i += LEAGUE_SIZE) {
       const chunk = shuffled.slice(i, i + LEAGUE_SIZE);
