@@ -288,12 +288,14 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     where: eq(scenarios.id, scenarioId),
   });
 
+  if (!updatedScenario) return c.json({ error: 'Scenario not found' }, 404);
+
   // Check if user voted with majority
   const verdictCounts: Record<string, number> = {
-    guilty: updatedScenario!.votesGuilty,
-    not_guilty: updatedScenario!.votesNotGuilty,
-    complicated: updatedScenario!.votesComplicated,
-    both_wrong: updatedScenario!.votesBothWrong,
+    guilty: updatedScenario.votesGuilty,
+    not_guilty: updatedScenario.votesNotGuilty,
+    complicated: updatedScenario.votesComplicated,
+    both_wrong: updatedScenario.votesBothWrong,
   };
   const maxVotes = Math.max(...Object.values(verdictCounts));
   const majorityMatch = verdictCounts[verdict] === maxVotes;

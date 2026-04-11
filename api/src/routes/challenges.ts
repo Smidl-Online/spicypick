@@ -136,10 +136,13 @@ challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
   if (!challenge || challenge.challengedId !== userId) return c.json({ error: 'Challenge not found' }, 404);
   if (challenge.status !== 'pending') return c.json({ error: 'Challenge already completed' }, 400);
 
-  await db.update(challenges).set({
+  // Atomic update with status check to prevent TOCTOU race condition
+  const [updated] = await db.update(challenges).set({
     challengedVerdict: parsed.data.verdict,
     status: 'completed',
-  }).where(eq(challenges.id, challengeId));
+  }).where(and(eq(challenges.id, challengeId), eq(challenges.status, 'pending'))).returning();
+
+  if (!updated) return c.json({ error: 'Challenge already completed' }, 400);
 
   return c.json({
     message: 'Challenge completed',

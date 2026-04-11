@@ -84,7 +84,7 @@ auth.post('/register', async (c) => {
 });
 
 // POST /api/auth/login
-auth.post('/login', async (c) => {
+auth.post('/login', rateLimit(10, 60_000), async (c) => {
   let body: unknown;
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = loginSchema.safeParse(body);

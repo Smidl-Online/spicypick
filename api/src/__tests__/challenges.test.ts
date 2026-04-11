@@ -13,7 +13,7 @@ vi.mock('../db/index.js', () => ({
       id: 'challenge-1', challengerId: 'user-1', challengedId: 'user-2',
       scenarioId: 'scenario-1', status: 'pending',
     }]) })) })),
-    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
+    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn(() => [{ id: 'ch-1', status: 'completed' }]) })) })) })),
   },
 }));
 
