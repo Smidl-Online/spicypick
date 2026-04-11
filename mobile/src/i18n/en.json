@@ -6,7 +6,10 @@
     "already_voted": "You already voted today!",
     "next_scenario": "Next scenario in",
     "share": "Share your pick",
-    "streak": "{{count}} day streak"
+    "streak": "{{count}} day streak",
+    "verdict_prompt": "What's your verdict?",
+    "offline": "Offline",
+    "offline_hint": "You're offline. Your vote will be synced when you reconnect."
   },
   "verdicts": {
     "guilty": "Guilty",
@@ -64,7 +67,10 @@
     "premium": "Premium",
     "language": "Language",
     "delete_account": "Delete Account",
-    "logout": "Log Out"
+    "delete_confirm": "This will permanently delete your account and all data. This cannot be undone.",
+    "logout": "Log Out",
+    "archive": "Scenario Archive",
+    "premium_active": "Active"
   },
   "premium": {
     "title": "SpicyPick Premium",
@@ -84,6 +90,7 @@
     "error": "Something went wrong",
     "retry": "Retry",
     "cancel": "Cancel",
+    "delete": "Delete",
     "save": "Save",
     "hours": "h",
     "minutes": "m",
