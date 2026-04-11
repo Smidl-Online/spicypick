@@ -1,9 +1,12 @@
 import { Hono } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const adminRoutes = new Hono();
 
@@ -14,45 +17,6 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-// --- Auth middleware (supports query param, cookie, and header) ---
-adminRoutes.use('*', async (c, next) => {
-  const envToken = process.env.ADMIN_TOKEN;
-  if (!envToken) {
-    if (process.env.NODE_ENV === 'production') {
-      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
-    }
-    await next();
-    return;
-  }
-
-  // Check query param first (for initial login link)
-  const queryToken = c.req.query('token');
-  if (queryToken === envToken) {
-    // Set cookie and redirect to strip token from URL
-    const url = new URL(c.req.url);
-    url.searchParams.delete('token');
-    c.header('Set-Cookie', `admin_token=${envToken}; HttpOnly; SameSite=Strict; Path=/admin; Max-Age=86400`);
-    return c.redirect(url.pathname + url.search);
-  }
-
-  // Check cookie
-  const cookieHeader = c.req.header('Cookie') || '';
-  const cookieToken = cookieHeader.split(';').map(c => c.trim()).find(c => c.startsWith('admin_token='))?.split('=')[1];
-  if (cookieToken === envToken) {
-    await next();
-    return;
-  }
-
-  // Check header (for API clients)
-  const headerToken = c.req.header('ADMIN_TOKEN');
-  if (headerToken === envToken) {
-    await next();
-    return;
-  }
-
-  return c.html('<h1>403 — Forbidden</h1>', 403);
-});
 
 // --- Shared CSS ---
 const CSS = `
@@ -105,6 +69,46 @@ function layout(title: string, content: string): string {
 ${content}
 </body></html>`;
 }
+
+// --- Auth middleware ---
+// Accepts token via: header "ADMIN_TOKEN", query param "token", or cookie "admin_token"
+adminRoutes.use('*', async (c, next) => {
+  const envToken = process.env.ADMIN_TOKEN;
+  if (!envToken) {
+    if (process.env.NODE_ENV === 'production') {
+      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
+    }
+    console.warn('[admin] WARNING: ADMIN_TOKEN not set — admin panel is open without authentication');
+    await next();
+    return;
+  }
+  const token =
+    c.req.header('ADMIN_TOKEN') ||
+    c.req.query('token') ||
+    getCookie(c, 'admin_token');
+  if (token !== envToken) {
+    if (c.req.method === 'GET' && !token) {
+      return c.html(layout('Login', `
+        <h1>Admin Login</h1>
+        <div class="card">
+          <form method="GET" action="${escapeHtml(c.req.path)}">
+            <div style="margin-bottom:8px;"><label>Admin Token</label><input name="token" type="password" required></div>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      `));
+    }
+    return c.html('<h1>403 — Forbidden</h1>', 403);
+  }
+  // Set cookie so subsequent browser navigations work without query param
+  setCookie(c, 'admin_token', envToken, {
+    httpOnly: true,
+    sameSite: 'Strict',
+    maxAge: 60 * 60 * 24,
+    path: '/admin',
+  });
+  await next();
+});
 
 // ============================
 // GET /admin — Dashboard
@@ -292,10 +296,7 @@ adminRoutes.post('/scenarios/generate', async (c) => {
 // ============================
 adminRoutes.post('/scenarios/:id/status', async (c) => {
   const id = c.req.param('id');
-  const uuidCheck = z.string().uuid().safeParse(id);
-  if (!uuidCheck.success) {
-    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
-  }
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
   const formData = await c.req.parseBody();
   const status = formData.status as string;
   if (!['draft', 'scheduled', 'published', 'archived'].includes(status)) {
@@ -323,14 +324,6 @@ adminRoutes.get('/submissions', async (c) => {
       <td>
         ${s.status === 'pending' ? `
           <form method="POST" action="/admin/submissions/${s.id}/approve" style="display:inline;margin:0;">
-            <select name="category" style="width:auto;display:inline;padding:4px;">
-              <option value="friends">friends</option>
-              <option value="workplace">workplace</option>
-              <option value="relationship">relationship</option>
-              <option value="family">family</option>
-              <option value="neighbors">neighbors</option>
-              <option value="money">money</option>
-            </select>
             <button type="submit" class="success" style="padding:4px 10px;font-size:0.85rem;">Approve</button>
           </form>
           <form method="POST" action="/admin/submissions/${s.id}/reject" style="display:inline;margin:0;">
@@ -357,35 +350,30 @@ adminRoutes.get('/submissions', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/approve', async (c) => {
   const id = c.req.param('id');
-  const uuidCheck = z.string().uuid().safeParse(id);
-  if (!uuidCheck.success) {
-    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
-  }
-
-  const formData = await c.req.parseBody();
-  const category = (formData.category as string) || 'friends';
-  const validCategories = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'];
-  if (!validCategories.includes(category)) {
-    return c.html(layout('Error', '<div class="flash flash-error">Invalid category</div>'), 400);
-  }
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
 
   const submission = await db.query.scenarioSubmissions.findFirst({
     where: eq(scenarioSubmissions.id, id),
   });
   if (!submission) return c.html(layout('Error', '<div class="flash flash-error">Submission not found</div>'), 404);
+  if (submission.status !== 'pending') {
+    return c.html(layout('Error', `<div class="flash flash-error">Submission already ${escapeHtml(submission.status)}</div><a href="/admin/submissions">Back</a>`), 409);
+  }
 
-  await db.insert(scenarios).values({
-    title: submission.body.substring(0, 120),
-    body: submission.body,
-    category,
-    source: 'user_submission',
-    status: 'draft',
+  await db.transaction(async (tx) => {
+    await tx.insert(scenarios).values({
+      title: submission.body.substring(0, 120),
+      body: submission.body,
+      category: 'friends',
+      source: 'user_submission',
+      status: 'draft',
+    });
+
+    await tx.update(scenarioSubmissions).set({
+      status: 'approved',
+      moderatorNotes: 'Approved and converted to scenario draft.',
+    }).where(eq(scenarioSubmissions.id, id));
   });
-
-  await db.update(scenarioSubmissions).set({
-    status: 'approved',
-    moderatorNotes: 'Approved and converted to scenario draft.',
-  }).where(eq(scenarioSubmissions.id, id));
 
   return c.redirect('/admin/submissions');
 });
@@ -395,10 +383,7 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/reject', async (c) => {
   const id = c.req.param('id');
-  const uuidCheck = z.string().uuid().safeParse(id);
-  if (!uuidCheck.success) {
-    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
-  }
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
   const formData = await c.req.parseBody();
   const moderatorNotes = (formData.moderatorNotes as string) || 'Rejected by moderator.';
 
@@ -440,13 +425,13 @@ adminRoutes.get('/reports', async (c) => {
         </form>
       </td>
     </tr>
-  `);
+  `).join('');
 
   const content = `
     <h1>Reported Scenarios</h1>
     <table>
       <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Reports</th><th>Actions</th></tr></thead>
-      <tbody>${rows.join('')}</tbody>
+      <tbody>${rows}</tbody>
     </table>
   `;
   return c.html(layout('Reports', content));
