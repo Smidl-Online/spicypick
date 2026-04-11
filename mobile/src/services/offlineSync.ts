@@ -37,6 +37,13 @@ export async function syncPendingVotes(): Promise<number> {
 
 export function startNetworkListener(onReconnect: () => void) {
   let wasOffline = false;
+  let initialSyncDone = false;
+
+  // Sync any pending votes on cold start (user may have voted offline, closed app, reopened while online)
+  syncPendingVotes().then((synced) => {
+    initialSyncDone = true;
+    if (synced > 0) onReconnect();
+  });
 
   return NetInfo.addEventListener((state) => {
     if (state.isConnected && wasOffline) {
