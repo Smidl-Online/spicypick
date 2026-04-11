@@ -15,7 +15,7 @@ function getResend(): Resend {
 const FROM_EMAIL = process.env.FROM_EMAIL || 'SpicyPick <noreply@spicypick.com>';
 
 export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
-  const resetUrl = `${process.env.APP_URL || 'https://spicypick.com'}/reset-password?token=${resetToken}`;
+  const resetUrl = `${process.env.APP_URL || 'https://spicypick.app'}/reset-password?token=${resetToken}`;
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,

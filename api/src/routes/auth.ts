@@ -118,12 +118,17 @@ auth.post('/login', async (c) => {
   });
 });
 
+const refreshSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
 // POST /api/auth/refresh
 auth.post('/refresh', async (c) => {
   let reqBody: unknown;
   try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
-  const { refreshToken } = reqBody as { refreshToken?: string };
-  if (!refreshToken) return c.json({ error: 'Refresh token required' }, 400);
+  const parsed = refreshSchema.safeParse(reqBody);
+  if (!parsed.success) return c.json({ error: 'Refresh token required' }, 400);
+  const { refreshToken } = parsed.data;
 
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { userId: string; email: string };

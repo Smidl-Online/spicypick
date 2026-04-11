@@ -21,8 +21,7 @@ import { startCronJobs } from './cron/index.js';
 const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
 for (const key of REQUIRED_ENV) {
   if (!process.env[key]) {
-    console.error(`FATAL: Missing required environment variable: ${key}`);
-    process.exit(1);
+    throw new Error(`FATAL: Missing required environment variable: ${key}`);
   }
 }
 if (!process.env.ADMIN_TOKEN) {
