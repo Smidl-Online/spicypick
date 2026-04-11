@@ -209,8 +209,8 @@ auth.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
   const rawToken = crypto.randomBytes(32).toString('hex');
   const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
 
-  // Invalidate previous tokens, store new one, and send email in a transaction
-  // If email fails, the whole operation rolls back so old tokens remain valid
+  // Invalidate previous tokens and store new one in a transaction
+  // Then send email outside the transaction to avoid holding DB connection during external call
   try {
     await db.transaction(async (tx) => {
       await tx.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id));
@@ -219,10 +219,10 @@ auth.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
         tokenHash,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       });
-      await sendPasswordResetEmail(email, rawToken);
     });
+    await sendPasswordResetEmail(email, rawToken);
   } catch (err) {
-    console.error('Password reset email failed:', err);
+    console.error('Password reset failed:', err);
   }
 
   return c.json(successResponse);
