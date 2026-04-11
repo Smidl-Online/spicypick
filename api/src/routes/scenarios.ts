@@ -338,13 +338,13 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     majorityMatch,
     newAchievements,
     communityStats: {
-      total: updatedScenario!.totalVotes,
-      guilty: updatedScenario!.votesGuilty,
-      notGuilty: updatedScenario!.votesNotGuilty,
-      complicated: updatedScenario!.votesComplicated,
-      bothWrong: updatedScenario!.votesBothWrong,
+      total: updatedScenario.totalVotes,
+      guilty: updatedScenario.votesGuilty,
+      notGuilty: updatedScenario.votesNotGuilty,
+      complicated: updatedScenario.votesComplicated,
+      bothWrong: updatedScenario.votesBothWrong,
     },
-    expertAnalysis: updatedScenario!.expertAnalysis,
+    expertAnalysis: updatedScenario.expertAnalysis,
   });
 });
 
