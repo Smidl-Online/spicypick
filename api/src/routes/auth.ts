@@ -157,12 +157,17 @@ auth.post('/refresh', async (c) => {
   }
 });
 
+const logoutSchema = z.object({
+  refreshToken: z.string().min(1).optional(),
+});
+
 // POST /api/auth/logout
 auth.post('/logout', authMiddleware, async (c) => {
   const userId = c.get('userId');
   let reqBody: unknown;
   try { reqBody = await c.req.json(); } catch { reqBody = {}; }
-  const { refreshToken } = (reqBody as { refreshToken?: string });
+  const parsed = logoutSchema.safeParse(reqBody);
+  const refreshToken = parsed.success ? parsed.data.refreshToken : undefined;
 
   if (refreshToken) {
     // Delete specific refresh token

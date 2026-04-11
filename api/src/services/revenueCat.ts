@@ -48,6 +48,7 @@ export async function validateReceipt(
       app_user_id: userId,
       fetch_token: receipt,
     }),
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {
@@ -69,6 +70,7 @@ export async function getSubscriptionStatus(userId: string): Promise<Subscriptio
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!response.ok) {

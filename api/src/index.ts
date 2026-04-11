@@ -16,6 +16,7 @@ import guildRoutes from './routes/guilds.js';
 import adminRoutes from './routes/admin.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
+import { initSentry } from './services/sentry.js';
 
 // Validate required env variables at startup
 const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
@@ -61,6 +62,9 @@ app.onError((err, c) => {
   console.error('Unhandled error:', err);
   return c.json({ error: 'Internal Server Error' }, 500);
 });
+
+// Initialize Sentry
+initSentry();
 
 // Start server
 const port = parseInt(process.env.PORT || '3000');
