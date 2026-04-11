@@ -115,7 +115,7 @@ export default function HomeScreen() {
               <Text style={styles.scenarioBody}>{todayScenario.body}</Text>
             </View>
 
-            <Text style={styles.verdictPrompt}>What's your verdict?</Text>
+            <Text style={styles.verdictPrompt}>{t('home.verdict_prompt')}</Text>
 
             {VERDICTS.map((v) => (
               <VerdictButton
