@@ -110,7 +110,8 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   }
 
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
-  if (!user?.isPremium) {
+  const isPremiumActive = user?.isPremium && user.premiumUntil && new Date(user.premiumUntil) > new Date();
+  if (!isPremiumActive) {
     return c.json({ error: 'Premium subscription required' }, 403);
   }
 

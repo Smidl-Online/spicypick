@@ -54,7 +54,12 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
     }
   }
 
-  // Development fallback: auto-activate premium for 30 days
+  // Development fallback: auto-activate premium for 30 days (blocked in production)
+  if (process.env.NODE_ENV === 'production') {
+    console.error('REVENUECAT_API_KEY is not set in production — rejecting subscribe request');
+    return c.json({ error: 'Payment processing unavailable' }, 503);
+  }
+
   console.warn('REVENUECAT_API_KEY not set — using development mode (auto-activate 30 days)');
   const premiumUntil = new Date();
   premiumUntil.setDate(premiumUntil.getDate() + 30);
