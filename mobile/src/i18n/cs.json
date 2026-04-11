@@ -67,6 +67,8 @@
     "premium": "Premium",
     "language": "Jazyk",
     "delete_account": "Smazat účet",
+    "delete_confirm": "Tímto trvale smažeš svůj účet a všechna data. Tuto akci nelze vrátit zpět.",
+    "premium_active": "Aktivní",
     "logout": "Odhlásit se",
     "archive": "Archiv scénářů"
   },
@@ -88,6 +90,7 @@
     "error": "Něco se pokazilo",
     "retry": "Zkusit znovu",
     "cancel": "Zrušit",
+    "delete": "Smazat",
     "save": "Uložit",
     "hours": "h",
     "minutes": "m",

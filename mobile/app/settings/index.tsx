@@ -31,19 +31,19 @@ export default function SettingsScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'This will permanently delete your account and all data. This cannot be undone.',
+      t('settings.delete_account'),
+      t('settings.delete_confirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
               await api('/api/auth/account', { method: 'DELETE' });
               await logout();
             } catch (err: any) {
-              Alert.alert('Error', err.message);
+              Alert.alert(t('common.error'), err.message);
             }
           },
         },
@@ -75,7 +75,7 @@ export default function SettingsScreen() {
         <Text style={rowText}>{t('settings.premium')}</Text>
         {user?.isPremium && (
           <Text style={{ fontSize: 12, fontWeight: '700', color: colors.accent, backgroundColor: colors.bgCard, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, marginRight: 8 }}>
-            Active
+            {t('settings.premium_active')}
           </Text>
         )}
         <Text style={chevron}>›</Text>

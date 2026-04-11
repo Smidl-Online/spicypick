@@ -67,6 +67,8 @@
     "premium": "Premium",
     "language": "Language",
     "delete_account": "Delete Account",
+    "delete_confirm": "This will permanently delete your account and all data. This cannot be undone.",
+    "premium_active": "Active",
     "logout": "Log Out",
     "archive": "Scenario Archive"
   },
@@ -88,6 +90,7 @@
     "error": "Something went wrong",
     "retry": "Retry",
     "cancel": "Cancel",
+    "delete": "Delete",
     "save": "Save",
     "hours": "h",
     "minutes": "m",
