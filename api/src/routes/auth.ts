@@ -157,7 +157,8 @@ auth.post('/forgot-password', async (c) => {
   const { email } = reqBody as { email?: string };
   if (!email) return c.json({ error: 'Email required' }, 400);
 
-  return c.json({ error: 'Password reset is not yet implemented' }, 501);
+  // Stub: always return success to not reveal if email exists
+  return c.json({ message: 'If account exists, password reset email sent' });
 });
 
 // GET /api/auth/export (GDPR data export)

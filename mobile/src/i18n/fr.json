@@ -68,6 +68,8 @@
     "premium": "Premium",
     "language": "Langue",
     "delete_account": "Supprimer le compte",
+    "delete_confirm": "Cela supprimera définitivement votre compte et toutes vos données. Cette action est irréversible.",
+    "premium_active": "Actif",
     "logout": "Se déconnecter",
     "archive": "Archive des scénarios"
   },
@@ -89,6 +91,7 @@
     "error": "Une erreur est survenue",
     "retry": "Réessayer",
     "cancel": "Annuler",
+    "delete": "Supprimer",
     "save": "Enregistrer",
     "hours": "h",
     "minutes": "min",

@@ -68,6 +68,8 @@
     "premium": "Premium",
     "language": "Idioma",
     "delete_account": "Eliminar cuenta",
+    "delete_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos. Esta acción no se puede deshacer.",
+    "premium_active": "Activo",
     "logout": "Cerrar sesión",
     "archive": "Archivo de escenarios"
   },
@@ -89,6 +91,7 @@
     "error": "Algo salió mal",
     "retry": "Reintentar",
     "cancel": "Cancelar",
+    "delete": "Eliminar",
     "save": "Guardar",
     "hours": "h",
     "minutes": "min",
