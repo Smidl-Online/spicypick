@@ -5,7 +5,7 @@ Daily social scenario judgment game. Read a real-life scenario, cast your verdic
 ## Stack
 
 - **Mobile:** Expo SDK 54, React Native, Expo Router, Zustand, Reanimated
-- **API:** Node.js, Hono, Drizzle ORM, PostgreSQL
+- **API:** Node.js, Hono, Drizzle ORM, PostgreSQL 18
 - **Deploy:** Coolify (Docker)
 
 ## Getting Started
@@ -42,6 +42,6 @@ npx expo start
 - User-submitted scenarios with moderation
 - Premium subscription (archive, extended analysis, ad-free)
 - Push notifications (daily scenario, streak warning, league, challenges)
-- i18n (EN, CS)
+- i18n (EN, CS, DE, ES, PT, FR, JA)
 - AI-powered expert analysis (Claude API)
 - GDPR compliant (account deletion, data export)
