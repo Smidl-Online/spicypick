@@ -15,18 +15,43 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-// --- Auth middleware ---
+// --- Auth middleware (supports query param, cookie, and header) ---
 adminRoutes.use('*', async (c, next) => {
-  const token = c.req.header('ADMIN_TOKEN');
   const envToken = process.env.ADMIN_TOKEN;
   if (!envToken) {
     if (process.env.NODE_ENV === 'production') {
       return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
     }
-  } else if (token !== envToken) {
-    return c.html('<h1>403 — Forbidden</h1>', 403);
+    await next();
+    return;
   }
-  await next();
+
+  // Check query param first (for initial login link)
+  const queryToken = c.req.query('token');
+  if (queryToken === envToken) {
+    // Set cookie and redirect to strip token from URL
+    const url = new URL(c.req.url);
+    url.searchParams.delete('token');
+    c.header('Set-Cookie', `admin_token=${envToken}; HttpOnly; SameSite=Strict; Path=/admin; Max-Age=86400`);
+    return c.redirect(url.pathname + url.search);
+  }
+
+  // Check cookie
+  const cookieHeader = c.req.header('Cookie') || '';
+  const cookieToken = cookieHeader.split(';').map(c => c.trim()).find(c => c.startsWith('admin_token='))?.split('=')[1];
+  if (cookieToken === envToken) {
+    await next();
+    return;
+  }
+
+  // Check header (for API clients)
+  const headerToken = c.req.header('ADMIN_TOKEN');
+  if (headerToken === envToken) {
+    await next();
+    return;
+  }
+
+  return c.html('<h1>403 — Forbidden</h1>', 403);
 });
 
 // --- Shared CSS ---
@@ -267,6 +292,10 @@ adminRoutes.post('/scenarios/generate', async (c) => {
 // ============================
 adminRoutes.post('/scenarios/:id/status', async (c) => {
   const id = c.req.param('id');
+  const uuidCheck = z.string().uuid().safeParse(id);
+  if (!uuidCheck.success) {
+    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
+  }
   const formData = await c.req.parseBody();
   const status = formData.status as string;
   if (!['draft', 'scheduled', 'published', 'archived'].includes(status)) {
@@ -294,6 +323,14 @@ adminRoutes.get('/submissions', async (c) => {
       <td>
         ${s.status === 'pending' ? `
           <form method="POST" action="/admin/submissions/${s.id}/approve" style="display:inline;margin:0;">
+            <select name="category" style="width:auto;display:inline;padding:4px;">
+              <option value="friends">friends</option>
+              <option value="workplace">workplace</option>
+              <option value="relationship">relationship</option>
+              <option value="family">family</option>
+              <option value="neighbors">neighbors</option>
+              <option value="money">money</option>
+            </select>
             <button type="submit" class="success" style="padding:4px 10px;font-size:0.85rem;">Approve</button>
           </form>
           <form method="POST" action="/admin/submissions/${s.id}/reject" style="display:inline;margin:0;">
@@ -320,6 +357,18 @@ adminRoutes.get('/submissions', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/approve', async (c) => {
   const id = c.req.param('id');
+  const uuidCheck = z.string().uuid().safeParse(id);
+  if (!uuidCheck.success) {
+    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
+  }
+
+  const formData = await c.req.parseBody();
+  const category = (formData.category as string) || 'friends';
+  const validCategories = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'];
+  if (!validCategories.includes(category)) {
+    return c.html(layout('Error', '<div class="flash flash-error">Invalid category</div>'), 400);
+  }
+
   const submission = await db.query.scenarioSubmissions.findFirst({
     where: eq(scenarioSubmissions.id, id),
   });
@@ -328,7 +377,7 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
   await db.insert(scenarios).values({
     title: submission.body.substring(0, 120),
     body: submission.body,
-    category: 'friends',
+    category,
     source: 'user_submission',
     status: 'draft',
   });
@@ -346,6 +395,10 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/reject', async (c) => {
   const id = c.req.param('id');
+  const uuidCheck = z.string().uuid().safeParse(id);
+  if (!uuidCheck.success) {
+    return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
+  }
   const formData = await c.req.parseBody();
   const moderatorNotes = (formData.moderatorNotes as string) || 'Rejected by moderator.';
 
@@ -365,32 +418,29 @@ adminRoutes.get('/reports', async (c) => {
     .select({
       scenarioId: reports.scenarioId,
       reportCount: count(),
+      title: scenarios.title,
+      category: scenarios.category,
+      status: scenarios.status,
     })
     .from(reports)
-    .groupBy(reports.scenarioId)
+    .innerJoin(scenarios, eq(reports.scenarioId, scenarios.id))
+    .groupBy(reports.scenarioId, scenarios.title, scenarios.category, scenarios.status)
     .orderBy(desc(count()));
 
-  const rows: string[] = [];
-  for (const r of reportedScenarios) {
-    const scenario = await db.query.scenarios.findFirst({
-      where: eq(scenarios.id, r.scenarioId),
-    });
-    if (!scenario) continue;
-    rows.push(`
-      <tr>
-        <td>${escapeHtml(scenario.title)}</td>
-        <td>${escapeHtml(scenario.category)}</td>
-        <td><span class="badge badge-${escapeHtml(scenario.status)}">${escapeHtml(scenario.status)}</span></td>
-        <td style="font-weight:700;color:#e74c3c;">${r.reportCount}</td>
-        <td>
-          <form method="POST" action="/admin/scenarios/${scenario.id}/status" style="display:inline;margin:0;">
-            <input type="hidden" name="status" value="archived">
-            <button type="submit" class="danger" style="padding:4px 10px;font-size:0.85rem;">Archive</button>
-          </form>
-        </td>
-      </tr>
-    `);
-  }
+  const rows = reportedScenarios.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.title)}</td>
+      <td>${escapeHtml(r.category)}</td>
+      <td><span class="badge badge-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+      <td style="font-weight:700;color:#e74c3c;">${r.reportCount}</td>
+      <td>
+        <form method="POST" action="/admin/scenarios/${r.scenarioId}/status" style="display:inline;margin:0;">
+          <input type="hidden" name="status" value="archived">
+          <button type="submit" class="danger" style="padding:4px 10px;font-size:0.85rem;">Archive</button>
+        </form>
+      </td>
+    </tr>
+  `);
 
   const content = `
     <h1>Reported Scenarios</h1>
