@@ -75,12 +75,7 @@ ${content}
 adminRoutes.use('*', async (c, next) => {
   const envToken = process.env.ADMIN_TOKEN;
   if (!envToken) {
-    if (process.env.NODE_ENV === 'production') {
-      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
-    }
-    console.warn('[admin] WARNING: ADMIN_TOKEN not set — admin panel is open without authentication');
-    await next();
-    return;
+    return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
   }
   const token =
     c.req.header('ADMIN_TOKEN') ||
@@ -242,12 +237,15 @@ adminRoutes.get('/scenarios', async (c) => {
 // ============================
 // POST /admin/scenarios — Create
 // ============================
+const VALID_CATEGORIES = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'] as const;
+const VALID_STATUSES = ['draft', 'scheduled', 'published'] as const;
+
 const createScenarioSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1),
-  category: z.string().min(1),
+  category: z.enum(VALID_CATEGORIES),
   publishDate: z.string().optional(),
-  status: z.string().default('draft'),
+  status: z.enum(VALID_STATUSES).default('draft'),
 });
 
 adminRoutes.post('/scenarios', async (c) => {
@@ -324,6 +322,14 @@ adminRoutes.get('/submissions', async (c) => {
       <td>
         ${s.status === 'pending' ? `
           <form method="POST" action="/admin/submissions/${s.id}/approve" style="display:inline;margin:0;">
+            <select name="category" style="width:auto;display:inline;padding:4px;">
+              <option value="friends">friends</option>
+              <option value="workplace">workplace</option>
+              <option value="relationship">relationship</option>
+              <option value="family">family</option>
+              <option value="neighbors">neighbors</option>
+              <option value="money">money</option>
+            </select>
             <button type="submit" class="success" style="padding:4px 10px;font-size:0.85rem;">Approve</button>
           </form>
           <form method="POST" action="/admin/submissions/${s.id}/reject" style="display:inline;margin:0;">
@@ -352,19 +358,25 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
   const id = c.req.param('id');
   if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
 
-  const submission = await db.query.scenarioSubmissions.findFirst({
-    where: eq(scenarioSubmissions.id, id),
-  });
-  if (!submission) return c.html(layout('Error', '<div class="flash flash-error">Submission not found</div>'), 404);
-  if (submission.status !== 'pending') {
-    return c.html(layout('Error', `<div class="flash flash-error">Submission already ${escapeHtml(submission.status)}</div><a href="/admin/submissions">Back</a>`), 409);
-  }
+  const formData = await c.req.parseBody();
+  const category = (formData.category as string) || 'friends';
+  const validCategories = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'];
+  const approveCategory = validCategories.includes(category) ? category : 'friends';
 
-  await db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
+    const [submission] = await tx
+      .select()
+      .from(scenarioSubmissions)
+      .where(eq(scenarioSubmissions.id, id))
+      .for('update');
+
+    if (!submission) return { error: 'not_found' } as const;
+    if (submission.status !== 'pending') return { error: 'already_processed', status: submission.status } as const;
+
     await tx.insert(scenarios).values({
       title: submission.body.substring(0, 120),
       body: submission.body,
-      category: 'friends',
+      category: approveCategory,
       source: 'user_submission',
       status: 'draft',
     });
@@ -373,7 +385,12 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
       status: 'approved',
       moderatorNotes: 'Approved and converted to scenario draft.',
     }).where(eq(scenarioSubmissions.id, id));
+
+    return { error: null } as const;
   });
+
+  if (result.error === 'not_found') return c.html(layout('Error', '<div class="flash flash-error">Submission not found</div>'), 404);
+  if (result.error === 'already_processed') return c.html(layout('Error', `<div class="flash flash-error">Submission already ${escapeHtml(result.status)}</div><a href="/admin/submissions">Back</a>`), 409);
 
   return c.redirect('/admin/submissions');
 });

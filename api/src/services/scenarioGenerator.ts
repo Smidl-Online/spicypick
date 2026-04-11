@@ -1,7 +1,13 @@
+import { z } from 'zod';
 import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
 
 const CATEGORIES = ['workplace', 'relationship', 'family', 'neighbors', 'friends', 'money'];
+
+const aiResponseSchema = z.object({
+  title: z.string().min(1),
+  body: z.string().min(1),
+});
 
 const SYSTEM_PROMPT = `You are a scenario writer for SpicyPick, a social judgment game.
 Write a realistic, morally ambiguous scenario from first person perspective.
@@ -33,13 +39,17 @@ export async function generateScenario(category?: string) {
   const data = await res.json() as any;
   if (!data.content?.[0]?.text) throw new Error('AI returned unexpected response format');
   const text = data.content[0].text;
-  let parsed: { title: string; body: string };
+  let raw: unknown;
   try {
-    parsed = JSON.parse(text);
+    raw = JSON.parse(text);
   } catch {
     throw new Error(`AI returned invalid JSON: ${text.substring(0, 200)}`);
   }
-  return { title: parsed.title, body: parsed.body, category: cat };
+  const parsed = aiResponseSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(`AI returned unexpected structure: ${parsed.error.message}`);
+  }
+  return { title: parsed.data.title, body: parsed.data.body, category: cat };
 }
 
 export async function generateAndSaveScenario(category?: string) {
