@@ -5,7 +5,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES } from '../../src/i18n';
+import { SUPPORTED_LANGUAGES, saveLocale } from '../../src/i18n';
 
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
@@ -15,11 +15,17 @@ export default function SettingsScreen() {
   const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
 
   const changeLanguage = async (code: string) => {
+    const previousLang = i18n.language;
     await i18n.changeLanguage(code);
     setLangPickerVisible(false);
     try {
+      await saveLocale(code);
       await api('/api/users/me', { method: 'PATCH', body: JSON.stringify({ locale: code }) });
-    } catch {}
+    } catch (err) {
+      console.warn('Failed to persist locale:', err);
+      await i18n.changeLanguage(previousLang);
+      await saveLocale(previousLang);
+    }
   };
 
   const handleDeleteAccount = () => {

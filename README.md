@@ -5,7 +5,7 @@ Daily social scenario judgment game. Read a real-life scenario, cast your verdic
 ## Stack
 
 - **Mobile:** Expo SDK 54, React Native, Expo Router, Zustand, Reanimated
-- **API:** Node.js, Hono, Drizzle ORM, PostgreSQL 18
+- **API:** Node.js, Hono, Drizzle ORM, PostgreSQL
 - **Deploy:** Coolify (Docker)
 
 ## Getting Started
