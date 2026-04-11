@@ -6,7 +6,10 @@
     "already_voted": "今日はもう投票しました！",
     "next_scenario": "次のシナリオまで",
     "share": "あなたの選択をシェア",
-    "streak": "{{count}}日連続"
+    "streak": "{{count}}日連続",
+    "verdict_prompt": "あなたの判定は？",
+    "offline": "オフライン",
+    "offline_hint": "オフラインです。再接続時に投票が同期されます。"
   },
   "verdicts": {
     "guilty": "有罪",
@@ -64,7 +67,8 @@
     "premium": "プレミアム",
     "language": "言語",
     "delete_account": "アカウント削除",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "archive": "シナリオアーカイブ"
   },
   "premium": {
     "title": "SpicyPick Premium",

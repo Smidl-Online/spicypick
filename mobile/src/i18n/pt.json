@@ -6,7 +6,10 @@
     "already_voted": "Você já votou hoje!",
     "next_scenario": "Próximo cenário em",
     "share": "Compartilhe sua escolha",
-    "streak": "{{count}} dias seguidos"
+    "streak": "{{count}} dias seguidos",
+    "verdict_prompt": "Qual é o seu veredicto?",
+    "offline": "Offline",
+    "offline_hint": "Você está offline. Seu voto será sincronizado quando reconectar."
   },
   "verdicts": {
     "guilty": "Culpado",
@@ -64,7 +67,8 @@
     "premium": "Premium",
     "language": "Idioma",
     "delete_account": "Excluir conta",
-    "logout": "Sair"
+    "logout": "Sair",
+    "archive": "Arquivo de cenários"
   },
   "premium": {
     "title": "SpicyPick Premium",

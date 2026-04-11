@@ -6,7 +6,10 @@
     "already_voted": "Vous avez déjà voté aujourd'hui !",
     "next_scenario": "Prochain scénario dans",
     "share": "Partagez votre choix",
-    "streak": "{{count}} jours d'affilée"
+    "streak": "{{count}} jours d'affilée",
+    "verdict_prompt": "Quel est votre verdict ?",
+    "offline": "Hors ligne",
+    "offline_hint": "Vous êtes hors ligne. Votre vote sera synchronisé lors de la reconnexion."
   },
   "verdicts": {
     "guilty": "Coupable",
@@ -64,7 +67,8 @@
     "premium": "Premium",
     "language": "Langue",
     "delete_account": "Supprimer le compte",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "archive": "Archive des scénarios"
   },
   "premium": {
     "title": "SpicyPick Premium",

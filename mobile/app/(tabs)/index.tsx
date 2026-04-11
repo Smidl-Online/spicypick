@@ -54,7 +54,7 @@ export default function HomeScreen() {
           <View style={styles.headerRight}>
             {isOffline && (
               <View style={[styles.offlineBadge, { backgroundColor: colors.warning }]}>
-                <Text style={styles.offlineText}>Offline</Text>
+                <Text style={styles.offlineText}>{t('home.offline')}</Text>
               </View>
             )}
             {user && <StreakBadge count={user.currentStreak} />}
@@ -115,7 +115,7 @@ export default function HomeScreen() {
               <Text style={[styles.scenarioBody, { color: colors.text }]}>{todayScenario.body}</Text>
             </View>
 
-            <Text style={[styles.verdictPrompt, { color: colors.text }]}>What's your verdict?</Text>
+            <Text style={[styles.verdictPrompt, { color: colors.text }]}>{t('home.verdict_prompt')}</Text>
 
             {VERDICTS.map((v) => (
               <VerdictButton
@@ -128,7 +128,7 @@ export default function HomeScreen() {
 
             {isOffline && (
               <Text style={[styles.offlineHint, { color: colors.textMuted }]}>
-                You're offline. Your vote will be synced when you reconnect.
+                {t('home.offline_hint')}
               </Text>
             )}
           </Animated.View>
