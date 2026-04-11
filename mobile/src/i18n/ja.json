@@ -1,0 +1,92 @@
+{
+  "app_name": "SpicyPick",
+  "home": {
+    "title": "今日のシナリオ",
+    "no_scenario": "今日はまだシナリオがありません。後でまた来てください！",
+    "already_voted": "今日はもう投票しました！",
+    "next_scenario": "次のシナリオまで",
+    "share": "あなたの選択をシェア",
+    "streak": "{{count}}日連続"
+  },
+  "verdicts": {
+    "guilty": "有罪",
+    "not_guilty": "無罪",
+    "complicated": "複雑",
+    "both_wrong": "両方間違い"
+  },
+  "reveal": {
+    "community": "コミュニティの投票結果",
+    "expert": "専門家の分析",
+    "majority_match": "多数派と同じ投票でした！",
+    "xp_earned": "+{{xp}} XP"
+  },
+  "league": {
+    "title": "リーグ",
+    "not_in_league": "投票してリーグに参加しよう！",
+    "rank": "ランク #{{rank}}",
+    "weekly_xp": "今週 {{xp}} XP",
+    "promotion_zone": "昇格ゾーン",
+    "demotion_zone": "降格ゾーン",
+    "ends_in": "週の終了まで"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "level": "レベル {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{count}}日連続",
+    "longest_streak": "最長: {{count}}日",
+    "total_votes": "{{count}}件の判定",
+    "achievements": "実績",
+    "history": "判定履歴",
+    "settings": "設定"
+  },
+  "challenges": {
+    "title": "チャレンジ",
+    "empty": "まだチャレンジがありません",
+    "send": "友達にチャレンジ",
+    "pending": "保留中",
+    "completed": "完了",
+    "respond": "あなたの判定を"
+  },
+  "auth": {
+    "login": "ログイン",
+    "register": "新規登録",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "username": "ユーザー名",
+    "forgot_password": "パスワードを忘れた？",
+    "no_account": "アカウントをお持ちでない？",
+    "has_account": "すでにアカウントをお持ち？"
+  },
+  "settings": {
+    "title": "設定",
+    "notifications": "通知",
+    "premium": "プレミアム",
+    "language": "言語",
+    "delete_account": "アカウント削除",
+    "logout": "ログアウト"
+  },
+  "premium": {
+    "title": "SpicyPick Premium",
+    "price": "¥450/月",
+    "features": [
+      "1日3シナリオ",
+      "シナリオアーカイブ全体",
+      "拡張専門家分析",
+      "広告なし",
+      "月3回のストリークフリーズ"
+    ],
+    "subscribe": "購読する",
+    "active": "プレミアム有効期限: {{date}}"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "hours": "時間",
+    "minutes": "分",
+    "seconds": "秒"
+  }
+}

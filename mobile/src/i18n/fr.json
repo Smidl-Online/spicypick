@@ -1,0 +1,92 @@
+{
+  "app_name": "SpicyPick",
+  "home": {
+    "title": "Scénario du jour",
+    "no_scenario": "Pas encore de scénario aujourd'hui. Revenez bientôt !",
+    "already_voted": "Vous avez déjà voté aujourd'hui !",
+    "next_scenario": "Prochain scénario dans",
+    "share": "Partagez votre choix",
+    "streak": "{{count}} jours d'affilée"
+  },
+  "verdicts": {
+    "guilty": "Coupable",
+    "not_guilty": "Non coupable",
+    "complicated": "C'est compliqué",
+    "both_wrong": "Les deux ont tort"
+  },
+  "reveal": {
+    "community": "La communauté a voté",
+    "expert": "Analyse d'expert",
+    "majority_match": "Vous avez voté avec la majorité !",
+    "xp_earned": "+{{xp}} XP"
+  },
+  "league": {
+    "title": "Ligue",
+    "not_in_league": "Votez pour rejoindre une ligue !",
+    "rank": "Rang #{{rank}}",
+    "weekly_xp": "{{xp}} XP cette semaine",
+    "promotion_zone": "Zone de promotion",
+    "demotion_zone": "Zone de relégation",
+    "ends_in": "La semaine se termine dans"
+  },
+  "profile": {
+    "title": "Profil",
+    "level": "Niveau {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{count}} jours d'affilée",
+    "longest_streak": "Plus longue : {{count}} jours",
+    "total_votes": "{{count}} verdicts",
+    "achievements": "Succès",
+    "history": "Historique des verdicts",
+    "settings": "Paramètres"
+  },
+  "challenges": {
+    "title": "Défis",
+    "empty": "Pas encore de défis",
+    "send": "Défier un ami",
+    "pending": "En attente",
+    "completed": "Terminé",
+    "respond": "Donnez votre verdict"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "username": "Nom d'utilisateur",
+    "forgot_password": "Mot de passe oublié ?",
+    "no_account": "Pas de compte ?",
+    "has_account": "Déjà un compte ?"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "notifications": "Notifications",
+    "premium": "Premium",
+    "language": "Langue",
+    "delete_account": "Supprimer le compte",
+    "logout": "Se déconnecter"
+  },
+  "premium": {
+    "title": "SpicyPick Premium",
+    "price": "2,99 €/mois",
+    "features": [
+      "3 scénarios par jour",
+      "Archive complète des scénarios",
+      "Analyse d'expert étendue",
+      "Sans publicité",
+      "3 gels de série par mois"
+    ],
+    "subscribe": "S'abonner",
+    "active": "Premium actif jusqu'au {{date}}"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "hours": "h",
+    "minutes": "min",
+    "seconds": "s"
+  }
+}
