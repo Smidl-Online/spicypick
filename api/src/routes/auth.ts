@@ -155,6 +155,73 @@ auth.post('/forgot-password', async (c) => {
   return c.json({ message: 'If account exists, password reset email sent' });
 });
 
+// GET /api/auth/export (GDPR data export)
+auth.get('/export', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: {
+      id: true,
+      email: true,
+      username: true,
+      avatarUrl: true,
+      xp: true,
+      level: true,
+      currentStreak: true,
+      longestStreak: true,
+      streakFreezes: true,
+      lastPlayedAt: true,
+      isPremium: true,
+      premiumUntil: true,
+      locale: true,
+      timezone: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  if (!user) return c.json({ error: 'User not found' }, 404);
+
+  const userVotes = await db.query.votes.findMany({
+    where: eq(votes.userId, userId),
+    columns: { id: true, scenarioId: true, verdict: true, xpEarned: true, votedAt: true },
+  });
+
+  const userAchievementsList = await db.query.userAchievements.findMany({
+    where: eq(userAchievements.userId, userId),
+    columns: { achievementId: true, unlockedAt: true },
+  });
+
+  const userSubmissions = await db.query.scenarioSubmissions.findMany({
+    where: eq(scenarioSubmissions.userId, userId),
+    columns: { id: true, body: true, status: true, createdAt: true },
+  });
+
+  const userChallenges = await db.query.challenges.findMany({
+    where: eq(challenges.challengerId, userId),
+    columns: { id: true, scenarioId: true, challengerVerdict: true, status: true, createdAt: true },
+  });
+
+  const userGuildMemberships = await db.query.guildMembers.findMany({
+    where: eq(guildMembers.userId, userId),
+    columns: { guildId: true, role: true, weeklyXp: true, joinedAt: true },
+  });
+
+  const exportData = {
+    exportedAt: new Date().toISOString(),
+    user,
+    votes: userVotes,
+    achievements: userAchievementsList,
+    submissions: userSubmissions,
+    challenges: userChallenges,
+    guildMemberships: userGuildMemberships,
+  };
+
+  c.header('Content-Disposition', `attachment; filename="spicypick-export-${userId}.json"`);
+  c.header('Content-Type', 'application/json');
+  return c.json(exportData);
+});
+
 // DELETE /api/auth/account (GDPR)
 auth.delete('/account', authMiddleware, async (c) => {
   const userId = c.get('userId');

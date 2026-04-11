@@ -131,6 +131,16 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       voteResult: result,
       isOffline: false,
     });
+    // Update offline cache so offline mode shows correct voted state
+    const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+    if (cached) {
+      await offlineCache.cacheTodayScenario({
+        ...cached,
+        voted: true,
+        userVerdict: verdict,
+        communityStats: result.communityStats,
+      });
+    }
     return result;
   },
 
