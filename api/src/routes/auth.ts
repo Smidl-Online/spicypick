@@ -3,8 +3,8 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
-import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { users, refreshTokens, votes, userAchievements, leagueMembers, scenarioSubmissions, challenges, guildMembers, guilds, reports } from '../db/schema.js';
+import { eq, or } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
 
@@ -197,8 +197,8 @@ auth.get('/export', authMiddleware, async (c) => {
   });
 
   const userChallenges = await db.query.challenges.findMany({
-    where: eq(challenges.challengerId, userId),
-    columns: { id: true, scenarioId: true, challengerVerdict: true, status: true, createdAt: true },
+    where: or(eq(challenges.challengerId, userId), eq(challenges.challengedId, userId)),
+    columns: { id: true, scenarioId: true, challengerVerdict: true, challengedVerdict: true, status: true, createdAt: true },
   });
 
   const userGuildMemberships = await db.query.guildMembers.findMany({
@@ -235,6 +235,7 @@ auth.delete('/account', authMiddleware, async (c) => {
     await tx.delete(challenges).where(eq(challenges.challengedId, userId));
     await tx.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
     // Guild cleanup: remove memberships, delete guilds where user is leader
+    await tx.delete(reports).where(eq(reports.userId, userId));
     await tx.delete(guildMembers).where(eq(guildMembers.userId, userId));
     await tx.delete(guilds).where(eq(guilds.leaderId, userId));
     await tx.delete(users).where(eq(users.id, userId));

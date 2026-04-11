@@ -289,10 +289,6 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   // Recalculate XP with actual majorityMatch
   const finalXpEarned = calculateVoteXp(newStreak, majorityMatch);
 
-  // Update user
-  const newTotalXp = user.xp + finalXpEarned;
-  const newLevel = calculateLevel(newTotalXp);
-
   // Update vote XP if majority bonus changed it
   if (finalXpEarned !== xpEarned) {
     await db.update(votes).set({ xpEarned: finalXpEarned }).where(
@@ -300,14 +296,22 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     );
   }
 
-  await db.update(users).set({
-    xp: newTotalXp,
-    level: newLevel,
+  // Atomic XP update to prevent race condition with concurrent votes
+  const [updatedUser] = await db.update(users).set({
+    xp: sql`${users.xp} + ${finalXpEarned}`,
     currentStreak: newStreak,
     longestStreak: Math.max(newStreak, user.longestStreak),
     lastPlayedAt: today,
     updatedAt: new Date(),
-  }).where(eq(users.id, userId));
+  }).where(eq(users.id, userId)).returning({ xp: users.xp });
+
+  const newTotalXp = updatedUser.xp;
+  const newLevel = calculateLevel(newTotalXp);
+
+  // Update level based on actual XP value
+  if (newLevel !== user.level) {
+    await db.update(users).set({ level: newLevel }).where(eq(users.id, userId));
+  }
 
   // Check achievements
   const newAchievements = await checkAchievements(userId);
