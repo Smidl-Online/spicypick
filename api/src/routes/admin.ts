@@ -1,9 +1,12 @@
 import { Hono } from 'hono';
+import { getCookie, setCookie } from 'hono/cookie';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const adminRoutes = new Hono();
 
@@ -14,20 +17,6 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-// --- Auth middleware ---
-adminRoutes.use('*', async (c, next) => {
-  const token = c.req.header('ADMIN_TOKEN');
-  const envToken = process.env.ADMIN_TOKEN;
-  if (!envToken) {
-    if (process.env.NODE_ENV === 'production') {
-      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
-    }
-  } else if (token !== envToken) {
-    return c.html('<h1>403 — Forbidden</h1>', 403);
-  }
-  await next();
-});
 
 // --- Shared CSS ---
 const CSS = `
@@ -80,6 +69,46 @@ function layout(title: string, content: string): string {
 ${content}
 </body></html>`;
 }
+
+// --- Auth middleware ---
+// Accepts token via: header "ADMIN_TOKEN", query param "token", or cookie "admin_token"
+adminRoutes.use('*', async (c, next) => {
+  const envToken = process.env.ADMIN_TOKEN;
+  if (!envToken) {
+    if (process.env.NODE_ENV === 'production') {
+      return c.html('<h1>403 — ADMIN_TOKEN not configured</h1>', 403);
+    }
+    console.warn('[admin] WARNING: ADMIN_TOKEN not set — admin panel is open without authentication');
+    await next();
+    return;
+  }
+  const token =
+    c.req.header('ADMIN_TOKEN') ||
+    c.req.query('token') ||
+    getCookie(c, 'admin_token');
+  if (token !== envToken) {
+    if (c.req.method === 'GET' && !token) {
+      return c.html(layout('Login', `
+        <h1>Admin Login</h1>
+        <div class="card">
+          <form method="GET" action="${escapeHtml(c.req.path)}">
+            <div style="margin-bottom:8px;"><label>Admin Token</label><input name="token" type="password" required></div>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      `));
+    }
+    return c.html('<h1>403 — Forbidden</h1>', 403);
+  }
+  // Set cookie so subsequent browser navigations work without query param
+  setCookie(c, 'admin_token', envToken, {
+    httpOnly: true,
+    sameSite: 'Strict',
+    maxAge: 60 * 60 * 24,
+    path: '/admin',
+  });
+  await next();
+});
 
 // ============================
 // GET /admin — Dashboard
@@ -267,6 +296,7 @@ adminRoutes.post('/scenarios/generate', async (c) => {
 // ============================
 adminRoutes.post('/scenarios/:id/status', async (c) => {
   const id = c.req.param('id');
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
   const formData = await c.req.parseBody();
   const status = formData.status as string;
   if (!['draft', 'scheduled', 'published', 'archived'].includes(status)) {
@@ -320,23 +350,30 @@ adminRoutes.get('/submissions', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/approve', async (c) => {
   const id = c.req.param('id');
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
+
   const submission = await db.query.scenarioSubmissions.findFirst({
     where: eq(scenarioSubmissions.id, id),
   });
   if (!submission) return c.html(layout('Error', '<div class="flash flash-error">Submission not found</div>'), 404);
+  if (submission.status !== 'pending') {
+    return c.html(layout('Error', `<div class="flash flash-error">Submission already ${escapeHtml(submission.status)}</div><a href="/admin/submissions">Back</a>`), 409);
+  }
 
-  await db.insert(scenarios).values({
-    title: submission.body.substring(0, 120),
-    body: submission.body,
-    category: 'friends',
-    source: 'user_submission',
-    status: 'draft',
+  await db.transaction(async (tx) => {
+    await tx.insert(scenarios).values({
+      title: submission.body.substring(0, 120),
+      body: submission.body,
+      category: 'friends',
+      source: 'user_submission',
+      status: 'draft',
+    });
+
+    await tx.update(scenarioSubmissions).set({
+      status: 'approved',
+      moderatorNotes: 'Approved and converted to scenario draft.',
+    }).where(eq(scenarioSubmissions.id, id));
   });
-
-  await db.update(scenarioSubmissions).set({
-    status: 'approved',
-    moderatorNotes: 'Approved and converted to scenario draft.',
-  }).where(eq(scenarioSubmissions.id, id));
 
   return c.redirect('/admin/submissions');
 });
@@ -346,6 +383,7 @@ adminRoutes.post('/submissions/:id/approve', async (c) => {
 // ============================
 adminRoutes.post('/submissions/:id/reject', async (c) => {
   const id = c.req.param('id');
+  if (!UUID_REGEX.test(id)) return c.html(layout('Error', '<div class="flash flash-error">Invalid ID format</div>'), 400);
   const formData = await c.req.parseBody();
   const moderatorNotes = (formData.moderatorNotes as string) || 'Rejected by moderator.';
 
@@ -365,38 +403,35 @@ adminRoutes.get('/reports', async (c) => {
     .select({
       scenarioId: reports.scenarioId,
       reportCount: count(),
+      title: scenarios.title,
+      category: scenarios.category,
+      status: scenarios.status,
     })
     .from(reports)
-    .groupBy(reports.scenarioId)
+    .innerJoin(scenarios, eq(reports.scenarioId, scenarios.id))
+    .groupBy(reports.scenarioId, scenarios.title, scenarios.category, scenarios.status)
     .orderBy(desc(count()));
 
-  const rows: string[] = [];
-  for (const r of reportedScenarios) {
-    const scenario = await db.query.scenarios.findFirst({
-      where: eq(scenarios.id, r.scenarioId),
-    });
-    if (!scenario) continue;
-    rows.push(`
-      <tr>
-        <td>${escapeHtml(scenario.title)}</td>
-        <td>${escapeHtml(scenario.category)}</td>
-        <td><span class="badge badge-${escapeHtml(scenario.status)}">${escapeHtml(scenario.status)}</span></td>
-        <td style="font-weight:700;color:#e74c3c;">${r.reportCount}</td>
-        <td>
-          <form method="POST" action="/admin/scenarios/${scenario.id}/status" style="display:inline;margin:0;">
-            <input type="hidden" name="status" value="archived">
-            <button type="submit" class="danger" style="padding:4px 10px;font-size:0.85rem;">Archive</button>
-          </form>
-        </td>
-      </tr>
-    `);
-  }
+  const rows = reportedScenarios.map((r) => `
+    <tr>
+      <td>${escapeHtml(r.title)}</td>
+      <td>${escapeHtml(r.category)}</td>
+      <td><span class="badge badge-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+      <td style="font-weight:700;color:#e74c3c;">${r.reportCount}</td>
+      <td>
+        <form method="POST" action="/admin/scenarios/${r.scenarioId}/status" style="display:inline;margin:0;">
+          <input type="hidden" name="status" value="archived">
+          <button type="submit" class="danger" style="padding:4px 10px;font-size:0.85rem;">Archive</button>
+        </form>
+      </td>
+    </tr>
+  `).join('');
 
   const content = `
     <h1>Reported Scenarios</h1>
     <table>
       <thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Reports</th><th>Actions</th></tr></thead>
-      <tbody>${rows.join('')}</tbody>
+      <tbody>${rows}</tbody>
     </table>
   `;
   return c.html(layout('Reports', content));

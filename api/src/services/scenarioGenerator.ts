@@ -31,6 +31,7 @@ export async function generateScenario(category?: string) {
 
   if (!res.ok) throw new Error(`AI API error: ${res.status}`);
   const data = await res.json() as any;
+  if (!data.content?.[0]?.text) throw new Error('AI returned unexpected response format');
   const text = data.content[0].text;
   let parsed: { title: string; body: string };
   try {
