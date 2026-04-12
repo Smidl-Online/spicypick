@@ -10,6 +10,7 @@ import { i18nReady } from '../src/i18n';
 import { initSentry } from '../src/services/sentry';
 import { startNetworkListener } from '../src/services/offlineSync';
 import { useScenarioStore } from '../src/store/scenarioStore';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -113,8 +114,10 @@ function RootLayoutInner() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <RootLayoutInner />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <RootLayoutInner />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
