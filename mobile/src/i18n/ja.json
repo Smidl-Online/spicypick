@@ -75,12 +75,27 @@
     "logout": "ログアウト",
     "archive": "シナリオアーカイブ"
   },
+  "packs": {
+    "title": "テーマパック",
+    "scenarios_count": "{{count}}個のシナリオ",
+    "unlock_premium": "プレミアムで解除",
+    "browse": "パックを見る"
+  },
+  "submission": {
+    "submit": "シナリオを投稿",
+    "placeholder": "道徳的に曖昧なシナリオを書いてください...",
+    "success": "投稿しました！シナリオは審査中です。",
+    "auto_approved": "シナリオが自動承認されました！",
+    "flagged": "シナリオは手動審査が必要です。",
+    "min_length": "最低50文字"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "¥450/月",
     "features": [
       "1日3シナリオ",
       "シナリオアーカイブ全体",
+      "テーマ別シナリオパック",
       "拡張専門家分析",
       "広告なし",
       "月3回のストリークフリーズ"

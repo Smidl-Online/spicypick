@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../src/api/client';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
+import { ChallengesSkeleton } from '../../src/components/SkeletonLoader';
 
 type Challenge = {
   id: string;
@@ -55,7 +56,7 @@ export default function ChallengesScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ChallengesSkeleton />
       </SafeAreaView>
     );
   }

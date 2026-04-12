@@ -75,12 +75,27 @@
     "logout": "Log Out",
     "archive": "Scenario Archive"
   },
+  "packs": {
+    "title": "Themed Packs",
+    "scenarios_count": "{{count}} scenarios",
+    "unlock_premium": "Unlock with Premium",
+    "browse": "Browse Pack"
+  },
+  "submission": {
+    "submit": "Submit a Scenario",
+    "placeholder": "Write your morally ambiguous scenario...",
+    "success": "Submitted! Your scenario is being reviewed.",
+    "auto_approved": "Your scenario was auto-approved!",
+    "flagged": "Your scenario needs manual review.",
+    "min_length": "Minimum 50 characters"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "$2.99/month",
     "features": [
       "3 scenarios per day",
       "Full scenario archive",
+      "Themed scenario packs",
       "Extended expert analysis",
       "Ad-free experience",
       "3 streak freezes per month"

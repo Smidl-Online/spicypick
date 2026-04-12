@@ -75,12 +75,27 @@
     "logout": "Odhlásit se",
     "archive": "Archiv scénářů"
   },
+  "packs": {
+    "title": "Tematické balíčky",
+    "scenarios_count": "{{count}} scénářů",
+    "unlock_premium": "Odemkni s Premium",
+    "browse": "Procházet balíček"
+  },
+  "submission": {
+    "submit": "Odeslat scénář",
+    "placeholder": "Napiš svůj morálně nejednoznačný scénář...",
+    "success": "Odesláno! Tvůj scénář se kontroluje.",
+    "auto_approved": "Tvůj scénář byl automaticky schválen!",
+    "flagged": "Tvůj scénář čeká na ruční kontrolu.",
+    "min_length": "Minimálně 50 znaků"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "74 Kč/měsíc",
     "features": [
       "3 scénáře denně",
       "Kompletní archiv scénářů",
+      "Tematické balíčky scénářů",
       "Rozšířená expertní analýza",
       "Bez reklam",
       "3 streak freeze měsíčně"

@@ -75,12 +75,27 @@
     "logout": "Abmelden",
     "archive": "Szenario-Archiv"
   },
+  "packs": {
+    "title": "Themenpakete",
+    "scenarios_count": "{{count}} Szenarien",
+    "unlock_premium": "Mit Premium freischalten",
+    "browse": "Paket durchstöbern"
+  },
+  "submission": {
+    "submit": "Szenario einreichen",
+    "placeholder": "Schreibe dein moralisch zweideutiges Szenario...",
+    "success": "Eingereicht! Dein Szenario wird überprüft.",
+    "auto_approved": "Dein Szenario wurde automatisch genehmigt!",
+    "flagged": "Dein Szenario muss manuell überprüft werden.",
+    "min_length": "Mindestens 50 Zeichen"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "2,99 €/Monat",
     "features": [
       "3 Szenarien pro Tag",
       "Vollständiges Szenario-Archiv",
+      "Thematische Szenariopakete",
       "Erweiterte Expertenanalyse",
       "Werbefrei",
       "3 Streak-Freezes pro Monat"

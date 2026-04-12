@@ -75,12 +75,27 @@
     "logout": "Se déconnecter",
     "archive": "Archive des scénarios"
   },
+  "packs": {
+    "title": "Packs thématiques",
+    "scenarios_count": "{{count}} scénarios",
+    "unlock_premium": "Débloquer avec Premium",
+    "browse": "Parcourir le pack"
+  },
+  "submission": {
+    "submit": "Soumettre un scénario",
+    "placeholder": "Écrivez votre scénario moralement ambigu...",
+    "success": "Soumis ! Votre scénario est en cours de révision.",
+    "auto_approved": "Votre scénario a été approuvé automatiquement !",
+    "flagged": "Votre scénario nécessite une révision manuelle.",
+    "min_length": "Minimum 50 caractères"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "2,99 €/mois",
     "features": [
       "3 scénarios par jour",
       "Archive complète des scénarios",
+      "Packs de scénarios thématiques",
       "Analyse d'expert étendue",
       "Sans publicité",
       "3 gels de série par mois"

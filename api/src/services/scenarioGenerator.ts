@@ -2,16 +2,29 @@ import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
 import { VALID_CATEGORIES } from '../constants.js';
 
+const LOCALE_PROMPTS: Record<string, string> = {
+  en: 'Write the scenario in English.',
+  cs: 'Write the scenario in Czech (čeština).',
+  de: 'Write the scenario in German (Deutsch).',
+  es: 'Write the scenario in Spanish (español).',
+  fr: 'Write the scenario in French (français).',
+  pt: 'Write the scenario in Portuguese (português).',
+  ja: 'Write the scenario in Japanese (日本語).',
+};
+
 const SYSTEM_PROMPT = `You are a scenario writer for SpicyPick, a social judgment game.
 Write a realistic, morally ambiguous scenario from first person perspective.
 Max 150 words. Must be debatable - no clear right/wrong answer.
 No politics, religion, racism, sexism.
 Return JSON: {"title": "...", "body": "..."}`;
 
-export async function generateScenario(category?: string) {
+export async function generateScenario(category?: string, locale?: string) {
   const cat = category || VALID_CATEGORIES[Math.floor(Math.random() * VALID_CATEGORIES.length)];
+  const lang = locale || 'en';
   const apiKey = process.env.AI_API_KEY;
   if (!apiKey) throw new Error('AI_API_KEY not configured');
+
+  const langInstruction = LOCALE_PROMPTS[lang] || LOCALE_PROMPTS.en;
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -24,7 +37,7 @@ export async function generateScenario(category?: string) {
       model: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
       max_tokens: 500,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Generate a ${cat} scenario.` }],
+      messages: [{ role: 'user', content: `Generate a ${cat} scenario. ${langInstruction}` }],
     }),
   });
 
@@ -44,15 +57,16 @@ export async function generateScenario(category?: string) {
   if (!parsed.title || !parsed.body) {
     throw new Error('AI response missing required fields (title, body)');
   }
-  return { title: parsed.title, body: parsed.body, category: cat };
+  return { title: parsed.title, body: parsed.body, category: cat, locale: lang };
 }
 
-export async function generateAndSaveScenario(category?: string) {
-  const scenario = await generateScenario(category);
+export async function generateAndSaveScenario(category?: string, locale?: string) {
+  const scenario = await generateScenario(category, locale);
   const [saved] = await db.insert(scenarios).values({
     title: scenario.title,
     body: scenario.body,
     category: scenario.category,
+    locale: scenario.locale,
     source: 'ai_generated',
     status: 'draft',
   }).returning();

@@ -5,6 +5,7 @@ import { scenarioSubmissions } from '../db/schema.js';
 import { eq, desc } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
+import { moderateContent } from '../services/contentModeration.js';
 
 const submissionRoutes = new Hono<AppEnv>();
 
@@ -23,13 +24,32 @@ submissionRoutes.post('/', authMiddleware, async (c) => {
     return c.json({ error: 'Invalid input. Body must be 50-2000 characters.', details: parsed.error.flatten() }, 400);
   }
 
+  // AI pre-screening
+  const moderation = await moderateContent(parsed.data.body);
+
+  // AI is a pre-screener only — all submissions go to manual review
+  const status = 'pending';
+  const moderatorNotes = moderation.approved
+    ? `AI pre-approved (needs human review): ${moderation.reason}`
+    : moderation.flags.length > 0
+      ? `AI flagged (${moderation.flags.join(', ')}): ${moderation.reason}`
+      : `AI review: ${moderation.reason}`;
+
   const [submission] = await db.insert(scenarioSubmissions).values({
     userId,
     body: parsed.data.body,
-    status: 'pending',
+    status,
+    moderatorNotes,
   }).returning();
 
-  return c.json({ submission }, 201);
+  return c.json({
+    submission,
+    moderation: {
+      autoApproved: moderation.approved,
+      suggestedCategory: moderation.category,
+      flags: moderation.flags,
+    },
+  }, 201);
 });
 
 // GET /api/submissions/mine
