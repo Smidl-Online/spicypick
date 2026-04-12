@@ -64,23 +64,34 @@ export async function checkAchievements(userId: string): Promise<string[]> {
   if (user.currentStreak >= 30) await tryUnlock('streak_30');
   if (user.currentStreak >= 365) await tryUnlock('streak_365');
 
-  // Contrarian & consensus
-  const userVotes = await db.query.votes.findMany({ where: eq(votes.userId, userId) });
+  // Contrarian & consensus — single JOIN query instead of N+1
+  const userVotesWithScenarios = await db
+    .select({
+      verdict: votes.verdict,
+      totalVotes: scenarios.totalVotes,
+      votesGuilty: scenarios.votesGuilty,
+      votesNotGuilty: scenarios.votesNotGuilty,
+      votesComplicated: scenarios.votesComplicated,
+      votesBothWrong: scenarios.votesBothWrong,
+    })
+    .from(votes)
+    .innerJoin(scenarios, eq(votes.scenarioId, scenarios.id))
+    .where(eq(votes.userId, userId));
+
   let contrarianCount = 0;
   let consensusCount = 0;
-  for (const v of userVotes) {
-    const scenario = await db.query.scenarios.findFirst({ where: eq(scenarios.id, v.scenarioId) });
-    if (!scenario || scenario.totalVotes === 0) continue;
+  for (const v of userVotesWithScenarios) {
+    if (v.totalVotes === 0) continue;
     const verdictCounts: Record<string, number> = {
-      guilty: scenario.votesGuilty,
-      not_guilty: scenario.votesNotGuilty,
-      complicated: scenario.votesComplicated,
-      both_wrong: scenario.votesBothWrong,
+      guilty: v.votesGuilty,
+      not_guilty: v.votesNotGuilty,
+      complicated: v.votesComplicated,
+      both_wrong: v.votesBothWrong,
     };
     const maxVotes = Math.max(...Object.values(verdictCounts));
     const userVerdictVotes = verdictCounts[v.verdict] || 0;
     if (userVerdictVotes < maxVotes) contrarianCount++;
-    if (userVerdictVotes / scenario.totalVotes >= 0.7) consensusCount++;
+    if (userVerdictVotes / v.totalVotes >= 0.7) consensusCount++;
   }
   if (contrarianCount >= 10) await tryUnlock('contrarian_10');
   if (consensusCount >= 10) await tryUnlock('consensus_10');

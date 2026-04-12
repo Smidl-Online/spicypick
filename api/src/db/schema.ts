@@ -190,6 +190,49 @@ export const refreshTokens = pgTable('refresh_tokens', {
 ]);
 
 // ============================================
+// PASSWORD RESET TOKENS
+// ============================================
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 255 }).notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('idx_password_reset_user').on(table.userId),
+]);
+
+// ============================================
+// GUILDS (team competitions)
+// ============================================
+export const guilds = pgTable('guilds', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  name: varchar('name', { length: 50 }).unique().notNull(),
+  description: text('description'),
+  avatarUrl: text('avatar_url'),
+  leaderId: uuid('leader_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  weeklyXp: integer('weekly_xp').default(0).notNull(),
+  totalXp: integer('total_xp').default(0).notNull(),
+  memberCount: integer('member_count').default(1).notNull(),
+  maxMembers: integer('max_members').default(30).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const guildMembers = pgTable('guild_members', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  guildId: uuid('guild_id').notNull().references(() => guilds.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: varchar('role', { length: 20 }).default('member').notNull(), // 'leader', 'officer', 'member'
+  weeklyXp: integer('weekly_xp').default(0).notNull(),
+  joinedAt: timestamp('joined_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_guild_members_unique').on(table.guildId, table.userId),
+  uniqueIndex('idx_guild_members_user_unique').on(table.userId),
+  index('idx_guild_members_guild').on(table.guildId),
+]);
+
+// ============================================
 // RELATIONS
 // ============================================
 export const usersRelations = relations(users, ({ many }) => ({
@@ -199,6 +242,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   submissions: many(scenarioSubmissions),
   challengesSent: many(challenges, { relationName: 'challenger' }),
   challengesReceived: many(challenges, { relationName: 'challenged' }),
+  guildMemberships: many(guildMembers),
 }));
 
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
@@ -219,4 +263,14 @@ export const challengesRelations = relations(challenges, ({ one }) => ({
   challenger: one(users, { fields: [challenges.challengerId], references: [users.id], relationName: 'challenger' }),
   challenged: one(users, { fields: [challenges.challengedId], references: [users.id], relationName: 'challenged' }),
   scenario: one(scenarios, { fields: [challenges.scenarioId], references: [scenarios.id] }),
+}));
+
+export const guildsRelations = relations(guilds, ({ one, many }) => ({
+  leader: one(users, { fields: [guilds.leaderId], references: [users.id] }),
+  members: many(guildMembers),
+}));
+
+export const guildMembersRelations = relations(guildMembers, ({ one }) => ({
+  guild: one(guilds, { fields: [guildMembers.guildId], references: [guilds.id] }),
+  user: one(users, { fields: [guildMembers.userId], references: [users.id] }),
 }));

@@ -9,17 +9,17 @@ import { CommunityStats } from '../../src/components/CommunityStats';
 import { CountdownTimer } from '../../src/components/CountdownTimer';
 import { ShareCard } from '../../src/components/ShareCard';
 import { StreakBadge } from '../../src/components/StreakBadge';
-import { colors } from '../../src/theme/colors';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
 const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 
 export default function HomeScreen() {
   const { t } = useTranslation();
-  const { todayScenario, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading } = useScenarioStore();
+  const { colors } = useTheme();
+  const { todayScenario, scenarioNumber, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading, isOffline } = useScenarioStore();
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
-  const [showReveal, setShowReveal] = useState(false);
 
   useEffect(() => {
     fetchToday();
@@ -29,9 +29,11 @@ export default function HomeScreen() {
     if (!todayScenario || voting) return;
     setVoting(true);
     try {
-      await vote(todayScenario.id, verdict);
-      setShowReveal(true);
-      await fetchProfile();
+      const result = await vote(todayScenario.id, verdict);
+      // Skip fetchProfile when offline (vote returns null)
+      if (result) {
+        await fetchProfile();
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -41,62 +43,72 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>🌶️ SpicyPick</Text>
-          {user && <StreakBadge count={user.currentStreak} />}
+          <Text style={[styles.title, { color: colors.primary }]}>🌶️ SpicyPick</Text>
+          <View style={styles.headerRight}>
+            {isOffline && (
+              <View style={[styles.offlineBadge, { backgroundColor: colors.warning }]}>
+                <Text style={styles.offlineText}>{t('home.offline')}</Text>
+              </View>
+            )}
+            {user && <StreakBadge count={user.currentStreak} />}
+          </View>
         </View>
 
         {!todayScenario ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>😴</Text>
-            <Text style={styles.emptyText}>{t('home.no_scenario')}</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('home.no_scenario')}</Text>
             <CountdownTimer />
           </View>
-        ) : hasVoted && communityStats ? (
-          /* Already voted — show results */
+        ) : hasVoted ? (
           <Animated.View entering={FadeIn.duration(500)}>
-            <View style={styles.scenarioCard}>
-              <Text style={styles.category}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={styles.scenarioTitle}>{todayScenario.title}</Text>
-              <Text style={styles.scenarioBody}>{todayScenario.body}</Text>
+            <View style={[styles.scenarioCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+              <Text style={[styles.category, { color: colors.primary }]}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={[styles.scenarioTitle, { color: colors.text }]}>{todayScenario.title}</Text>
+              <Text style={[styles.scenarioBody, { color: colors.text }]}>{todayScenario.body}</Text>
             </View>
 
-            {/* XP earned */}
+            {isOffline && !communityStats && (
+              <View style={[styles.offlineVotedBanner, { backgroundColor: colors.bgLight, borderColor: colors.warning }]}>
+                <Text style={[styles.offlineVotedText, { color: colors.text }]}>{t('home.offline_voted')}</Text>
+              </View>
+            )}
+
             {voteResult && (
-              <Animated.View entering={SlideInDown.delay(200)} style={styles.xpBanner}>
-                <Text style={styles.xpText}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
+              <Animated.View entering={SlideInDown.delay(200)} style={[styles.xpBanner, { backgroundColor: colors.bgLight, borderColor: colors.xp }]}>
+                <Text style={[styles.xpText, { color: colors.xp }]}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
                 {voteResult.majorityMatch && (
-                  <Text style={styles.majorityText}>{t('reveal.majority_match')}</Text>
+                  <Text style={[styles.majorityText, { color: colors.xp }]}>{t('reveal.majority_match')}</Text>
                 )}
               </Animated.View>
             )}
 
-            <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            {communityStats && (
+              <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            )}
 
-            {/* Expert analysis */}
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
-              <Animated.View entering={FadeInUp.delay(800)} style={styles.analysisCard}>
-                <Text style={styles.analysisTitle}>{t('reveal.expert')}</Text>
-                <Text style={styles.analysisText}>
+              <Animated.View entering={FadeInUp.delay(800)} style={[styles.analysisCard, { backgroundColor: colors.bgCard, borderColor: colors.accent }]}>
+                <Text style={[styles.analysisTitle, { color: colors.accent }]}>{t('reveal.expert')}</Text>
+                <Text style={[styles.analysisText, { color: colors.text }]}>
                   {todayScenario.expertAnalysis || voteResult?.expertAnalysis}
                 </Text>
               </Animated.View>
             )}
 
-            {/* Share card */}
             {userVerdict && communityStats && (
               <ShareCard
-                scenarioNumber={1}
+                scenarioNumber={scenarioNumber || 1}
                 userVerdict={userVerdict}
                 communityMajority={getMajority(communityStats)}
                 communityPct={getMajorityPct(communityStats)}
@@ -107,15 +119,14 @@ export default function HomeScreen() {
             <CountdownTimer />
           </Animated.View>
         ) : (
-          /* Show scenario + voting buttons */
           <Animated.View entering={FadeInUp.duration(600)}>
-            <View style={styles.scenarioCard}>
-              <Text style={styles.category}>{todayScenario.category.toUpperCase()}</Text>
-              <Text style={styles.scenarioTitle}>{todayScenario.title}</Text>
-              <Text style={styles.scenarioBody}>{todayScenario.body}</Text>
+            <View style={[styles.scenarioCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+              <Text style={[styles.category, { color: colors.primary }]}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={[styles.scenarioTitle, { color: colors.text }]}>{todayScenario.title}</Text>
+              <Text style={[styles.scenarioBody, { color: colors.text }]}>{todayScenario.body}</Text>
             </View>
 
-            <Text style={styles.verdictPrompt}>What's your verdict?</Text>
+            <Text style={[styles.verdictPrompt, { color: colors.text }]}>{t('home.verdict_prompt')}</Text>
 
             {VERDICTS.map((v) => (
               <VerdictButton
@@ -125,6 +136,12 @@ export default function HomeScreen() {
                 disabled={voting}
               />
             ))}
+
+            {isOffline && (
+              <Text style={[styles.offlineHint, { color: colors.textMuted }]}>
+                {t('home.offline_hint')}
+              </Text>
+            )}
           </Animated.View>
         )}
       </ScrollView>
@@ -149,44 +166,28 @@ function getMajorityPct(stats: { total: number; guilty: number; notGuilty: numbe
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
+  container: { flex: 1 },
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: colors.primary },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 24, fontWeight: '800' },
+  offlineBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  offlineText: { fontSize: 11, fontWeight: '700', color: '#1a1a2e' },
+  offlineHint: { fontSize: 13, textAlign: 'center', marginTop: 16 },
   emptyState: { alignItems: 'center', marginTop: 60 },
   emptyEmoji: { fontSize: 64, marginBottom: 16 },
-  emptyText: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 24 },
-  scenarioCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: 20,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  category: { fontSize: 12, fontWeight: '700', color: colors.primary, letterSpacing: 1, marginBottom: 8 },
-  scenarioTitle: { fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 12 },
-  scenarioBody: { fontSize: 16, color: colors.text, lineHeight: 24 },
-  verdictPrompt: { fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center', marginVertical: 16 },
-  xpBanner: {
-    backgroundColor: colors.bgLight,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.xp,
-  },
-  xpText: { fontSize: 20, fontWeight: '800', color: colors.xp },
-  majorityText: { fontSize: 14, color: colors.xp, marginTop: 4 },
-  analysisCard: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  analysisTitle: { fontSize: 16, fontWeight: '700', color: colors.accent, marginBottom: 8 },
-  analysisText: { fontSize: 14, color: colors.text, lineHeight: 22 },
+  emptyText: { fontSize: 16, textAlign: 'center', marginBottom: 24 },
+  scenarioCard: { borderRadius: 16, padding: 20, marginVertical: 8, borderWidth: 1 },
+  category: { fontSize: 12, fontWeight: '700', letterSpacing: 1, marginBottom: 8 },
+  scenarioTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
+  scenarioBody: { fontSize: 16, lineHeight: 24 },
+  verdictPrompt: { fontSize: 18, fontWeight: '700', textAlign: 'center', marginVertical: 16 },
+  xpBanner: { borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1 },
+  xpText: { fontSize: 20, fontWeight: '800' },
+  majorityText: { fontSize: 14, marginTop: 4 },
+  analysisCard: { borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1 },
+  analysisTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
+  analysisText: { fontSize: 14, lineHeight: 22 },
+  offlineVotedBanner: { borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1 },
+  offlineVotedText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
 });

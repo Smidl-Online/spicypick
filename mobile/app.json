@@ -15,7 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.spicypick.app"
+      "bundleIdentifier": "com.spicypick.app",
+      "associatedDomains": [
+        "applinks:spicypick.app",
+        "applinks:www.spicypick.app"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +27,26 @@
         "backgroundColor": "#1a1a2e"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.spicypick.app"
+      "package": "com.spicypick.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "spicypick.app",
+              "pathPrefix": "/scenario"
+            },
+            {
+              "scheme": "https",
+              "host": "www.spicypick.app",
+              "pathPrefix": "/scenario"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-router",

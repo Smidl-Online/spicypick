@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
+import { offlineCache } from '../services/offlineCache';
+import { isOnline } from '../services/offlineSync';
 
 type CommunityStats = {
   total: number;
@@ -31,50 +33,104 @@ type VoteResult = {
 
 type ScenarioState = {
   todayScenario: Scenario | null;
+  scenarioNumber: number | null;
   hasVoted: boolean;
   userVerdict: string | null;
   communityStats: CommunityStats | null;
   voteResult: VoteResult | null;
   isLoading: boolean;
+  isOffline: boolean;
   error: string | null;
 
   fetchToday: () => Promise<void>;
-  vote: (scenarioId: string, verdict: string) => Promise<VoteResult>;
+  vote: (scenarioId: string, verdict: string) => Promise<VoteResult | null>;
   reset: () => void;
+};
+
+type TodayResponse = {
+  scenario: Scenario | null;
+  scenarioNumber?: number;
+  voted?: boolean;
+  userVerdict?: string;
+  communityStats?: CommunityStats;
 };
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
   todayScenario: null,
+  scenarioNumber: null,
   hasVoted: false,
   userVerdict: null,
   communityStats: null,
   voteResult: null,
   isLoading: false,
+  isOffline: false,
   error: null,
 
   fetchToday: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await api<{
-        scenario: Scenario | null;
-        voted?: boolean;
-        userVerdict?: string;
-        communityStats?: CommunityStats;
-      }>('/api/scenarios/today');
+      const online = await isOnline();
+      if (!online) {
+        const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+        if (cached) {
+          set({
+            todayScenario: cached.scenario,
+            scenarioNumber: cached.scenarioNumber || null,
+            hasVoted: cached.voted || false,
+            userVerdict: cached.userVerdict || null,
+            communityStats: cached.communityStats || null,
+            isLoading: false,
+            isOffline: true,
+          });
+          return;
+        }
+        set({ error: 'No internet connection', isLoading: false, isOffline: true });
+        return;
+      }
+
+      const data = await api<TodayResponse>('/api/scenarios/today');
+      await offlineCache.cacheTodayScenario(data);
 
       set({
         todayScenario: data.scenario,
+        scenarioNumber: data.scenarioNumber || null,
         hasVoted: data.voted || false,
         userVerdict: data.userVerdict || null,
         communityStats: data.communityStats || null,
         isLoading: false,
+        isOffline: false,
       });
     } catch (err: any) {
+      const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+      if (cached) {
+        set({
+          todayScenario: cached.scenario,
+          scenarioNumber: cached.scenarioNumber || null,
+          hasVoted: cached.voted || false,
+          userVerdict: cached.userVerdict || null,
+          communityStats: cached.communityStats || null,
+          isLoading: false,
+          isOffline: true,
+        });
+        return;
+      }
       set({ error: err.message, isLoading: false });
     }
   },
 
   vote: async (scenarioId, verdict) => {
+    const online = await isOnline();
+    if (!online) {
+      await offlineCache.queueVote(scenarioId, verdict);
+      // Update offline cache so restarting the app shows correct voted state
+      const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+      if (cached) {
+        await offlineCache.cacheTodayScenario({ ...cached, voted: true, userVerdict: verdict });
+      }
+      set({ hasVoted: true, userVerdict: verdict, isOffline: true });
+      return null;
+    }
+
     const result = await api<VoteResult>(`/api/scenarios/${scenarioId}/vote`, {
       method: 'POST',
       body: { verdict },
@@ -84,15 +140,28 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       userVerdict: verdict,
       communityStats: result.communityStats,
       voteResult: result,
+      isOffline: false,
     });
+    // Update offline cache so offline mode shows correct voted state
+    const cached = await offlineCache.getCachedTodayScenario<TodayResponse>();
+    if (cached) {
+      await offlineCache.cacheTodayScenario({
+        ...cached,
+        voted: true,
+        userVerdict: verdict,
+        communityStats: result.communityStats,
+      });
+    }
     return result;
   },
 
   reset: () => set({
     todayScenario: null,
+    scenarioNumber: null,
     hasVoted: false,
     userVerdict: null,
     communityStats: null,
     voteResult: null,
+    isOffline: false,
   }),
 }));

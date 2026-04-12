@@ -1,0 +1,100 @@
+{
+  "app_name": "SpicyPick",
+  "home": {
+    "title": "Escenario de hoy",
+    "no_scenario": "Aún no hay escenario hoy. ¡Vuelve pronto!",
+    "already_voted": "¡Ya votaste hoy!",
+    "next_scenario": "Próximo escenario en",
+    "share": "Comparte tu elección",
+    "streak": "{{count}} días seguidos",
+    "verdict_prompt": "¿Cuál es tu veredicto?",
+    "offline": "Sin conexión",
+    "offline_hint": "Estás sin conexión. Tu voto se sincronizará cuando te reconectes.",
+    "offline_voted": "¡Tu voto ha sido guardado! Los resultados aparecerán cuando vuelvas a estar en línea."
+  },
+  "verdicts": {
+    "guilty": "Culpable",
+    "not_guilty": "Inocente",
+    "complicated": "Es complicado",
+    "both_wrong": "Ambos mal"
+  },
+  "reveal": {
+    "community": "La comunidad votó",
+    "expert": "Análisis experto",
+    "majority_match": "¡Votaste con la mayoría!",
+    "xp_earned": "+{{xp}} XP"
+  },
+  "league": {
+    "title": "Liga",
+    "not_in_league": "¡Vota para unirte a una liga!",
+    "rank": "Posición #{{rank}}",
+    "weekly_xp": "{{xp}} XP esta semana",
+    "promotion_zone": "Zona de ascenso",
+    "demotion_zone": "Zona de descenso",
+    "ends_in": "La semana termina en"
+  },
+  "profile": {
+    "title": "Perfil",
+    "level": "Nivel {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{count}} días seguidos",
+    "longest_streak": "Más larga: {{count}} días",
+    "total_votes": "{{count}} veredictos",
+    "achievements": "Logros",
+    "history": "Historial de veredictos",
+    "settings": "Ajustes"
+  },
+  "challenges": {
+    "title": "Desafíos",
+    "empty": "Aún no hay desafíos",
+    "send": "Desafiar a un amigo",
+    "pending": "Pendiente",
+    "completed": "Completado",
+    "respond": "Da tu veredicto"
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "username": "Nombre de usuario",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "no_account": "¿No tienes cuenta?",
+    "has_account": "¿Ya tienes cuenta?"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "notifications": "Notificaciones",
+    "premium": "Premium",
+    "language": "Idioma",
+    "delete_account": "Eliminar cuenta",
+    "delete_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos. Esta acción no se puede deshacer.",
+    "premium_active": "Activo",
+    "logout": "Cerrar sesión",
+    "archive": "Archivo de escenarios"
+  },
+  "premium": {
+    "title": "SpicyPick Premium",
+    "price": "$2.99/mes",
+    "features": [
+      "3 escenarios por día",
+      "Archivo completo de escenarios",
+      "Análisis experto extendido",
+      "Sin anuncios",
+      "3 congelaciones de racha por mes"
+    ],
+    "subscribe": "Suscribirse",
+    "active": "Premium activo hasta {{date}}"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "hours": "h",
+    "minutes": "min",
+    "seconds": "s"
+  }
+}

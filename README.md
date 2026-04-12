@@ -42,6 +42,6 @@ npx expo start
 - User-submitted scenarios with moderation
 - Premium subscription (archive, extended analysis, ad-free)
 - Push notifications (daily scenario, streak warning, league, challenges)
-- i18n (EN, CS)
+- i18n (EN, CS, DE, ES, PT, FR, JA)
 - AI-powered expert analysis (Claude API)
 - GDPR compliant (account deletion, data export)

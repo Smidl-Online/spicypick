@@ -14,15 +14,21 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "engines": {
+    "node": ">=20.18.1"
+  },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
+    "@sentry/node": "^10.48.0",
     "bcryptjs": "^2.4.3",
-    "drizzle-orm": "^0.39.0",
+    "drizzle-orm": "^0.45.2",
+    "expo-server-sdk": "^6.1.0",
     "hono": "^4.7.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
     "pg": "^8.13.0",
     "postgres": "^3.4.5",
+    "resend": "^6.10.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
@@ -31,7 +37,7 @@
     "@types/node": "^22.0.0",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.11.10",
-    "drizzle-kit": "^0.30.0",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

@@ -1,6 +1,7 @@
 import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { and, gt, ne, isNotNull } from 'drizzle-orm';
+import { sendBulkPushNotifications } from '../services/pushNotifications.js';
 
 export async function sendStreakWarnings() {
   const today = new Date().toISOString().split('T')[0];
@@ -16,16 +17,17 @@ export async function sendStreakWarnings() {
 
   console.log(`[CRON] Found ${atRiskUsers.length} users with at-risk streaks`);
 
-  for (const user of atRiskUsers) {
-    // TODO: Send actual push notification via expo-server-sdk
-    // For now, just log
-    console.log(`[CRON] Would send streak warning to ${user.username} (streak: ${user.currentStreak})`);
+  if (atRiskUsers.length === 0) return;
 
-    // In production:
-    // await sendPushNotification(user.pushToken, {
-    //   title: '🔥 Streak v ohrožení!',
-    //   body: `Tvůj ${user.currentStreak}-denní streak je v ohrožení! Zbývá pár hodin.`,
-    //   data: { type: 'streak_warning' },
-    // });
-  }
+  const messages = atRiskUsers
+    .filter((u) => u.pushToken)
+    .map((user) => ({
+      pushToken: user.pushToken!,
+      title: '🔥 Streak v ohrožení!',
+      body: `Tvůj ${user.currentStreak}-denní streak je v ohrožení! Zbývá pár hodin.`,
+      data: { type: 'streak_warning' } as Record<string, unknown>,
+    }));
+
+  const sent = await sendBulkPushNotifications(messages);
+  console.log(`[CRON] Sent ${sent}/${messages.length} streak warnings`);
 }

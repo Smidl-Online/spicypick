@@ -12,15 +12,31 @@ import challengeRoutes from './routes/challenges.js';
 import submissionRoutes from './routes/submissions.js';
 import premiumRoutes from './routes/premium.js';
 import reportRoutes from './routes/reports.js';
+import guildRoutes from './routes/guilds.js';
+import adminRoutes from './routes/admin.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
+import { initSentry } from './services/sentry.js';
+
+// Validate required env variables at startup
+const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) {
+    throw new Error(`FATAL: Missing required environment variable: ${key}`);
+  }
+}
+if (!process.env.ADMIN_TOKEN) {
+  console.warn('WARNING: ADMIN_TOKEN not set — admin panel will be disabled');
+}
 
 const app = new Hono();
 
 // Global middleware
-app.use('*', cors({ origin: process.env.CORS_ORIGIN || '*' }));
+const corsOrigin = process.env.CORS_ORIGIN || '*';
+app.use('*', cors({ origin: corsOrigin }));
 app.use('*', logger());
 app.use('/api/*', rateLimit(100, 60_000));
+app.use('/admin/*', rateLimit(30, 60_000));
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
@@ -35,6 +51,8 @@ app.route('/api/challenges', challengeRoutes);
 app.route('/api/submissions', submissionRoutes);
 app.route('/api/premium', premiumRoutes);
 app.route('/api/reports', reportRoutes);
+app.route('/api/guilds', guildRoutes);
+app.route('/admin', adminRoutes);
 
 // 404
 app.notFound((c) => c.json({ error: 'Not Found' }, 404));
@@ -44,6 +62,9 @@ app.onError((err, c) => {
   console.error('Unhandled error:', err);
   return c.json({ error: 'Internal Server Error' }, 500);
 });
+
+// Initialize Sentry
+initSentry();
 
 // Start server
 const port = parseInt(process.env.PORT || '3000');

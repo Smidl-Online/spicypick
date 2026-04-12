@@ -20,7 +20,8 @@ const respondSchema = z.object({
 // POST /api/challenges
 challengeRoutes.post('/', authMiddleware, async (c) => {
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = createChallengeSchema.safeParse(body);
   if (!parsed.success) {
@@ -111,11 +112,17 @@ challengeRoutes.get('/', authMiddleware, async (c) => {
   });
 });
 
+const uuidSchema = z.string().uuid();
+
 // POST /api/challenges/:id/respond
 challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
   const challengeId = c.req.param('id')!;
+  if (!uuidSchema.safeParse(challengeId).success) {
+    return c.json({ error: 'Invalid challenge ID format' }, 400);
+  }
   const userId = c.get('userId');
-  const body = await c.req.json();
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
 
   const parsed = respondSchema.safeParse(body);
   if (!parsed.success) {
@@ -126,14 +133,16 @@ challengeRoutes.post('/:id/respond', authMiddleware, async (c) => {
     where: eq(challenges.id, challengeId),
   });
 
-  if (!challenge) return c.json({ error: 'Challenge not found' }, 404);
-  if (challenge.challengedId !== userId) return c.json({ error: 'Not your challenge' }, 403);
+  if (!challenge || challenge.challengedId !== userId) return c.json({ error: 'Challenge not found' }, 404);
   if (challenge.status !== 'pending') return c.json({ error: 'Challenge already completed' }, 400);
 
-  await db.update(challenges).set({
+  // Atomic update with status check to prevent TOCTOU race condition
+  const [updated] = await db.update(challenges).set({
     challengedVerdict: parsed.data.verdict,
     status: 'completed',
-  }).where(eq(challenges.id, challengeId));
+  }).where(and(eq(challenges.id, challengeId), eq(challenges.status, 'pending'))).returning();
+
+  if (!updated) return c.json({ error: 'Challenge already completed' }, 400);
 
   return c.json({
     message: 'Challenge completed',
