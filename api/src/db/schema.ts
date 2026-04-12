@@ -77,6 +77,7 @@ export const scenarios = pgTable('scenarios', {
   index('idx_scenarios_publish_date').on(table.publishDate),
   index('idx_scenarios_status').on(table.status),
   index('idx_scenarios_locale').on(table.locale),
+  index('idx_scenarios_pack').on(table.pack),
 ]);
 
 // ============================================

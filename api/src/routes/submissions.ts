@@ -27,9 +27,10 @@ submissionRoutes.post('/', authMiddleware, async (c) => {
   // AI pre-screening
   const moderation = await moderateContent(parsed.data.body);
 
-  const status = moderation.approved ? 'approved' : 'pending';
+  // AI is a pre-screener only — all submissions go to manual review
+  const status = 'pending';
   const moderatorNotes = moderation.approved
-    ? `AI auto-approved: ${moderation.reason}`
+    ? `AI pre-approved (needs human review): ${moderation.reason}`
     : moderation.flags.length > 0
       ? `AI flagged (${moderation.flags.join(', ')}): ${moderation.reason}`
       : `AI review: ${moderation.reason}`;

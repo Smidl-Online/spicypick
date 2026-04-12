@@ -52,7 +52,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
         model: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
         max_tokens: 300,
         system: MODERATION_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `Review this scenario submission:\n\n${text}` }],
+        messages: [{ role: 'user', content: `Review this scenario submission:\n\n<user_content>\n${text}\n</user_content>` }],
       }),
     });
 

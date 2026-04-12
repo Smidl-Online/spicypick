@@ -34,10 +34,13 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   const today = todayDate(user?.timezone ?? undefined);
 
+  const userLocale = user?.locale || 'en';
+
   const scenario = await db.query.scenarios.findFirst({
     where: and(
       eq(scenarios.publishDate, today),
       eq(scenarios.status, 'published'),
+      eq(scenarios.locale, userLocale),
     ),
   });
 
@@ -130,6 +133,10 @@ scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
   const userId = c.get('userId');
   const packId = c.req.param('packId');
   const category = c.req.query('category');
+  const parsedPage = parseInt(c.req.query('page') || '1');
+  const page = Math.max(Number.isFinite(parsedPage) ? parsedPage : 1, 1);
+  const rawLimit = parseInt(c.req.query('limit') || '20');
+  const limit = Math.min(Math.max(rawLimit || 20, 1), 50);
 
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   const isPremiumActive = user?.isPremium && (!user.premiumUntil || new Date(user.premiumUntil) > new Date());
@@ -137,9 +144,13 @@ scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
     return c.json({ error: 'Premium subscription required for themed packs' }, 403);
   }
 
+  const locale = c.req.query('locale') || user?.locale || 'en';
+  const offset = (page - 1) * limit;
+
   const conditions = [
     sql`${scenarios.pack} = ${packId}`,
     eq(scenarios.status, 'published'),
+    eq(scenarios.locale, locale),
   ];
   if (category && (VALID_CATEGORIES as readonly string[]).includes(category)) {
     conditions.push(eq(scenarios.category, category));
@@ -148,6 +159,8 @@ scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
   const packScenarios = await db.query.scenarios.findMany({
     where: and(...conditions),
     orderBy: [desc(scenarios.publishDate)],
+    limit,
+    offset,
   });
 
   return c.json({
@@ -159,6 +172,8 @@ scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
       publishDate: s.publishDate,
       totalVotes: s.totalVotes,
     })),
+    page,
+    limit,
   });
 });
 
@@ -184,10 +199,12 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
 
   const today = todayDate();
   const offset = (page - 1) * limit;
+  const locale = c.req.query('locale') || user?.locale || 'en';
 
   const conditions = [
     eq(scenarios.status, 'published'),
     lte(scenarios.publishDate, today),
+    eq(scenarios.locale, locale),
   ];
   if (category) {
     conditions.push(eq(scenarios.category, category));
