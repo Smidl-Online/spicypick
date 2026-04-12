@@ -181,12 +181,12 @@ export const reports = pgTable('reports', {
 export const refreshTokens = pgTable('refresh_tokens', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: uuid('user_id').notNull().references(() => users.id),
-  token: varchar('token', { length: 500 }).notNull(),
+  tokenHash: varchar('token_hash', { length: 128 }).notNull(),
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [
   index('idx_refresh_tokens_user').on(table.userId),
-  index('idx_refresh_tokens_token').on(table.token),
+  index('idx_refresh_tokens_token_hash').on(table.tokenHash),
 ]);
 
 // ============================================
