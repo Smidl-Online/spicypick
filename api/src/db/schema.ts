@@ -57,7 +57,7 @@ export const scenarios = pgTable('scenarios', {
   outcome: text('outcome'),
 
   // Scheduling
-  publishDate: date('publish_date').unique(),
+  publishDate: date('publish_date'),
   isPremiumBonus: boolean('is_premium_bonus').default(false).notNull(),
   pack: varchar('pack', { length: 50 }),
 
@@ -74,9 +74,8 @@ export const scenarios = pgTable('scenarios', {
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [
-  index('idx_scenarios_publish_date').on(table.publishDate),
+  uniqueIndex('idx_scenarios_publish_date_locale').on(table.publishDate, table.locale),
   index('idx_scenarios_status').on(table.status),
-  index('idx_scenarios_locale').on(table.locale),
   index('idx_scenarios_pack').on(table.pack),
 ]);
 
