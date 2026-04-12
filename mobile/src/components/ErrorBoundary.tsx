@@ -50,6 +50,9 @@ class ErrorBoundaryInner extends Component<Props, State> {
   }
 }
 
+// Intentionally wraps ThemeProvider in _layout.tsx so it catches provider errors.
+// useTheme() is safe here — createContext provides a default value (darkTheme),
+// so useContext never throws even without a mounted ThemeProvider.
 export function ErrorBoundary({ children }: { children: React.ReactNode }) {
   const { colors } = useTheme();
   return <ErrorBoundaryInner colors={colors}>{children}</ErrorBoundaryInner>;

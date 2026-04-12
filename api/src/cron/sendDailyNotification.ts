@@ -31,9 +31,7 @@ export async function sendDailyNotification() {
 
   if (eligibleUsers.length === 0) return;
 
-  const messages = eligibleUsers
-    .filter((u) => u.pushToken)
-    .map((user) => ({
+  const messages = eligibleUsers.map((user) => ({
       pushToken: user.pushToken!,
       title: '🌶️ New scenario is here!',
       body: scenario.title,
