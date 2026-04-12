@@ -13,13 +13,14 @@ const VERDICT_EMOJI: Record<string, string> = {
 
 type Props = {
   scenarioNumber: number;
+  scenarioId?: string;
   userVerdict: string;
   communityMajority: string;
   communityPct: number;
   streak: number;
 };
 
-export function ShareCard({ scenarioNumber, userVerdict, communityMajority, communityPct, streak }: Props) {
+export function ShareCard({ scenarioNumber, scenarioId, userVerdict, communityMajority, communityPct, streak }: Props) {
   const viewShotRef = useRef<ViewShot>(null);
 
   const handleShare = async () => {
@@ -49,7 +50,9 @@ export function ShareCard({ scenarioNumber, userVerdict, communityMajority, comm
           {streak > 0 && (
             <Text style={styles.streak}>🔥 Streak: {streak} days</Text>
           )}
-          <Text style={styles.url}>spicypick.app</Text>
+          <Text style={styles.url}>
+            {scenarioId ? `spicypick.app/scenario/${scenarioId}` : 'spicypick.app'}
+          </Text>
         </View>
       </ViewShot>
 

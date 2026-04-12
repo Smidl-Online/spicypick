@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInUp, SlideInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useScenarioStore } from '../../src/store/scenarioStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { VerdictButton } from '../../src/components/VerdictButton';
 import { CommunityStats } from '../../src/components/CommunityStats';
 import { CountdownTimer } from '../../src/components/CountdownTimer';
 import { ShareCard } from '../../src/components/ShareCard';
+import { RevealAnimation } from '../../src/components/RevealAnimation';
 import { StreakBadge } from '../../src/components/StreakBadge';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -85,12 +86,12 @@ export default function HomeScreen() {
             )}
 
             {voteResult && (
-              <Animated.View entering={SlideInDown.delay(200)} style={[styles.xpBanner, { backgroundColor: colors.bgLight, borderColor: colors.xp }]}>
-                <Text style={[styles.xpText, { color: colors.xp }]}>{t('reveal.xp_earned', { xp: voteResult.xpEarned })}</Text>
-                {voteResult.majorityMatch && (
-                  <Text style={[styles.majorityText, { color: colors.xp }]}>{t('reveal.majority_match')}</Text>
-                )}
-              </Animated.View>
+              <RevealAnimation
+                majorityMatch={voteResult.majorityMatch}
+                xpEarned={voteResult.xpEarned}
+                streak={voteResult.streak}
+                newAchievements={voteResult.newAchievements}
+              />
             )}
 
             {communityStats && (
@@ -109,6 +110,7 @@ export default function HomeScreen() {
             {userVerdict && communityStats && (
               <ShareCard
                 scenarioNumber={scenarioNumber || 1}
+                scenarioId={todayScenario.id}
                 userVerdict={userVerdict}
                 communityMajority={getMajority(communityStats)}
                 communityPct={getMajorityPct(communityStats)}
@@ -182,9 +184,6 @@ const styles = StyleSheet.create({
   scenarioTitle: { fontSize: 20, fontWeight: '700', marginBottom: 12 },
   scenarioBody: { fontSize: 16, lineHeight: 24 },
   verdictPrompt: { fontSize: 18, fontWeight: '700', textAlign: 'center', marginVertical: 16 },
-  xpBanner: { borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1 },
-  xpText: { fontSize: 20, fontWeight: '800' },
-  majorityText: { fontSize: 14, marginTop: 4 },
   analysisCard: { borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1 },
   analysisTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
   analysisText: { fontSize: 14, lineHeight: 22 },
