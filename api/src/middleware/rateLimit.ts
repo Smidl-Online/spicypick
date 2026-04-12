@@ -3,15 +3,17 @@ import { Context, Next } from 'hono';
 export const rateLimit = (maxRequests: number = 60, windowMs: number = 60_000, store?: Map<string, { count: number; resetAt: number }>) => {
   const requests = store ?? new Map<string, { count: number; resetAt: number }>();
 
-  // Cleanup old entries every 5 minutes (unref to allow clean Docker shutdown)
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of requests) {
-      if (now > entry.resetAt) {
-        requests.delete(key);
+  // Cleanup old entries every 5 minutes — only when we own the Map (no external store)
+  if (!store) {
+    setInterval(() => {
+      const now = Date.now();
+      for (const [key, entry] of requests) {
+        if (now > entry.resetAt) {
+          requests.delete(key);
+        }
       }
-    }
-  }, 300_000).unref();
+    }, 300_000).unref();
+  }
 
   return async (c: Context, next: Next) => {
     const key = c.req.header('x-forwarded-for')?.split(',')[0]?.trim()

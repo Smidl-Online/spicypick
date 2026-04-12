@@ -13,8 +13,18 @@ import { sendPasswordResetEmail } from '../services/email.js';
 
 const auth = new Hono<AppEnv>();
 
-// Shared rate limit store for all auth endpoints — single IP budget across /register, /login, /forgot-password
+// Shared rate limit store for /register and /login — single IP budget so attackers can't bypass by switching endpoints
 const authRateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+// Single cleanup timer for the shared store (unref to allow clean Docker shutdown)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of authRateLimitStore) {
+    if (now > entry.resetAt) {
+      authRateLimitStore.delete(key);
+    }
+  }
+}, 300_000).unref();
 
 function hashRefreshToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
