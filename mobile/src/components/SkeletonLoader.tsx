@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -7,16 +7,18 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 
 type SkeletonProps = {
   width?: number | string;
   height?: number;
   borderRadius?: number;
   style?: object;
+  bgColor?: string;
 };
 
-function SkeletonBlock({ width = '100%', height = 16, borderRadius = 8, style }: SkeletonProps) {
+function SkeletonBlock({ width = '100%', height = 16, borderRadius = 8, style, bgColor }: SkeletonProps) {
+  const { colors } = useTheme();
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ function SkeletonBlock({ width = '100%', height = 16, borderRadius = 8, style }:
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: colors.bgLight,
+          backgroundColor: bgColor || colors.bgLight,
         },
         animatedStyle,
         style,
@@ -48,6 +50,16 @@ function SkeletonBlock({ width = '100%', height = 16, borderRadius = 8, style }:
 }
 
 export function ScenarioSkeleton() {
+  const { colors } = useTheme();
+  const cardStyle = useMemo(() => ({
+    backgroundColor: colors.bgCard,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -57,7 +69,7 @@ export function ScenarioSkeleton() {
       </View>
 
       {/* Scenario card */}
-      <View style={styles.card}>
+      <View style={cardStyle}>
         <SkeletonBlock width={80} height={12} style={{ marginBottom: 12 }} />
         <SkeletonBlock width="70%" height={22} style={{ marginBottom: 16 }} />
         <SkeletonBlock width="100%" height={14} style={{ marginBottom: 8 }} />
@@ -76,6 +88,7 @@ export function ScenarioSkeleton() {
 }
 
 export function LeagueSkeleton() {
+  const { colors } = useTheme();
   return (
     <View style={styles.container}>
       {/* Tier badge */}
@@ -86,7 +99,7 @@ export function LeagueSkeleton() {
 
       {/* Leaderboard rows */}
       {Array.from({ length: 8 }).map((_, i) => (
-        <View key={i} style={styles.leaderboardRow}>
+        <View key={i} style={[styles.leaderboardRow, { borderBottomColor: colors.border }]}>
           <SkeletonBlock width={24} height={16} />
           <SkeletonBlock width={32} height={32} borderRadius={16} style={{ marginLeft: 12 }} />
           <SkeletonBlock width={120} height={16} style={{ marginLeft: 12 }} />
@@ -139,10 +152,11 @@ export function ProfileSkeleton() {
 }
 
 export function ChallengesSkeleton() {
+  const { colors } = useTheme();
   return (
     <View style={styles.container}>
       {Array.from({ length: 4 }).map((_, i) => (
-        <View key={i} style={styles.challengeRow}>
+        <View key={i} style={[styles.challengeRow, { borderBottomColor: colors.border }]}>
           <SkeletonBlock width={40} height={40} borderRadius={20} />
           <View style={{ marginLeft: 12, flex: 1 }}>
             <SkeletonBlock width="60%" height={16} style={{ marginBottom: 6 }} />
@@ -158,20 +172,11 @@ export function ChallengesSkeleton() {
 const styles = StyleSheet.create({
   container: { paddingHorizontal: 20, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  card: {
-    backgroundColor: colors.bgCard,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   leaderboardRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   statsRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 },
   achievementsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
@@ -180,6 +185,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
 });

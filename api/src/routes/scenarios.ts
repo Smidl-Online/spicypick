@@ -36,13 +36,24 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
 
   const userLocale = user?.locale || 'en';
 
-  const scenario = await db.query.scenarios.findFirst({
+  let scenario = await db.query.scenarios.findFirst({
     where: and(
       eq(scenarios.publishDate, today),
       eq(scenarios.status, 'published'),
       eq(scenarios.locale, userLocale),
     ),
   });
+
+  // Fallback to English if no scenario for user's locale
+  if (!scenario && userLocale !== 'en') {
+    scenario = await db.query.scenarios.findFirst({
+      where: and(
+        eq(scenarios.publishDate, today),
+        eq(scenarios.status, 'published'),
+        eq(scenarios.locale, 'en'),
+      ),
+    });
+  }
 
   if (!scenario) {
     return c.json({ scenario: null, message: 'No scenario today yet' });
@@ -106,6 +117,10 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
 
 // GET /api/scenarios/packs — list available themed packs
 scenarioRoutes.get('/packs', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const locale = c.req.query('locale') || user?.locale || 'en';
+
   const packs = await db.select({
     pack: scenarios.pack,
     count: sql<number>`count(*)::int`,
@@ -115,6 +130,7 @@ scenarioRoutes.get('/packs', authMiddleware, async (c) => {
     .where(and(
       isNotNull(scenarios.pack),
       eq(scenarios.status, 'published'),
+      eq(scenarios.locale, locale),
     ))
     .groupBy(scenarios.pack);
 

@@ -1023,17 +1023,23 @@
         }
       },
       "indexes": {
-        "idx_scenarios_publish_date": {
-          "name": "idx_scenarios_publish_date",
+        "idx_scenarios_publish_date_locale": {
+          "name": "idx_scenarios_publish_date_locale",
           "columns": [
             {
               "expression": "publish_date",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
+            },
+            {
+              "expression": "locale",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
             }
           ],
-          "isUnique": false,
+          "isUnique": true,
           "concurrently": false,
           "method": "btree",
           "with": {}
@@ -1043,21 +1049,6 @@
           "columns": [
             {
               "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_scenarios_locale": {
-          "name": "idx_scenarios_locale",
-          "columns": [
-            {
-              "expression": "locale",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1086,15 +1077,7 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "scenarios_publish_date_unique": {
-          "name": "scenarios_publish_date_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "publish_date"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
