@@ -10,7 +10,9 @@
     "verdict_prompt": "Quel est votre verdict ?",
     "offline": "Hors ligne",
     "offline_hint": "Vous êtes hors ligne. Votre vote sera synchronisé lors de la reconnexion.",
-    "offline_voted": "Votre vote a été enregistré ! Les résultats apparaîtront lorsque vous serez de nouveau en ligne."
+    "offline_voted": "Votre vote a été enregistré ! Les résultats apparaîtront lorsque vous serez de nouveau en ligne.",
+    "share_my_pick": "Mon choix",
+    "share_community": "Communauté"
   },
   "verdicts": {
     "guilty": "Coupable",

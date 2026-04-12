@@ -10,7 +10,9 @@
     "verdict_prompt": "What's your verdict?",
     "offline": "Offline",
     "offline_hint": "You're offline. Your vote will be synced when you reconnect.",
-    "offline_voted": "Your vote has been saved! Results will appear when you're back online."
+    "offline_voted": "Your vote has been saved! Results will appear when you're back online.",
+    "share_my_pick": "My Pick",
+    "share_community": "Community"
   },
   "verdicts": {
     "guilty": "Guilty",

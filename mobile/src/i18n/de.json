@@ -10,7 +10,9 @@
     "verdict_prompt": "Wie lautet dein Urteil?",
     "offline": "Offline",
     "offline_hint": "Du bist offline. Deine Stimme wird synchronisiert, sobald du wieder verbunden bist.",
-    "offline_voted": "Deine Stimme wurde gespeichert! Die Ergebnisse erscheinen, wenn du wieder online bist."
+    "offline_voted": "Deine Stimme wurde gespeichert! Die Ergebnisse erscheinen, wenn du wieder online bist.",
+    "share_my_pick": "Meine Wahl",
+    "share_community": "Community"
   },
   "verdicts": {
     "guilty": "Schuldig",

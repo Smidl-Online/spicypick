@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -12,6 +12,8 @@ import { RevealAnimation } from '../../src/components/RevealAnimation';
 import { StreakBadge } from '../../src/components/StreakBadge';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { analytics } from '../../src/services/analytics';
+import { adMobInterstitial } from '../../src/services/adMob';
 
 const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 
@@ -21,22 +23,72 @@ export default function HomeScreen() {
   const { todayScenario, scenarioNumber, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading, isOffline } = useScenarioStore();
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
+  const hasTrackedView = useRef(false);
 
   useEffect(() => {
     fetchToday();
+    // Preload interstitial ad for free users
+    if (user && !user.isPremium) {
+      adMobInterstitial.load();
+    }
+  }, [user?.isPremium]);
+
+  // Track screen view once
+  useEffect(() => {
+    if (!hasTrackedView.current) {
+      analytics.screen('Home');
+      hasTrackedView.current = true;
+    }
   }, []);
+
+  const showAdForFreeUser = useCallback(async () => {
+    if (user?.isPremium) return;
+    // Show interstitial ad after reveal for free users
+    const shown = await adMobInterstitial.show();
+    if (shown) {
+      analytics.track('ad_interstitial_shown', { placement: 'post_vote_reveal' });
+    }
+  }, [user?.isPremium]);
 
   const handleVote = async (verdict: string) => {
     if (!todayScenario || voting) return;
     setVoting(true);
+
+    analytics.track('vote_submitted', {
+      scenarioId: todayScenario.id,
+      verdict,
+      scenarioNumber,
+    });
+
     try {
       const result = await vote(todayScenario.id, verdict);
       // Skip fetchProfile when offline (vote returns null)
       if (result) {
         await fetchProfile();
+
+        analytics.track('vote_result', {
+          scenarioId: todayScenario.id,
+          verdict,
+          majorityMatch: result.majorityMatch,
+          xpEarned: result.xpEarned,
+          streak: result.streak,
+          newAchievements: result.newAchievements,
+        });
+
+        // Show ad after a short delay to let the reveal animation play
+        setTimeout(() => {
+          showAdForFreeUser();
+        }, 2500);
+      } else {
+        analytics.track('vote_offline', {
+          scenarioId: todayScenario.id,
+          verdict,
+        });
       }
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error(message);
+      analytics.track('vote_error', { error: message });
     } finally {
       setVoting(false);
     }
