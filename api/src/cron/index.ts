@@ -3,6 +3,8 @@ import { publishDailyScenario } from './publishDailyScenario.js';
 import { processWeeklyLeagues } from './processWeeklyLeagues.js';
 import { sendStreakWarnings } from './sendStreakWarnings.js';
 import { generateExpertAnalysis } from './generateExpertAnalysis.js';
+import { sendDailyNotification } from './sendDailyNotification.js';
+import { sendLeagueNotifications } from './sendLeagueNotifications.js';
 
 export function startCronJobs() {
   // Publish daily scenario at midnight UTC
@@ -46,6 +48,28 @@ export function startCronJobs() {
       console.log('[CRON] Expert analysis generated.');
     } catch (err) {
       console.error('[CRON] Failed to generate expert analysis:', err);
+    }
+  });
+
+  // Send daily scenario notification at 9:00 UTC
+  cron.schedule('0 9 * * *', async () => {
+    console.log('[CRON] Sending daily scenario notifications...');
+    try {
+      await sendDailyNotification();
+      console.log('[CRON] Daily notifications sent.');
+    } catch (err) {
+      console.error('[CRON] Failed to send daily notifications:', err);
+    }
+  });
+
+  // Send league result notifications on Monday at 10:00 UTC (after league processing at 8:00)
+  cron.schedule('0 10 * * 1', async () => {
+    console.log('[CRON] Sending league result notifications...');
+    try {
+      await sendLeagueNotifications();
+      console.log('[CRON] League notifications sent.');
+    } catch (err) {
+      console.error('[CRON] Failed to send league notifications:', err);
     }
   });
 

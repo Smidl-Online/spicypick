@@ -4,6 +4,7 @@ import { db } from '../db/index.js';
 import { challenges, users, scenarios, votes } from '../db/schema.js';
 import { eq, or, and, desc } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
+import { sendPushNotification } from '../services/pushNotifications.js';
 import { AppEnv } from '../types.js';
 
 const challengeRoutes = new Hono<AppEnv>();
@@ -57,6 +58,8 @@ challengeRoutes.post('/', authMiddleware, async (c) => {
     ),
   });
 
+  const challenger = await db.query.users.findFirst({ where: eq(users.id, userId) });
+
   const [challenge] = await db.insert(challenges).values({
     challengerId: userId,
     challengedId: challengedUser.id,
@@ -64,6 +67,15 @@ challengeRoutes.post('/', authMiddleware, async (c) => {
     challengerVerdict: challengerVote?.verdict || null,
     status: 'pending',
   }).returning();
+
+  // Send push notification to challenged user
+  if (challengedUser.pushToken) {
+    sendPushNotification(challengedUser.pushToken, {
+      title: '⚡ New Challenge!',
+      body: `${challenger?.username || 'Someone'} challenged you!`,
+      data: { type: 'challenge', scenarioId, challengeId: challenge.id },
+    }).catch(() => {}); // Fire and forget
+  }
 
   return c.json({ challenge }, 201);
 });

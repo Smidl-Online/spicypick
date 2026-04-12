@@ -5,6 +5,7 @@ import { scenarios, votes, users } from '../db/schema.js';
 import { eq, sql, and, desc, lte } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
+import { sendPushNotification } from '../services/pushNotifications.js';
 import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
 
@@ -329,6 +330,17 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
 
   // Check achievements
   const newAchievements = await checkAchievements(userId);
+
+  // Send push notification for new achievements (fire and forget)
+  if (newAchievements.length > 0 && user.pushToken) {
+    sendPushNotification(user.pushToken, {
+      title: '🏆 Achievement Unlocked!',
+      body: newAchievements.length === 1
+        ? `You unlocked: ${newAchievements[0]}`
+        : `You unlocked ${newAchievements.length} achievements!`,
+      data: { type: 'achievement' },
+    }).catch(() => {});
+  }
 
   return c.json({
     xpEarned: finalXpEarned,
