@@ -13,6 +13,9 @@ import { sendPasswordResetEmail } from '../services/email.js';
 
 const auth = new Hono<AppEnv>();
 
+// Shared rate limit store for all auth endpoints — single IP budget across /register, /login, /forgot-password
+const authRateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
 function hashRefreshToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -43,7 +46,7 @@ function generateTokens(userId: string, email: string) {
 }
 
 // POST /api/auth/register
-auth.post('/register', rateLimit(10, 60_000), async (c) => {
+auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
   let body: unknown;
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = registerSchema.safeParse(body);
@@ -88,7 +91,7 @@ auth.post('/register', rateLimit(10, 60_000), async (c) => {
 });
 
 // POST /api/auth/login
-auth.post('/login', rateLimit(10, 60_000), async (c) => {
+auth.post('/login', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
   let body: unknown;
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = loginSchema.safeParse(body);
