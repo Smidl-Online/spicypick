@@ -22,8 +22,7 @@ RUN npm install --omit=dev
 
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/drizzle.config.ts ./
-COPY --from=base /app/src/db/migrations ./src/db/migrations
-COPY --from=base /app/src/db/seed.ts ./src/db/seed.ts
+COPY --from=base /app/src/db ./src/db
 COPY --from=base /app/tsconfig.json ./
 
 # Install tsx for seed script execution
