@@ -110,6 +110,7 @@ export default function HomeScreen() {
             {userVerdict && communityStats && (
               <ShareCard
                 scenarioNumber={scenarioNumber || 1}
+                scenarioId={todayScenario.id}
                 userVerdict={userVerdict}
                 communityMajority={getMajority(communityStats)}
                 communityPct={getMajorityPct(communityStats)}
