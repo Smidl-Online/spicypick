@@ -59,12 +59,14 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
     return c.json({ scenario: null, message: 'No scenario today yet' });
   }
 
-  // Scenario number = count of published scenarios up to and including today
+  // Scenario number = count of published scenarios up to and including today (for user's locale)
+  const scenarioLocale = scenario.locale;
   const [{ count: scenarioNumber }] = await db.select({ count: sql<number>`count(*)::int` })
     .from(scenarios)
     .where(and(
       eq(scenarios.status, 'published'),
       lte(scenarios.publishDate, today),
+      eq(scenarios.locale, scenarioLocale),
     ));
 
   // Check if user already voted
@@ -121,7 +123,7 @@ scenarioRoutes.get('/packs', authMiddleware, async (c) => {
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   const locale = c.req.query('locale') || user?.locale || 'en';
 
-  const packs = await db.select({
+  let packs = await db.select({
     pack: scenarios.pack,
     count: sql<number>`count(*)::int`,
     categories: sql<string[]>`array_agg(DISTINCT ${scenarios.category})`,
@@ -133,6 +135,22 @@ scenarioRoutes.get('/packs', authMiddleware, async (c) => {
       eq(scenarios.locale, locale),
     ))
     .groupBy(scenarios.pack);
+
+  // Fallback to English if no packs for user's locale
+  if (packs.length === 0 && locale !== 'en') {
+    packs = await db.select({
+      pack: scenarios.pack,
+      count: sql<number>`count(*)::int`,
+      categories: sql<string[]>`array_agg(DISTINCT ${scenarios.category})`,
+    })
+      .from(scenarios)
+      .where(and(
+        isNotNull(scenarios.pack),
+        eq(scenarios.status, 'published'),
+        eq(scenarios.locale, 'en'),
+      ))
+      .groupBy(scenarios.pack);
+  }
 
   return c.json({
     packs: packs.map((p) => ({
@@ -172,12 +190,30 @@ scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
     conditions.push(eq(scenarios.category, category));
   }
 
-  const packScenarios = await db.query.scenarios.findMany({
+  let packScenarios = await db.query.scenarios.findMany({
     where: and(...conditions),
     orderBy: [desc(scenarios.publishDate)],
     limit,
     offset,
   });
+
+  // Fallback to English if no scenarios for user's locale in this pack
+  if (packScenarios.length === 0 && locale !== 'en' && offset === 0) {
+    const enConditions = [
+      sql`${scenarios.pack} = ${packId}`,
+      eq(scenarios.status, 'published'),
+      eq(scenarios.locale, 'en'),
+    ];
+    if (category && (VALID_CATEGORIES as readonly string[]).includes(category)) {
+      enConditions.push(eq(scenarios.category, category));
+    }
+    packScenarios = await db.query.scenarios.findMany({
+      where: and(...enConditions),
+      orderBy: [desc(scenarios.publishDate)],
+      limit,
+      offset,
+    });
+  }
 
   return c.json({
     pack: packId,
@@ -229,12 +265,33 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
     conditions.push(sql`${scenarios.pack} = ${pack}`);
   }
 
-  const archived = await db.query.scenarios.findMany({
+  let archived = await db.query.scenarios.findMany({
     where: and(...conditions),
     orderBy: [desc(scenarios.publishDate)],
     limit,
     offset,
   });
+
+  // Fallback to English if no results for user's locale
+  if (archived.length === 0 && locale !== 'en' && offset === 0) {
+    const enConditions = [
+      eq(scenarios.status, 'published'),
+      lte(scenarios.publishDate, today),
+      eq(scenarios.locale, 'en'),
+    ];
+    if (category) {
+      enConditions.push(eq(scenarios.category, category));
+    }
+    if (pack) {
+      enConditions.push(sql`${scenarios.pack} = ${pack}`);
+    }
+    archived = await db.query.scenarios.findMany({
+      where: and(...enConditions),
+      orderBy: [desc(scenarios.publishDate)],
+      limit,
+      offset,
+    });
+  }
 
   return c.json({
     scenarios: archived.map((s) => ({

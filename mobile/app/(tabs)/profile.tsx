@@ -21,8 +21,9 @@ type Achievement = {
 
 export default function ProfileScreen() {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, fetchProfile } = useAuthStore();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     api<{ achievements: Achievement[] }>('/api/achievements')
@@ -30,10 +31,27 @@ export default function ProfileScreen() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      const timeout = setTimeout(() => setLoadError(true), 10000);
+      return () => clearTimeout(timeout);
+    }
+    setLoadError(false);
+  }, [user]);
+
   if (!user) {
     return (
       <SafeAreaView style={styles.container}>
-        <ProfileSkeleton />
+        {loadError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{t('profile.load_error', { defaultValue: 'Failed to load profile' })}</Text>
+            <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoadError(false); fetchProfile(); }}>
+              <Text style={styles.retryBtnText}>{t('common.retry', { defaultValue: 'Retry' })}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <ProfileSkeleton />
+        )}
       </SafeAreaView>
     );
   }
@@ -133,4 +151,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   settingsBtnText: { fontSize: 16, fontWeight: '600', color: colors.text },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  errorText: { fontSize: 16, color: colors.textSecondary, marginBottom: 16, textAlign: 'center' },
+  retryBtn: { backgroundColor: colors.primary, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24 },
+  retryBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
 });
