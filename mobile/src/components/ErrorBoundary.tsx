@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { captureError } from '../services/sentry';
-import { colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
+import type { ThemeColors } from '../theme/themes';
 
 type Props = {
   children: React.ReactNode;
+  colors: ThemeColors;
 };
 
 type State = {
@@ -12,7 +14,7 @@ type State = {
   error: Error | null;
 };
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryInner extends Component<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -29,14 +31,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      const { colors } = this.props;
       return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.bg }]}>
           <Text style={styles.emoji}>😵</Text>
-          <Text style={styles.title}>Something went wrong</Text>
-          <Text style={styles.message}>
+          <Text style={[styles.title, { color: colors.text }]}>Something went wrong</Text>
+          <Text style={[styles.message, { color: colors.textSecondary }]}>
             {this.state.error?.message || 'An unexpected error occurred'}
           </Text>
-          <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
+          <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={this.handleRetry}>
             <Text style={styles.buttonText}>Try Again</Text>
           </TouchableOpacity>
         </View>
@@ -47,10 +50,14 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
+export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  const { colors } = useTheme();
+  return <ErrorBoundaryInner colors={colors}>{children}</ErrorBoundaryInner>;
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
@@ -62,18 +69,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.text,
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
-    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
   },
   button: {
-    backgroundColor: colors.primary,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,

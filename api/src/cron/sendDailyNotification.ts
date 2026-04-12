@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import { users, scenarios } from '../db/schema.js';
-import { eq, and, isNotNull, ne } from 'drizzle-orm';
+import { eq, and, isNotNull, isNull, ne, or } from 'drizzle-orm';
 import { sendBulkPushNotifications } from '../services/pushNotifications.js';
 
 export async function sendDailyNotification() {
@@ -23,7 +23,7 @@ export async function sendDailyNotification() {
   const eligibleUsers = await db.query.users.findMany({
     where: and(
       isNotNull(users.pushToken),
-      ne(users.lastPlayedAt, today),
+      or(isNull(users.lastPlayedAt), ne(users.lastPlayedAt, today)),
     ),
   });
 
