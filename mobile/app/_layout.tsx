@@ -50,6 +50,8 @@ function RootLayoutInner() {
       router.push(`/scenario/${data.scenarioId}`);
     } else if (data?.type === 'league_update') {
       router.push('/(tabs)/league');
+    } else if (data?.type === 'achievement') {
+      router.push('/(tabs)/profile');
     }
   };
 
@@ -86,9 +88,16 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
+    // Only process if the notification was tapped recently (within 5 seconds)
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
-        setTimeout(() => handleNotificationResponse(response), 500);
+        const tappedAt = response.actionIdentifier
+          ? Date.now()
+          : response.notification.date * 1000;
+        const age = Date.now() - tappedAt;
+        if (age < 5000) {
+          setTimeout(() => handleNotificationResponse(response), 500);
+        }
       }
     });
 
