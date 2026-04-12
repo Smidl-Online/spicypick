@@ -83,6 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // correctly tags analytics events (not just login/register)
       analytics.identify(user.id);
     } catch {
+      analytics.reset();
       set({ user: null, isAuthenticated: false });
     }
   },

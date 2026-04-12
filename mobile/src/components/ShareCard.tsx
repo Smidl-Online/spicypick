@@ -43,13 +43,14 @@ export function ShareCard({ scenarioNumber, scenarioId, userVerdict, communityMa
     try {
       const uri = await viewShotRef.current?.capture?.();
       if (uri) {
+        await Sharing.shareAsync(uri, { mimeType: 'image/png' });
+        // Track after shareAsync so cancelled shares are not counted
         analytics.track('share_card_shared', {
           scenarioNumber,
           scenarioId,
           userVerdict,
           platform: Platform.OS,
         });
-        await Sharing.shareAsync(uri, { mimeType: 'image/png' });
       }
     } catch (err) {
       console.error('Share failed:', err);

@@ -93,6 +93,11 @@ class AdMobInterstitialService {
         keywords: ['social', 'game', 'quiz'],
       });
 
+      // Unsubscribe previous listeners before registering new ones (prevents leaks on reload)
+      this.unsubscribeLoaded?.();
+      this.unsubscribeClosed?.();
+      this.unsubscribeError?.();
+
       this.unsubscribeLoaded = ad.addAdEventListener(AdEventType.LOADED, () => {
         this.state.loaded = true;
         this.state.loading = false;
