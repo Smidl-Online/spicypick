@@ -43,8 +43,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
-      await get().fetchProfile();
       analytics.identify(data.user.id, { email: data.user.email, username: data.user.username });
+      await get().fetchProfile();
       analytics.track('user_logged_in', { method: 'email' });
     } finally {
       set({ isLoading: false });
@@ -60,8 +60,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
-      await get().fetchProfile();
       analytics.identify(data.user.id, { email: data.user.email, username: data.user.username });
+      await get().fetchProfile();
       analytics.track('user_registered', { method: 'email' });
     } finally {
       set({ isLoading: false });

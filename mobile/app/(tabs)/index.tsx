@@ -27,7 +27,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchToday();
-    // Preload interstitial ad for free users
+  }, []);
+
+  // Preload interstitial ad for free users
+  useEffect(() => {
     if (user && !user.isPremium) {
       adMobInterstitial.load();
     }

@@ -58,6 +58,7 @@ class AdMobInterstitialService {
   private interstitialAd: { show: () => Promise<void>; load: () => void } | null = null;
   private unsubscribeLoaded: (() => void) | null = null;
   private unsubscribeClosed: (() => void) | null = null;
+  private unsubscribeError: (() => void) | null = null;
 
   /**
    * Attempt to load an interstitial ad.
@@ -92,6 +93,14 @@ class AdMobInterstitialService {
         this.state.loaded = false;
         // Preload next ad
         this.load();
+      });
+
+      this.unsubscribeError = ad.addAdEventListener(AdEventType.ERROR, () => {
+        if (__DEV__) {
+          console.log('[AdMob] Interstitial ad failed to load');
+        }
+        this.state.loading = false;
+        this.state.loaded = false;
       });
 
       ad.load();
@@ -135,6 +144,7 @@ class AdMobInterstitialService {
   destroy(): void {
     this.unsubscribeLoaded?.();
     this.unsubscribeClosed?.();
+    this.unsubscribeError?.();
     this.interstitialAd = null;
     this.state = { loaded: false, loading: false };
   }

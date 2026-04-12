@@ -2,7 +2,7 @@ import React, { useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import * as Linking from 'expo-linking';
+
 import { useTheme } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../services/analytics';
@@ -14,11 +14,11 @@ const VERDICT_EMOJI: Record<string, string> = {
   both_wrong: '⚡',
 };
 
-const VERDICT_LABELS: Record<string, string> = {
-  guilty: 'Guilty',
-  not_guilty: 'Not Guilty',
-  complicated: "It's Complicated",
-  both_wrong: 'Both Wrong',
+const VERDICT_KEYS: Record<string, string> = {
+  guilty: 'verdicts.guilty',
+  not_guilty: 'verdicts.not_guilty',
+  complicated: 'verdicts.complicated',
+  both_wrong: 'verdicts.both_wrong',
 };
 
 type Props = {
@@ -75,7 +75,7 @@ export function ShareCard({ scenarioNumber, scenarioId, userVerdict, communityMa
           <View style={styles.emojiCenter}>
             <Text style={styles.bigEmoji}>{userEmoji}</Text>
             <Text style={[styles.verdictLabel, { color: colors.text }]}>
-              {VERDICT_LABELS[userVerdict] || userVerdict}
+              {VERDICT_KEYS[userVerdict] ? t(VERDICT_KEYS[userVerdict]) : userVerdict}
             </Text>
           </View>
 
