@@ -24,6 +24,7 @@ export default function HomeScreen() {
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
   const hasTrackedView = useRef(false);
+  const adTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchToday();
@@ -35,6 +36,15 @@ export default function HomeScreen() {
       adMobInterstitial.load();
     }
   }, [user?.isPremium]);
+
+  // Clean up ad timer on unmount
+  useEffect(() => {
+    return () => {
+      if (adTimerRef.current) {
+        clearTimeout(adTimerRef.current);
+      }
+    };
+  }, []);
 
   // Track screen view once
   useEffect(() => {
@@ -79,8 +89,9 @@ export default function HomeScreen() {
         });
 
         // Show ad after a short delay to let the reveal animation play
-        setTimeout(() => {
+        adTimerRef.current = setTimeout(() => {
           showAdForFreeUser();
+          adTimerRef.current = null;
         }, 2500);
       } else {
         analytics.track('vote_offline', {

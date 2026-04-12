@@ -24,11 +24,13 @@ class AnalyticsService {
   async init(): Promise<void> {
     if (this.initialized) return;
 
-    // Load queued events from storage
+    // Load queued events from storage — merge with any events enqueued before init
     try {
       const stored = await AsyncStorage.getItem(QUEUE_KEY);
       if (stored) {
-        this.queue = JSON.parse(stored);
+        const persisted: AnalyticsEvent[] = JSON.parse(stored);
+        // Prepend persisted events, then append any already enqueued during startup
+        this.queue = [...persisted, ...this.queue].slice(0, MAX_QUEUE_SIZE);
       }
     } catch {
       // Ignore storage errors

@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
-      analytics.identify(data.user.id, { email: data.user.email, username: data.user.username });
+      analytics.identify(data.user.id);
       await get().fetchProfile();
       analytics.track('user_logged_in', { method: 'email' });
     } finally {
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
-      analytics.identify(data.user.id, { email: data.user.email, username: data.user.username });
+      analytics.identify(data.user.id);
       await get().fetchProfile();
       analytics.track('user_registered', { method: 'email' });
     } finally {
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user, isAuthenticated: true });
       // Re-identify on every profile fetch so app resume with existing session
       // correctly tags analytics events (not just login/register)
-      analytics.identify(user.id, { email: user.email, username: user.username });
+      analytics.identify(user.id);
     } catch {
       set({ user: null, isAuthenticated: false });
     }
