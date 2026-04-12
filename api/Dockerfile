@@ -25,8 +25,8 @@ COPY --from=base /app/drizzle.config.ts ./
 COPY --from=base /app/src/db ./src/db
 COPY --from=base /app/tsconfig.json ./
 
-# Install tsx for seed script execution
-RUN npm install -g tsx
+# Install tsx for seed script and drizzle-kit for migrations
+RUN npm install -g tsx drizzle-kit
 
 # Startup script: push schema + seed + start
 COPY --from=base /app/start.sh ./
