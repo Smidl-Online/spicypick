@@ -42,6 +42,17 @@ function RootLayoutInner() {
   const fetchToday = useScenarioStore((s) => s.fetchToday);
   const router = useRouter();
 
+  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
+    const data = response.notification.request.content.data;
+    if (data?.type === 'daily_scenario') {
+      router.push('/');
+    } else if (data?.type === 'challenge' && data?.scenarioId) {
+      router.push(`/scenario/${data.scenarioId}`);
+    } else if (data?.type === 'league_update') {
+      router.push('/(tabs)/league');
+    }
+  };
+
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
     fetchProfile();
@@ -69,15 +80,15 @@ function RootLayoutInner() {
       }
     });
 
-    // Handle push notification taps
+    // Handle push notification taps (while app is running)
     const notifSub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      if (data?.type === 'daily_scenario') {
-        router.push('/');
-      } else if (data?.type === 'challenge' && data?.scenarioId) {
-        router.push(`/scenario/${data.scenarioId}`);
-      } else if (data?.type === 'league_update') {
-        router.push('/(tabs)/league');
+      handleNotificationResponse(response);
+    });
+
+    // Handle push notification tap on cold start
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        setTimeout(() => handleNotificationResponse(response), 500);
       }
     });
 
