@@ -4,6 +4,7 @@ import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withTiming } from '
 import { useTheme } from '../theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 
+// Countdown targets UTC midnight — matches server-side cron that publishes new scenarios at 00:00 UTC
 function getTimeUntilMidnightUTC(): { hours: number; minutes: number; seconds: number; totalMs: number } {
   const now = new Date();
   const tomorrow = new Date(Date.UTC(

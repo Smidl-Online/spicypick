@@ -79,6 +79,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await api<User>('/api/users/me');
       set({ user, isAuthenticated: true });
+      // Re-identify on every profile fetch so app resume with existing session
+      // correctly tags analytics events (not just login/register)
+      analytics.identify(user.id, { email: user.email, username: user.username });
     } catch {
       set({ user: null, isAuthenticated: false });
     }
