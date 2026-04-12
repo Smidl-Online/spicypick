@@ -10,7 +10,9 @@
     "verdict_prompt": "あなたの判定は？",
     "offline": "オフライン",
     "offline_hint": "オフラインです。再接続時に投票が同期されます。",
-    "offline_voted": "投票が保存されました！オンラインに戻ると結果が表示されます。"
+    "offline_voted": "投票が保存されました！オンラインに戻ると結果が表示されます。",
+    "share_my_pick": "私の選択",
+    "share_community": "コミュニティ"
   },
   "verdicts": {
     "guilty": "有罪",

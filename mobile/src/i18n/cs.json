@@ -10,7 +10,9 @@
     "verdict_prompt": "Jaký je tvůj verdikt?",
     "offline": "Offline",
     "offline_hint": "Jsi offline. Tvůj hlas bude synchronizován po připojení.",
-    "offline_voted": "Tvůj hlas byl uložen! Výsledky se zobrazí po připojení k internetu."
+    "offline_voted": "Tvůj hlas byl uložen! Výsledky se zobrazí po připojení k internetu.",
+    "share_my_pick": "Můj verdikt",
+    "share_community": "Komunita"
   },
   "verdicts": {
     "guilty": "Vinen",

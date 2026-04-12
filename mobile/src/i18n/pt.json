@@ -10,7 +10,9 @@
     "verdict_prompt": "Qual é o seu veredicto?",
     "offline": "Offline",
     "offline_hint": "Você está offline. Seu voto será sincronizado quando reconectar.",
-    "offline_voted": "Seu voto foi salvo! Os resultados aparecerão quando você estiver online novamente."
+    "offline_voted": "Seu voto foi salvo! Os resultados aparecerão quando você estiver online novamente.",
+    "share_my_pick": "Minha escolha",
+    "share_community": "Comunidade"
   },
   "verdicts": {
     "guilty": "Culpado",

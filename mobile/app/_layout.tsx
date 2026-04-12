@@ -11,6 +11,7 @@ import { initSentry } from '../src/services/sentry';
 import { startNetworkListener } from '../src/services/offlineSync';
 import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { analytics } from '../src/services/analytics';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -57,6 +58,7 @@ function RootLayoutInner() {
 
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
+    analytics.init();
     fetchProfile();
     initSentry();
     const unsubscribe = startNetworkListener(() => {

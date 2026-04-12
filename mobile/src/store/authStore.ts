@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
+import { analytics } from '../services/analytics';
 
 type User = {
   id: string;
@@ -42,7 +43,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
+      analytics.identify(data.user.id);
       await get().fetchProfile();
+      analytics.track('user_logged_in', { method: 'email' });
     } finally {
       set({ isLoading: false });
     }
@@ -57,13 +60,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       );
       await setTokens(data.accessToken, data.refreshToken);
       set({ isAuthenticated: true });
+      analytics.identify(data.user.id);
       await get().fetchProfile();
+      analytics.track('user_registered', { method: 'email' });
     } finally {
       set({ isLoading: false });
     }
   },
 
   logout: async () => {
+    analytics.track('user_logged_out');
+    analytics.reset();
     await clearTokens();
     set({ user: null, isAuthenticated: false });
   },
@@ -72,7 +79,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await api<User>('/api/users/me');
       set({ user, isAuthenticated: true });
+      // Re-identify on every profile fetch so app resume with existing session
+      // correctly tags analytics events (not just login/register)
+      analytics.identify(user.id);
     } catch {
+      analytics.reset();
       set({ user: null, isAuthenticated: false });
     }
   },
