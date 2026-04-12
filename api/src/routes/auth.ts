@@ -13,6 +13,10 @@ import { sendPasswordResetEmail } from '../services/email.js';
 
 const auth = new Hono<AppEnv>();
 
+function hashRefreshToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 const registerSchema = z.object({
   email: z.string().email().max(255),
   username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
@@ -39,7 +43,7 @@ function generateTokens(userId: string, email: string) {
 }
 
 // POST /api/auth/register
-auth.post('/register', async (c) => {
+auth.post('/register', rateLimit(10, 60_000), async (c) => {
   let body: unknown;
   try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const parsed = registerSchema.safeParse(body);
@@ -66,10 +70,10 @@ auth.post('/register', async (c) => {
 
   const tokens = generateTokens(user.id, user.email);
 
-  // Store refresh token
+  // Store hashed refresh token
   await db.insert(refreshTokens).values({
     userId: user.id,
-    token: tokens.refreshToken,
+    tokenHash: hashRefreshToken(tokens.refreshToken),
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
@@ -104,7 +108,7 @@ auth.post('/login', rateLimit(10, 60_000), async (c) => {
 
   await db.insert(refreshTokens).values({
     userId: user.id,
-    token: tokens.refreshToken,
+    tokenHash: hashRefreshToken(tokens.refreshToken),
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
@@ -132,22 +136,23 @@ auth.post('/refresh', async (c) => {
 
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { userId: string; email: string };
+    const tokenHash = hashRefreshToken(refreshToken);
 
     // Verify token exists in DB
     const stored = await db.query.refreshTokens.findFirst({
-      where: eq(refreshTokens.token, refreshToken),
+      where: eq(refreshTokens.tokenHash, tokenHash),
     });
     if (!stored) return c.json({ error: 'Invalid refresh token' }, 401);
 
     // Delete old token
-    await db.delete(refreshTokens).where(eq(refreshTokens.token, refreshToken));
+    await db.delete(refreshTokens).where(eq(refreshTokens.tokenHash, tokenHash));
 
     // Generate new tokens
     const tokens = generateTokens(payload.userId, payload.email);
 
     await db.insert(refreshTokens).values({
       userId: payload.userId,
-      token: tokens.refreshToken,
+      tokenHash: hashRefreshToken(tokens.refreshToken),
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
@@ -170,9 +175,10 @@ auth.post('/logout', authMiddleware, async (c) => {
   const refreshToken = parsed.success ? parsed.data.refreshToken : undefined;
 
   if (refreshToken) {
-    // Delete specific refresh token
+    // Delete specific refresh token by hash
+    const tokenHash = hashRefreshToken(refreshToken);
     await db.delete(refreshTokens).where(
-      and(eq(refreshTokens.userId, userId), eq(refreshTokens.token, refreshToken)),
+      and(eq(refreshTokens.userId, userId), eq(refreshTokens.tokenHash, tokenHash)),
     );
   } else {
     // Delete all refresh tokens for this user
