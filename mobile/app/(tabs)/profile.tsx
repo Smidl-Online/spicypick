@@ -8,6 +8,7 @@ import { StreakBadge } from '../../src/components/StreakBadge';
 import { api } from '../../src/api/client';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
+import { ProfileSkeleton } from '../../src/components/SkeletonLoader';
 
 type Achievement = {
   id: string;
@@ -29,7 +30,13 @@ export default function ProfileScreen() {
       .catch(() => {});
   }, []);
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ProfileSkeleton />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>

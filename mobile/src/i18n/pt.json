@@ -75,12 +75,27 @@
     "logout": "Sair",
     "archive": "Arquivo de cenários"
   },
+  "packs": {
+    "title": "Pacotes temáticos",
+    "scenarios_count": "{{count}} cenários",
+    "unlock_premium": "Desbloquear com Premium",
+    "browse": "Explorar pacote"
+  },
+  "submission": {
+    "submit": "Enviar um cenário",
+    "placeholder": "Escreva seu cenário moralmente ambíguo...",
+    "success": "Enviado! Seu cenário está sendo revisado.",
+    "auto_approved": "Seu cenário foi aprovado automaticamente!",
+    "flagged": "Seu cenário precisa de revisão manual.",
+    "min_length": "Mínimo 50 caracteres"
+  },
   "premium": {
     "title": "SpicyPick Premium",
     "price": "R$ 14,90/mês",
     "features": [
       "3 cenários por dia",
       "Arquivo completo de cenários",
+      "Pacotes de cenários temáticos",
       "Análise especializada estendida",
       "Sem anúncios",
       "3 congelamentos de sequência por mês"

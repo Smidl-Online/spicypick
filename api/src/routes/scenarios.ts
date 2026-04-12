@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
 import { scenarios, votes, users } from '../db/schema.js';
-import { eq, sql, and, desc, lte } from 'drizzle-orm';
+import { eq, sql, and, desc, lte, isNotNull } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
 import { sendPushNotification } from '../services/pushNotifications.js';
@@ -70,6 +70,8 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
         category: scenario.category,
         expertAnalysis: scenario.expertAnalysis,
         publishDate: scenario.publishDate,
+        locale: scenario.locale,
+        pack: scenario.pack,
       },
       scenarioNumber,
       voted: true,
@@ -91,9 +93,72 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
       body: scenario.body,
       category: scenario.category,
       publishDate: scenario.publishDate,
+      locale: scenario.locale,
+      pack: scenario.pack,
     },
     scenarioNumber,
     voted: false,
+  });
+});
+
+// GET /api/scenarios/packs — list available themed packs
+scenarioRoutes.get('/packs', authMiddleware, async (c) => {
+  const packs = await db.select({
+    pack: scenarios.pack,
+    count: sql<number>`count(*)::int`,
+    categories: sql<string[]>`array_agg(DISTINCT ${scenarios.category})`,
+  })
+    .from(scenarios)
+    .where(and(
+      isNotNull(scenarios.pack),
+      eq(scenarios.status, 'published'),
+    ))
+    .groupBy(scenarios.pack);
+
+  return c.json({
+    packs: packs.map((p) => ({
+      id: p.pack,
+      name: p.pack,
+      scenarioCount: p.count,
+      categories: p.categories,
+    })),
+  });
+});
+
+// GET /api/scenarios/packs/:packId — get scenarios from a themed pack (premium only)
+scenarioRoutes.get('/packs/:packId', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const packId = c.req.param('packId');
+  const category = c.req.query('category');
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const isPremiumActive = user?.isPremium && (!user.premiumUntil || new Date(user.premiumUntil) > new Date());
+  if (!isPremiumActive) {
+    return c.json({ error: 'Premium subscription required for themed packs' }, 403);
+  }
+
+  const conditions = [
+    sql`${scenarios.pack} = ${packId}`,
+    eq(scenarios.status, 'published'),
+  ];
+  if (category && (VALID_CATEGORIES as readonly string[]).includes(category)) {
+    conditions.push(eq(scenarios.category, category));
+  }
+
+  const packScenarios = await db.query.scenarios.findMany({
+    where: and(...conditions),
+    orderBy: [desc(scenarios.publishDate)],
+  });
+
+  return c.json({
+    pack: packId,
+    scenarios: packScenarios.map((s) => ({
+      id: s.id,
+      title: s.title,
+      category: s.category,
+      publishDate: s.publishDate,
+      totalVotes: s.totalVotes,
+    })),
   });
 });
 
@@ -105,6 +170,7 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   const rawLimit = parseInt(c.req.query('limit') || '20');
   const limit = Math.min(Math.max(rawLimit || 20, 1), 50);
   const category = c.req.query('category');
+  const pack = c.req.query('pack');
 
   if (category && !(VALID_CATEGORIES as readonly string[]).includes(category)) {
     return c.json({ error: `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}` }, 400);
@@ -126,6 +192,9 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
   if (category) {
     conditions.push(eq(scenarios.category, category));
   }
+  if (pack) {
+    conditions.push(sql`${scenarios.pack} = ${pack}`);
+  }
 
   const archived = await db.query.scenarios.findMany({
     where: and(...conditions),
@@ -141,6 +210,7 @@ scenarioRoutes.get('/archive/list', authMiddleware, async (c) => {
       category: s.category,
       publishDate: s.publishDate,
       totalVotes: s.totalVotes,
+      pack: s.pack,
     })),
     page,
     limit,
@@ -179,6 +249,8 @@ scenarioRoutes.get('/:id', authMiddleware, async (c) => {
       expertAnalysis: existingVote ? scenario.expertAnalysis : null,
       outcome: existingVote ? scenario.outcome : null,
       publishDate: scenario.publishDate,
+      locale: scenario.locale,
+      pack: scenario.pack,
     },
     voted: !!existingVote,
     userVerdict: existingVote?.verdict || null,

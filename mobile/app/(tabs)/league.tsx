@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLeagueStore } from '../../src/store/leagueStore';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
+import { LeagueSkeleton } from '../../src/components/SkeletonLoader';
 
 const TIER_EMOJI: Record<string, string> = {
   bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💠',
@@ -29,7 +30,7 @@ export default function LeagueScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <LeagueSkeleton />
       </SafeAreaView>
     );
   }

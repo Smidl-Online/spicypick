@@ -14,6 +14,7 @@ import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
 import { adMobInterstitial } from '../../src/services/adMob';
+import { ScenarioSkeleton } from '../../src/components/SkeletonLoader';
 
 const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 
@@ -111,7 +112,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
-        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 100 }} />
+        <ScenarioSkeleton />
       </SafeAreaView>
     );
   }

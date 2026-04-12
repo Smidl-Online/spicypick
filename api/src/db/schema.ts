@@ -59,6 +59,7 @@ export const scenarios = pgTable('scenarios', {
   // Scheduling
   publishDate: date('publish_date').unique(),
   isPremiumBonus: boolean('is_premium_bonus').default(false).notNull(),
+  pack: varchar('pack', { length: 50 }),
 
   // Stats (denormalized for speed)
   totalVotes: integer('total_votes').default(0).notNull(),
@@ -70,10 +71,12 @@ export const scenarios = pgTable('scenarios', {
   // Meta
   source: varchar('source', { length: 50 }),
   status: varchar('status', { length: 20 }).default('draft').notNull(),
+  locale: varchar('locale', { length: 5 }).default('en').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => [
   index('idx_scenarios_publish_date').on(table.publishDate),
   index('idx_scenarios_status').on(table.status),
+  index('idx_scenarios_locale').on(table.locale),
 ]);
 
 // ============================================
