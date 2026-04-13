@@ -77,9 +77,22 @@
   },
   "packs": {
     "title": "Pacotes temáticos",
+    "subtitle": "Explore cenários por tema",
     "scenarios_count": "{{count}} cenários",
     "unlock_premium": "Desbloquear com Premium",
-    "browse": "Explorar pacote"
+    "browse": "Explorar pacote",
+    "empty": "Nenhum pacote temático disponível ainda",
+    "filter_all": "Todos",
+    "votes": "votos",
+    "no_scenarios": "Nenhum cenário neste pacote ainda",
+    "premium_required": "Recurso Premium",
+    "premium_desc": "Pacotes temáticos estão disponíveis para assinantes Premium. Desbloqueie para explorar todas as categorias e cenários.",
+    "category_workplace": "Trabalho",
+    "category_relationship": "Relacionamento",
+    "category_family": "Família",
+    "category_friends": "Amigos",
+    "category_money": "Dinheiro",
+    "category_neighbors": "Vizinhos"
   },
   "submission": {
     "submit": "Enviar um cenário",

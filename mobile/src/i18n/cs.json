@@ -77,9 +77,22 @@
   },
   "packs": {
     "title": "Tematické balíčky",
+    "subtitle": "Procházej scénáře podle tématu",
     "scenarios_count": "{{count}} scénářů",
     "unlock_premium": "Odemkni s Premium",
-    "browse": "Procházet balíček"
+    "browse": "Procházet balíček",
+    "empty": "Zatím žádné tematické balíčky",
+    "filter_all": "Vše",
+    "votes": "hlasů",
+    "no_scenarios": "V tomto balíčku zatím nejsou žádné scénáře",
+    "premium_required": "Premium funkce",
+    "premium_desc": "Tematické balíčky jsou dostupné pro Premium předplatitele. Odemkni a procházej všechny kategorie a scénáře.",
+    "category_workplace": "Práce",
+    "category_relationship": "Vztahy",
+    "category_family": "Rodina",
+    "category_friends": "Přátelé",
+    "category_money": "Peníze",
+    "category_neighbors": "Sousedé"
   },
   "submission": {
     "submit": "Odeslat scénář",
