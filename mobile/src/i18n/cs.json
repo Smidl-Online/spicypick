@@ -73,7 +73,11 @@
     "delete_confirm": "Tímto trvale smažeš svůj účet a všechna data. Tuto akci nelze vrátit zpět.",
     "premium_active": "Aktivní",
     "logout": "Odhlásit se",
-    "archive": "Archiv scénářů"
+    "archive": "Archiv scénářů",
+    "appearance": "Vzhled",
+    "theme_light": "Světlý",
+    "theme_dark": "Tmavý",
+    "theme_system": "Systém"
   },
   "packs": {
     "title": "Tematické balíčky",

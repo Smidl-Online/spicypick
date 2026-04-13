@@ -73,7 +73,11 @@
     "delete_confirm": "Isso excluirá permanentemente sua conta e todos os dados. Esta ação não pode ser desfeita.",
     "premium_active": "Ativo",
     "logout": "Sair",
-    "archive": "Arquivo de cenários"
+    "archive": "Arquivo de cenários",
+    "appearance": "Aparência",
+    "theme_light": "Claro",
+    "theme_dark": "Escuro",
+    "theme_system": "Sistema"
   },
   "packs": {
     "title": "Pacotes temáticos",

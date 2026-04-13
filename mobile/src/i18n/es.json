@@ -73,7 +73,11 @@
     "delete_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos. Esta acción no se puede deshacer.",
     "premium_active": "Activo",
     "logout": "Cerrar sesión",
-    "archive": "Archivo de escenarios"
+    "archive": "Archivo de escenarios",
+    "appearance": "Apariencia",
+    "theme_light": "Claro",
+    "theme_dark": "Oscuro",
+    "theme_system": "Sistema"
   },
   "packs": {
     "title": "Paquetes temáticos",
