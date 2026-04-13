@@ -77,9 +77,22 @@
   },
   "packs": {
     "title": "Themed Packs",
+    "subtitle": "Browse scenarios by theme",
     "scenarios_count": "{{count}} scenarios",
     "unlock_premium": "Unlock with Premium",
-    "browse": "Browse Pack"
+    "browse": "Browse Pack",
+    "empty": "No themed packs available yet",
+    "filter_all": "All",
+    "votes": "votes",
+    "no_scenarios": "No scenarios in this pack yet",
+    "premium_required": "Premium Feature",
+    "premium_desc": "Themed packs are available for Premium subscribers. Unlock to browse all categories and scenarios.",
+    "category_workplace": "Workplace",
+    "category_relationship": "Relationship",
+    "category_family": "Family",
+    "category_friends": "Friends",
+    "category_money": "Money",
+    "category_neighbors": "Neighbors"
   },
   "submission": {
     "submit": "Submit a Scenario",

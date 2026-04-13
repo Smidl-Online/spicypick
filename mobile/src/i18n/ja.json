@@ -77,9 +77,22 @@
   },
   "packs": {
     "title": "テーマパック",
+    "subtitle": "テーマ別にシナリオを閲覧",
     "scenarios_count": "{{count}}個のシナリオ",
     "unlock_premium": "プレミアムで解除",
-    "browse": "パックを見る"
+    "browse": "パックを見る",
+    "empty": "テーマパックはまだありません",
+    "filter_all": "すべて",
+    "votes": "票",
+    "no_scenarios": "このパックにはまだシナリオがありません",
+    "premium_required": "プレミアム機能",
+    "premium_desc": "テーマパックはプレミアム会員のみご利用いただけます。すべてのカテゴリとシナリオを閲覧するには解除してください。",
+    "category_workplace": "職場",
+    "category_relationship": "恋愛",
+    "category_family": "家族",
+    "category_friends": "友人",
+    "category_money": "お金",
+    "category_neighbors": "近所"
   },
   "submission": {
     "submit": "シナリオを投稿",

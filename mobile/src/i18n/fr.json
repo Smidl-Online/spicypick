@@ -77,9 +77,22 @@
   },
   "packs": {
     "title": "Packs thématiques",
+    "subtitle": "Parcourez les scénarios par thème",
     "scenarios_count": "{{count}} scénarios",
     "unlock_premium": "Débloquer avec Premium",
-    "browse": "Parcourir le pack"
+    "browse": "Parcourir le pack",
+    "empty": "Aucun pack thématique disponible pour le moment",
+    "filter_all": "Tous",
+    "votes": "votes",
+    "no_scenarios": "Aucun scénario dans ce pack pour le moment",
+    "premium_required": "Fonctionnalité Premium",
+    "premium_desc": "Les packs thématiques sont disponibles pour les abonnés Premium. Débloquez pour parcourir toutes les catégories et scénarios.",
+    "category_workplace": "Travail",
+    "category_relationship": "Relations",
+    "category_family": "Famille",
+    "category_friends": "Amis",
+    "category_money": "Argent",
+    "category_neighbors": "Voisins"
   },
   "submission": {
     "submit": "Soumettre un scénario",
