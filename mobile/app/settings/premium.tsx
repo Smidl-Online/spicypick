@@ -4,6 +4,7 @@ import { api } from '../../src/api/client';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
+import { analytics } from '../../src/services/analytics';
 
 type PremiumStatus = {
   isPremium: boolean;
@@ -38,6 +39,7 @@ export default function PremiumScreen() {
         body: { receipt: 'dev-receipt', platform: 'ios' },
       });
       await fetchProfile();
+      analytics.track('premium_subscribe', { platform: 'ios' });
       Alert.alert('Premium activated!', 'Enjoy all premium features.');
       const updatedStatus = await api<PremiumStatus>('/api/premium/status');
       setStatus(updatedStatus);
