@@ -2,6 +2,7 @@ import { db } from '../db/index.js';
 import { leagueMembers, leagues, users } from '../db/schema.js';
 import { eq, and, isNotNull, inArray } from 'drizzle-orm';
 import { sendBulkPushNotifications } from '../services/pushNotifications.js';
+import { leaguePromotion, leagueDemotion, leagueChampion, t } from '../i18n/notifications.js';
 
 export async function sendLeagueNotifications() {
   // Find leagues that ended last week
@@ -42,25 +43,30 @@ export async function sendLeagueNotifications() {
     const user = userMap.get(member.userId);
     if (!user?.pushToken) continue;
 
+    const locale = user.locale || 'en';
+
     if (member.promoted) {
+      const { title, body } = t(leaguePromotion, locale);
       messages.push({
         pushToken: user.pushToken,
-        title: '🏆 League Promotion!',
-        body: `Congratulations! You've been promoted in the league!`,
+        title,
+        body,
         data: { type: 'league_update' },
       });
     } else if (member.demoted) {
+      const { title, body } = t(leagueDemotion, locale);
       messages.push({
         pushToken: user.pushToken,
-        title: '📉 League Update',
-        body: `You've been moved down a tier. Keep voting to climb back!`,
+        title,
+        body,
         data: { type: 'league_update' },
       });
     } else if (member.finalRank === 1) {
+      const { title, body } = t(leagueChampion, locale);
       messages.push({
         pushToken: user.pushToken,
-        title: '👑 League Champion!',
-        body: `You finished #1 in your league! Amazing!`,
+        title,
+        body,
         data: { type: 'league_update' },
       });
     }

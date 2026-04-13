@@ -2,6 +2,7 @@ import { db } from '../db/index.js';
 import { users } from '../db/schema.js';
 import { and, gt, ne, isNotNull } from 'drizzle-orm';
 import { sendBulkPushNotifications } from '../services/pushNotifications.js';
+import { streakWarning, t } from '../i18n/notifications.js';
 
 export async function sendStreakWarnings() {
   const today = new Date().toISOString().split('T')[0];
@@ -21,12 +22,15 @@ export async function sendStreakWarnings() {
 
   const messages = atRiskUsers
     .filter((u) => u.pushToken)
-    .map((user) => ({
-      pushToken: user.pushToken!,
-      title: '🔥 Streak v ohrožení!',
-      body: `Tvůj ${user.currentStreak}-denní streak je v ohrožení! Zbývá pár hodin.`,
-      data: { type: 'streak_warning' } as Record<string, unknown>,
-    }));
+    .map((user) => {
+      const { title, body } = t(streakWarning, user.locale, { streak: user.currentStreak });
+      return {
+        pushToken: user.pushToken!,
+        title,
+        body,
+        data: { type: 'streak_warning' } as Record<string, unknown>,
+      };
+    });
 
   const sent = await sendBulkPushNotifications(messages);
   console.log(`[CRON] Sent ${sent}/${messages.length} streak warnings`);
