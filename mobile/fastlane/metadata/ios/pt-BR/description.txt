@@ -1,0 +1,27 @@
+SpicyPick e um jogo social diario que coloca sua bussola moral a prova. Todo dia, encare um novo cenario moralmente ambiguo e de seu veredicto: Culpado, Inocente, E complicado ou Os dois errados.
+
+COMO FUNCIONA
+Todo dia traz uma situacao nova inspirada na vida real. Leia o cenario, tome sua decisao e veja como a comunidade votou. Compare seu veredicto com a analise de especialistas e ganhe XP pelas suas escolhas.
+
+FUNCIONALIDADES PRINCIPAIS
+- Cenarios diarios: Um novo dilema moral todo dia pra te fazer pensar
+- Veredictos da comunidade: Veja como milhares de outros jogadores votaram
+- Analise de especialistas: Receba perspectivas profissionais sobre cada cenario
+- Ligas e classificacoes: Compita semanalmente, suba no ranking e conquiste promocoes
+- Sequencias e XP: Construa sequencias diarias, suba de nivel e desbloqueie conquistas
+- Desafie amigos: Envie cenarios para amigos e comparem seus veredictos
+- Pacotes tematicos: Explore colecoes de cenarios selecionados por tema
+- Envie os seus: Escreva seus proprios cenarios moralmente ambiguos para a comunidade
+
+FUNCIONALIDADES PREMIUM
+Faca upgrade para o SpicyPick Premium e tenha a experiencia completa:
+- 3 cenarios por dia em vez de 1
+- Acesso completo ao arquivo de cenarios
+- Pacotes tematicos de cenarios
+- Analise de especialistas ampliada
+- Sem anuncios
+- 3 congelamentos de sequencia por mes
+
+Disponivel em ingles, tcheco, alemao, espanhol, frances, japones e portugues.
+
+SpicyPick — Qual e o seu veredicto?

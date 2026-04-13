@@ -59,6 +59,7 @@ function RootLayoutInner() {
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
     analytics.init();
+    analytics.track('app_open');
     fetchProfile();
     initSentry();
     const unsubscribe = startNetworkListener(() => {
@@ -128,6 +129,7 @@ function RootLayoutInner() {
           <>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="scenario" />
+            <Stack.Screen name="guild" />
             <Stack.Screen name="settings" />
           </>
         )}

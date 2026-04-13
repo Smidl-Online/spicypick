@@ -236,6 +236,52 @@ export const guildMembers = pgTable('guild_members', {
 ]);
 
 // ============================================
+// EXPERIMENTS (A/B testing)
+// ============================================
+export const experiments = pgTable('experiments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  key: varchar('key', { length: 100 }).unique().notNull(), // e.g. 'notification_timing', 'reveal_animation'
+  name: varchar('name', { length: 200 }).notNull(),
+  description: text('description'),
+  variants: text('variants').notNull(), // JSON array: ["control", "variant_a", "variant_b"]
+  trafficPercent: integer('traffic_percent').default(100).notNull(), // % of users included
+  status: varchar('status', { length: 20 }).default('draft').notNull(), // draft, running, paused, completed
+  startedAt: timestamp('started_at'),
+  endedAt: timestamp('ended_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('idx_experiments_status').on(table.status),
+  uniqueIndex('idx_experiments_key').on(table.key),
+]);
+
+export const experimentAssignments = pgTable('experiment_assignments', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  experimentId: uuid('experiment_id').notNull().references(() => experiments.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  variant: varchar('variant', { length: 50 }).notNull(),
+  assignedAt: timestamp('assigned_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_exp_assignments_unique').on(table.experimentId, table.userId),
+  index('idx_exp_assignments_user').on(table.userId),
+  index('idx_exp_assignments_experiment').on(table.experimentId),
+]);
+
+export const experimentEvents = pgTable('experiment_events', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  experimentId: uuid('experiment_id').notNull().references(() => experiments.id),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  variant: varchar('variant', { length: 50 }).notNull(),
+  eventType: varchar('event_type', { length: 100 }).notNull(), // e.g. 'conversion', 'engagement', 'retention'
+  eventValue: integer('event_value').default(1).notNull(),
+  metadata: text('metadata'), // optional JSON
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  index('idx_exp_events_experiment').on(table.experimentId),
+  index('idx_exp_events_user').on(table.userId),
+  index('idx_exp_events_type').on(table.experimentId, table.eventType),
+]);
+
+// ============================================
 // RELATIONS
 // ============================================
 export const usersRelations = relations(users, ({ many }) => ({
@@ -246,6 +292,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   challengesSent: many(challenges, { relationName: 'challenger' }),
   challengesReceived: many(challenges, { relationName: 'challenged' }),
   guildMemberships: many(guildMembers),
+  experimentAssignments: many(experimentAssignments),
 }));
 
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
@@ -276,4 +323,19 @@ export const guildsRelations = relations(guilds, ({ one, many }) => ({
 export const guildMembersRelations = relations(guildMembers, ({ one }) => ({
   guild: one(guilds, { fields: [guildMembers.guildId], references: [guilds.id] }),
   user: one(users, { fields: [guildMembers.userId], references: [users.id] }),
+}));
+
+export const experimentsRelations = relations(experiments, ({ many }) => ({
+  assignments: many(experimentAssignments),
+  events: many(experimentEvents),
+}));
+
+export const experimentAssignmentsRelations = relations(experimentAssignments, ({ one }) => ({
+  experiment: one(experiments, { fields: [experimentAssignments.experimentId], references: [experiments.id] }),
+  user: one(users, { fields: [experimentAssignments.userId], references: [users.id] }),
+}));
+
+export const experimentEventsRelations = relations(experimentEvents, ({ one }) => ({
+  experiment: one(experiments, { fields: [experimentEvents.experimentId], references: [experiments.id] }),
+  user: one(users, { fields: [experimentEvents.userId], references: [users.id] }),
 }));

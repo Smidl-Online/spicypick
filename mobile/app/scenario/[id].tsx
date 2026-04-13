@@ -5,6 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { api } from '../../src/api/client';
 import { CommunityStats } from '../../src/components/CommunityStats';
 import { colors } from '../../src/theme/colors';
+import { analytics } from '../../src/services/analytics';
 
 type ScenarioDetail = {
   scenario: {
@@ -34,7 +35,14 @@ export default function ScenarioDetailScreen() {
   useEffect(() => {
     if (id) {
       api<ScenarioDetail>(`/api/scenarios/${id}`)
-        .then(setData)
+        .then((result) => {
+          setData(result);
+          analytics.track('scenario_read', {
+            scenarioId: id,
+            category: result.scenario.category,
+            source: 'detail',
+          });
+        })
         .catch(() => {})
         .finally(() => setLoading(false));
     }

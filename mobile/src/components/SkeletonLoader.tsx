@@ -169,6 +169,32 @@ export function ChallengesSkeleton() {
   );
 }
 
+export function GuildSkeleton() {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.container}>
+      {/* My guild card */}
+      <View style={{ backgroundColor: colors.bgCard, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
+        <SkeletonBlock width={140} height={20} style={{ marginBottom: 12 }} />
+        <SkeletonBlock width="60%" height={14} style={{ marginBottom: 8 }} />
+        <SkeletonBlock width={100} height={14} />
+      </View>
+
+      {/* Guild list */}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <View key={i} style={[styles.leaderboardRow, { borderBottomColor: colors.border }]}>
+          <SkeletonBlock width={28} height={16} />
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <SkeletonBlock width="50%" height={16} style={{ marginBottom: 4 }} />
+            <SkeletonBlock width="30%" height={12} />
+          </View>
+          <SkeletonBlock width={60} height={16} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { paddingHorizontal: 20, paddingTop: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },

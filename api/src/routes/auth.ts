@@ -10,6 +10,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { AppEnv } from '../types.js';
 import { sendPasswordResetEmail } from '../services/email.js';
+import { analytics } from '../services/analytics.js';
 
 const auth = new Hono<AppEnv>();
 
@@ -90,6 +91,9 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
+  analytics.identify(user.id, { email: user.email, username: user.username });
+  analytics.track('user_registered', user.id, { method: 'email' });
+
   return c.json({
     user: {
       id: user.id,
@@ -124,6 +128,8 @@ auth.post('/login', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
     tokenHash: hashRefreshToken(tokens.refreshToken),
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
+
+  analytics.track('session_start', user.id, { method: 'email' });
 
   return c.json({
     user: {

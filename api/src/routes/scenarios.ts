@@ -8,6 +8,7 @@ import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/
 import { sendPushNotification } from '../services/pushNotifications.js';
 import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
+import { analytics } from '../services/analytics.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
@@ -502,6 +503,25 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
         : `You unlocked ${newAchievements.length} achievements!`,
       data: { type: 'achievement' },
     }).catch(() => {});
+  }
+
+  // Server-side analytics
+  analytics.track('vote', userId, {
+    scenarioId,
+    verdict: parsed.data.verdict,
+    xpEarned: finalXpEarned,
+    streak: newStreak,
+    majorityMatch,
+    level: newLevel,
+  });
+
+  if (newAchievements.length > 0) {
+    for (const achievement of newAchievements) {
+      analytics.track('achievement_unlock', userId, {
+        achievementId: achievement,
+        scenarioId,
+      });
+    }
   }
 
   return c.json({
