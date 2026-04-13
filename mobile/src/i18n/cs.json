@@ -73,7 +73,20 @@
     "delete_confirm": "Tímto trvale smažeš svůj účet a všechna data. Tuto akci nelze vrátit zpět.",
     "premium_active": "Aktivní",
     "logout": "Odhlásit se",
-    "archive": "Archiv scénářů"
+    "archive": "Archiv scénářů",
+    "creator_mode": "Režim tvůrce"
+  },
+  "creator": {
+    "title": "Režim tvůrce",
+    "instructions": "Nahraj obrazovku při reagování na dnešní scénář. Optimalizováno pro vertikální formát TikToku (9:16).",
+    "start": "Spustit nahrávání",
+    "get_ready": "Připrav se...",
+    "vote_first": "Nejdříve hlasuj o dnešním scénáři pro odemčení verdiktu!",
+    "no_scenario": "Dnes žádný scénář. Přijď zítra!",
+    "show_verdict": "Ukázat verdikt",
+    "reset": "Resetovat",
+    "back_to_scenario": "Zpět na scénář",
+    "my_verdict": "Můj verdikt"
   },
   "packs": {
     "title": "Tematické balíčky",

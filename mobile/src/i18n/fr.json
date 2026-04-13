@@ -73,7 +73,20 @@
     "delete_confirm": "Cela supprimera définitivement votre compte et toutes vos données. Cette action est irréversible.",
     "premium_active": "Actif",
     "logout": "Se déconnecter",
-    "archive": "Archive des scénarios"
+    "archive": "Archive des scénarios",
+    "creator_mode": "Mode Créateur"
+  },
+  "creator": {
+    "title": "Mode Créateur",
+    "instructions": "Enregistrez votre écran en réagissant au scénario du jour. Optimisé pour le format vertical TikTok (9:16).",
+    "start": "Lancer l'enregistrement",
+    "get_ready": "Préparez-vous...",
+    "vote_first": "Votez d'abord sur le scénario du jour pour débloquer le verdict !",
+    "no_scenario": "Aucun scénario disponible aujourd'hui. Revenez demain !",
+    "show_verdict": "Afficher le verdict",
+    "reset": "Réinitialiser",
+    "back_to_scenario": "Retour au scénario",
+    "my_verdict": "Mon verdict"
   },
   "packs": {
     "title": "Packs thématiques",

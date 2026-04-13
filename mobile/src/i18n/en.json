@@ -73,7 +73,20 @@
     "delete_confirm": "This will permanently delete your account and all data. This cannot be undone.",
     "premium_active": "Active",
     "logout": "Log Out",
-    "archive": "Scenario Archive"
+    "archive": "Scenario Archive",
+    "creator_mode": "Creator Mode"
+  },
+  "creator": {
+    "title": "Creator Mode",
+    "instructions": "Record your screen while reacting to today's scenario. Optimized for TikTok vertical format (9:16).",
+    "start": "Start Recording",
+    "get_ready": "Get ready...",
+    "vote_first": "Vote on today's scenario first to unlock the verdict reveal!",
+    "no_scenario": "No scenario available today. Come back tomorrow!",
+    "show_verdict": "Show Verdict",
+    "reset": "Reset",
+    "back_to_scenario": "Back to Scenario",
+    "my_verdict": "My Verdict"
   },
   "packs": {
     "title": "Themed Packs",

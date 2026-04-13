@@ -73,7 +73,20 @@
     "delete_confirm": "Esto eliminará permanentemente tu cuenta y todos los datos. Esta acción no se puede deshacer.",
     "premium_active": "Activo",
     "logout": "Cerrar sesión",
-    "archive": "Archivo de escenarios"
+    "archive": "Archivo de escenarios",
+    "creator_mode": "Modo Creador"
+  },
+  "creator": {
+    "title": "Modo Creador",
+    "instructions": "Graba tu pantalla mientras reaccionas al escenario de hoy. Optimizado para formato vertical de TikTok (9:16).",
+    "start": "Iniciar grabación",
+    "get_ready": "Prepárate...",
+    "vote_first": "¡Vota primero en el escenario de hoy para desbloquear el veredicto!",
+    "no_scenario": "No hay escenario disponible hoy. ¡Vuelve mañana!",
+    "show_verdict": "Mostrar veredicto",
+    "reset": "Reiniciar",
+    "back_to_scenario": "Volver al escenario",
+    "my_verdict": "Mi veredicto"
   },
   "packs": {
     "title": "Paquetes temáticos",
