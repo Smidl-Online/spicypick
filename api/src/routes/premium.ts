@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
 import { validateReceipt, getSubscriptionStatus } from '../services/revenueCat.js';
+import { analytics } from '../services/analytics.js';
 
 const premiumRoutes = new Hono<AppEnv>();
 
@@ -43,6 +44,12 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
         updatedAt: new Date(),
       }).where(eq(users.id, userId));
 
+      analytics.track('premium_subscribe', userId, {
+        platform,
+        productId: result.productId,
+        premiumUntil: result.expiresAt.toISOString(),
+      });
+
       return c.json({
         message: 'Premium activated',
         premiumUntil: result.expiresAt.toISOString(),
@@ -70,6 +77,12 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
     streakFreezes: 3,
     updatedAt: new Date(),
   }).where(eq(users.id, userId));
+
+  analytics.track('premium_subscribe', userId, {
+    platform,
+    devMode: true,
+    premiumUntil: premiumUntil.toISOString(),
+  });
 
   return c.json({
     message: 'Premium activated (dev mode)',

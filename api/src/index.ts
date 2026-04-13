@@ -19,6 +19,7 @@ import deeplinkRoutes from './routes/deeplink.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
+import { analytics } from './services/analytics.js';
 
 // Validate required env variables at startup
 const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
@@ -71,8 +72,9 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal Server Error' }, 500);
 });
 
-// Initialize Sentry
+// Initialize services
 initSentry();
+analytics.init();
 
 // Start server
 const port = parseInt(process.env.PORT || '3000');

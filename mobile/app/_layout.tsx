@@ -59,6 +59,7 @@ function RootLayoutInner() {
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
     analytics.init();
+    analytics.track('app_open');
     fetchProfile();
     initSentry();
     const unsubscribe = startNetworkListener(() => {

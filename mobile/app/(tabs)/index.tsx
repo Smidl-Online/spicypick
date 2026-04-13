@@ -47,13 +47,24 @@ export default function HomeScreen() {
     };
   }, []);
 
-  // Track screen view once
+  // Track screen view and scenario read for funnel
   useEffect(() => {
     if (!hasTrackedView.current) {
       analytics.screen('Home');
       hasTrackedView.current = true;
     }
   }, []);
+
+  useEffect(() => {
+    if (todayScenario && hasTrackedView.current) {
+      analytics.track('scenario_read', {
+        scenarioId: todayScenario.id,
+        scenarioNumber,
+        category: todayScenario.category,
+        source: 'today',
+      });
+    }
+  }, [todayScenario?.id]);
 
   const showAdForFreeUser = useCallback(async () => {
     if (user?.isPremium) return;
