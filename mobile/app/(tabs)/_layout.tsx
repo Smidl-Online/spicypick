@@ -40,6 +40,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="guild"
+        options={{
+          title: 'Guild',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏰" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="challenges"
         options={{
           title: 'Challenges',

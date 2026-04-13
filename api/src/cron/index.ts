@@ -29,12 +29,12 @@ export function startCronJobs() {
     }
   });
 
-  // Send streak warnings at 20:00 UTC (for UTC users — timezone-aware version would iterate per-tz)
-  cron.schedule('0 20 * * *', async () => {
-    console.log('[CRON] Sending streak warnings...');
+  // Send streak warnings at 20:00 LOCAL time (runs hourly, filters by timezone)
+  cron.schedule('0 * * * *', async () => {
+    console.log('[CRON] Checking streak warnings for current timezone group...');
     try {
       await sendStreakWarnings();
-      console.log('[CRON] Streak warnings sent.');
+      console.log('[CRON] Streak warnings check done.');
     } catch (err) {
       console.error('[CRON] Failed to send streak warnings:', err);
     }
@@ -51,23 +51,23 @@ export function startCronJobs() {
     }
   });
 
-  // Send daily scenario notification at 9:00 UTC
-  cron.schedule('0 9 * * *', async () => {
-    console.log('[CRON] Sending daily scenario notifications...');
+  // Send daily scenario notification at 9:00 LOCAL time (runs hourly, filters by timezone)
+  cron.schedule('5 * * * *', async () => {
+    console.log('[CRON] Checking daily notifications for current timezone group...');
     try {
       await sendDailyNotification();
-      console.log('[CRON] Daily notifications sent.');
+      console.log('[CRON] Daily notifications check done.');
     } catch (err) {
       console.error('[CRON] Failed to send daily notifications:', err);
     }
   });
 
-  // Send league result notifications on Monday at 10:00 UTC (after league processing at 8:00)
-  cron.schedule('0 10 * * 1', async () => {
-    console.log('[CRON] Sending league result notifications...');
+  // Send league result notifications at Monday 10:00 LOCAL time (runs hourly, filters by timezone + day)
+  cron.schedule('10 * * * *', async () => {
+    console.log('[CRON] Checking league notifications for current timezone group...');
     try {
       await sendLeagueNotifications();
-      console.log('[CRON] League notifications sent.');
+      console.log('[CRON] League notifications check done.');
     } catch (err) {
       console.error('[CRON] Failed to send league notifications:', err);
     }

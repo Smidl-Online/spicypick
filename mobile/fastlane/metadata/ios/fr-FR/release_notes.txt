@@ -1,0 +1,4 @@
+- Nouveaux scenarios quotidiens pleins de dilemmes moraux
+- Systeme de ligues et classements ameliore
+- Corrections de bugs et ameliorations de performance
+- Merci de jouer a SpicyPick !
