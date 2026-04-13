@@ -14,6 +14,8 @@ import premiumRoutes from './routes/premium.js';
 import reportRoutes from './routes/reports.js';
 import guildRoutes from './routes/guilds.js';
 import adminRoutes from './routes/admin.js';
+import wellknownRoutes from './routes/wellknown.js';
+import deeplinkRoutes from './routes/deeplink.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
@@ -40,6 +42,12 @@ app.use('/admin/*', rateLimit(30, 60_000));
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// Well-known files (universal links / app links verification)
+app.route('/.well-known', wellknownRoutes);
+
+// Deep link fallback pages (scenario web preview + app store redirect)
+app.route('/', deeplinkRoutes);
 
 // Routes
 app.route('/api/auth', authRoutes);
