@@ -73,7 +73,11 @@
     "delete_confirm": "Cela supprimera définitivement votre compte et toutes vos données. Cette action est irréversible.",
     "premium_active": "Actif",
     "logout": "Se déconnecter",
-    "archive": "Archive des scénarios"
+    "archive": "Archive des scénarios",
+    "appearance": "Apparence",
+    "theme_light": "Clair",
+    "theme_dark": "Sombre",
+    "theme_system": "Système"
   },
   "packs": {
     "title": "Packs thématiques",

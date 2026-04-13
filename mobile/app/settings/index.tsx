@@ -7,11 +7,20 @@ import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, saveLocale } from '../../src/i18n';
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
+const THEME_OPTIONS: { mode: ThemeMode; icon: string; labelKey: string }[] = [
+  { mode: 'light', icon: '☀️', labelKey: 'settings.theme_light' },
+  { mode: 'dark', icon: '🌙', labelKey: 'settings.theme_dark' },
+  { mode: 'system', icon: '📱', labelKey: 'settings.theme_system' },
+];
+
 export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, mode: themeMode, setMode: setThemeMode } = useTheme();
   const { logout, user } = useAuthStore();
   const [langPickerVisible, setLangPickerVisible] = useState(false);
+  const [themePickerVisible, setThemePickerVisible] = useState(false);
 
   const currentLang = SUPPORTED_LANGUAGES.find((l) => l.code === i18n.language) || SUPPORTED_LANGUAGES[0];
 
@@ -94,7 +103,40 @@ export default function SettingsScreen() {
         <Text style={chevron}>›</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={row} onPress={() => setThemePickerVisible(true)}>
+        <Text style={styles.rowIcon}>🎨</Text>
+        <Text style={rowText}>{t('settings.appearance')}</Text>
+        <Text style={{ fontSize: 14, color: colors.textMuted, marginRight: 8 }}>
+          {t(`settings.theme_${themeMode}`)}
+        </Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
       <View style={{ height: 32 }} />
+
+      <Modal visible={themePickerVisible} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: colors.bgCard, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 40 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text, textAlign: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>{t('settings.appearance')}</Text>
+            {THEME_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.mode}
+                style={[{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: colors.border }, option.mode === themeMode && { backgroundColor: colors.primary + '15' }]}
+                onPress={() => { setThemeMode(option.mode); setThemePickerVisible(false); }}
+              >
+                <Text style={{ fontSize: 20, marginRight: 12 }}>{option.icon}</Text>
+                <Text style={[{ fontSize: 16, color: colors.text, flex: 1 }, option.mode === themeMode && { fontWeight: '700', color: colors.primary }]}>
+                  {t(option.labelKey)}
+                </Text>
+                {option.mode === themeMode && <Text style={{ fontSize: 18, color: colors.primary, fontWeight: '700' }}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ paddingVertical: 16, alignItems: 'center' }} onPress={() => setThemePickerVisible(false)}>
+              <Text style={{ fontSize: 16, color: colors.textMuted }}>{t('common.cancel')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={langPickerVisible} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>

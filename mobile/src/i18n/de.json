@@ -73,7 +73,11 @@
     "delete_confirm": "Dadurch werden Ihr Konto und alle Daten dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
     "premium_active": "Aktiv",
     "logout": "Abmelden",
-    "archive": "Szenario-Archiv"
+    "archive": "Szenario-Archiv",
+    "appearance": "Darstellung",
+    "theme_light": "Hell",
+    "theme_dark": "Dunkel",
+    "theme_system": "System"
   },
   "packs": {
     "title": "Themenpakete",
