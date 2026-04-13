@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { eq, and } from 'drizzle-orm';
 import type { AppEnv } from '../types.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { adminMiddleware } from '../middleware/admin.js';
 import { db } from '../db/index.js';
 import { experiments, experimentAssignments } from '../db/schema.js';
 import {
@@ -76,7 +77,7 @@ experimentRoutes.post('/track', authMiddleware, async (c) => {
 // ============================================
 // GET /:key/results — get experiment results (admin-like, but auth-protected)
 // ============================================
-experimentRoutes.get('/:key/results', authMiddleware, async (c) => {
+experimentRoutes.get('/:key/results', authMiddleware, adminMiddleware, async (c) => {
   const key = c.req.param('key')!;
   const results = await getExperimentResults(key);
 

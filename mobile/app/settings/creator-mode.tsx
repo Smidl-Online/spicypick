@@ -2,15 +2,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, StatusBar } from 'react-native';
 import Animated, {
   FadeIn,
-  FadeOut,
   FadeInUp,
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  withSpring,
   withDelay,
-  withSequence,
-  runOnJS,
   Easing,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
@@ -47,7 +43,6 @@ export default function CreatorModeScreen() {
 
   const countdownScale = useSharedValue(1);
   const countdownOpacity = useSharedValue(1);
-  const scenarioProgress = useSharedValue(0);
 
   const countdownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
