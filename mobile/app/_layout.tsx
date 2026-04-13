@@ -128,6 +128,7 @@ function RootLayoutInner() {
           <>
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="scenario" />
+            <Stack.Screen name="guild" />
             <Stack.Screen name="settings" />
           </>
         )}
