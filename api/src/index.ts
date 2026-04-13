@@ -13,10 +13,14 @@ import submissionRoutes from './routes/submissions.js';
 import premiumRoutes from './routes/premium.js';
 import reportRoutes from './routes/reports.js';
 import guildRoutes from './routes/guilds.js';
+import experimentRoutes from './routes/experiments.js';
 import adminRoutes from './routes/admin.js';
+import wellknownRoutes from './routes/wellknown.js';
+import deeplinkRoutes from './routes/deeplink.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
+import { analytics } from './services/analytics.js';
 
 // Validate required env variables at startup
 const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'] as const;
@@ -41,6 +45,12 @@ app.use('/admin/*', rateLimit(30, 60_000));
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+// Well-known files (universal links / app links verification)
+app.route('/.well-known', wellknownRoutes);
+
+// Deep link fallback pages (scenario web preview + app store redirect)
+app.route('/', deeplinkRoutes);
+
 // Routes
 app.route('/api/auth', authRoutes);
 app.route('/api/scenarios', scenarioRoutes);
@@ -52,6 +62,7 @@ app.route('/api/submissions', submissionRoutes);
 app.route('/api/premium', premiumRoutes);
 app.route('/api/reports', reportRoutes);
 app.route('/api/guilds', guildRoutes);
+app.route('/api/experiments', experimentRoutes);
 app.route('/admin', adminRoutes);
 
 // 404
@@ -63,8 +74,9 @@ app.onError((err, c) => {
   return c.json({ error: 'Internal Server Error' }, 500);
 });
 
-// Initialize Sentry
+// Initialize services
 initSentry();
+analytics.init();
 
 // Start server
 const port = parseInt(process.env.PORT || '3000');

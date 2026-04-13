@@ -1,5 +1,5 @@
 import { db } from './index.js';
-import { achievements, scenarios } from './schema.js';
+import { achievements, scenarios, experiments } from './schema.js';
 import { sql } from 'drizzle-orm';
 
 const ACHIEVEMENTS_DATA = [
@@ -151,6 +151,41 @@ async function seed() {
     }).onConflictDoNothing();
   }
   console.log(`Seeded ${SCENARIOS_DATA.length} scenarios (today + ${SCENARIOS_DATA.length - 1} days).`);
+
+  // Seed initial A/B experiments
+  const EXPERIMENTS_DATA = [
+    {
+      key: 'notification_timing',
+      name: 'Notification Timing',
+      description: 'Test optimal push notification time for daily scenario reminder',
+      variants: JSON.stringify(['control_9am', 'variant_12pm', 'variant_7pm']),
+      trafficPercent: 100,
+      status: 'running' as const,
+      startedAt: new Date(),
+    },
+    {
+      key: 'reveal_animation',
+      name: 'Reveal Animation Style',
+      description: 'Test different result reveal animations after voting',
+      variants: JSON.stringify(['control_fade', 'variant_slide', 'variant_confetti']),
+      trafficPercent: 100,
+      status: 'running' as const,
+      startedAt: new Date(),
+    },
+    {
+      key: 'xp_reward_amount',
+      name: 'XP Reward Amount',
+      description: 'Test different XP reward amounts for daily voting',
+      variants: JSON.stringify(['control_10xp', 'variant_15xp', 'variant_20xp']),
+      trafficPercent: 50,
+      status: 'draft' as const,
+    },
+  ];
+
+  for (const exp of EXPERIMENTS_DATA) {
+    await db.insert(experiments).values(exp).onConflictDoNothing();
+  }
+  console.log(`Seeded ${EXPERIMENTS_DATA.length} experiments.`);
 
   console.log('Seed complete!');
   process.exit(0);

@@ -1,0 +1,13 @@
+app_identifier("com.spicypick.app")
+
+for_platform :ios do
+  # Apple Developer Portal / App Store Connect credentials
+  # Set via environment variables:
+  # FASTLANE_APPLE_ID, FASTLANE_ITC_TEAM_ID, FASTLANE_TEAM_ID
+end
+
+for_platform :android do
+  package_name("com.spicypick.app")
+  # Google Play Console service account JSON key
+  # Set via environment variable: SUPPLY_JSON_KEY
+end
