@@ -68,7 +68,7 @@ describe('deep link fallback routes', () => {
 
   it('should handle invalid scenario ID gracefully', async () => {
     const res = await app.request('/scenario/not-a-uuid');
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(404);
 
     const html = await res.text();
     expect(html).toContain('SpicyPick');

@@ -6,36 +6,11 @@
  * their stored `timezone` value.
  */
 
-const COMMON_TIMEZONES = [
-  'Pacific/Midway',       // UTC-11
-  'Pacific/Honolulu',     // UTC-10
-  'America/Anchorage',    // UTC-9
-  'America/Los_Angeles',  // UTC-8 / -7
-  'America/Denver',       // UTC-7 / -6
-  'America/Chicago',      // UTC-6 / -5
-  'America/New_York',     // UTC-5 / -4
-  'America/Halifax',      // UTC-4 / -3
-  'America/Sao_Paulo',    // UTC-3 / -2
-  'Atlantic/South_Georgia', // UTC-2
-  'Atlantic/Azores',      // UTC-1 / 0
-  'UTC',
-  'Europe/London',        // UTC+0 / +1
-  'Europe/Prague',        // UTC+1 / +2
-  'Europe/Helsinki',      // UTC+2 / +3
-  'Europe/Moscow',        // UTC+3
-  'Asia/Dubai',           // UTC+4
-  'Asia/Karachi',         // UTC+5
-  'Asia/Kolkata',         // UTC+5:30
-  'Asia/Dhaka',           // UTC+6
-  'Asia/Bangkok',         // UTC+7
-  'Asia/Shanghai',        // UTC+8
-  'Asia/Tokyo',           // UTC+9
-  'Australia/Adelaide',   // UTC+9:30 / +10:30
-  'Australia/Sydney',     // UTC+10 / +11
-  'Pacific/Noumea',       // UTC+11
-  'Pacific/Auckland',     // UTC+12 / +13
-  'Pacific/Tongatapu',    // UTC+13
-];
+/** Full IANA timezone list from the runtime — covers all user timezones. */
+const ALL_TIMEZONES: string[] = [...Intl.supportedValuesOf('timeZone'), 'UTC'];
+
+/** Set for O(1) timezone validation. */
+export const VALID_TIMEZONES = new Set(ALL_TIMEZONES);
 
 /**
  * Returns a list of IANA timezone strings where the current local hour
@@ -47,7 +22,7 @@ export function getTimezonesForHour(targetHour: number, now?: Date): string[] {
   const d = now ?? new Date();
   const matching: string[] = [];
 
-  for (const tz of COMMON_TIMEZONES) {
+  for (const tz of ALL_TIMEZONES) {
     try {
       const hourStr = new Intl.DateTimeFormat('en-US', {
         timeZone: tz,

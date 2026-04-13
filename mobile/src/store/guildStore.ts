@@ -81,7 +81,7 @@ export const useGuildStore = create<GuildState>((set, get) => ({
   error: null,
 
   fetchGuilds: async (page = 1) => {
-    set({ isLoadingGuilds: true });
+    set({ isLoadingGuilds: true, error: null });
     try {
       const data = await api<{ guilds: GuildSummary[]; page: number }>(`/api/guilds?page=${page}&limit=20`);
       set({
@@ -89,13 +89,13 @@ export const useGuildStore = create<GuildState>((set, get) => ({
         guildsPage: data.page,
         isLoadingGuilds: false,
       });
-    } catch {
-      set({ isLoadingGuilds: false });
+    } catch (e: any) {
+      set({ isLoadingGuilds: false, error: e?.message || 'Failed to load guilds' });
     }
   },
 
   fetchMyGuild: async () => {
-    set({ isLoadingMyGuild: true });
+    set({ isLoadingMyGuild: true, error: null });
     try {
       const data = await api<MyGuildData>('/api/guilds/mine');
       set({
@@ -104,13 +104,13 @@ export const useGuildStore = create<GuildState>((set, get) => ({
         myGuildMembers: data.members ?? [],
         isLoadingMyGuild: false,
       });
-    } catch {
-      set({ isLoadingMyGuild: false });
+    } catch (e: any) {
+      set({ isLoadingMyGuild: false, error: e?.message || 'Failed to load guild' });
     }
   },
 
   fetchGuildDetail: async (id: string) => {
-    set({ isLoadingDetail: true });
+    set({ isLoadingDetail: true, error: null });
     try {
       const data = await api<{ guild: GuildDetail; members: GuildMember[] }>(`/api/guilds/${id}`);
       set({
@@ -118,8 +118,8 @@ export const useGuildStore = create<GuildState>((set, get) => ({
         guildDetailMembers: data.members,
         isLoadingDetail: false,
       });
-    } catch {
-      set({ isLoadingDetail: false });
+    } catch (e: any) {
+      set({ isLoadingDetail: false, error: e?.message || 'Failed to load guild details' });
     }
   },
 
