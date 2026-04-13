@@ -11,13 +11,30 @@ const PLAY_STORE_URL =
   'https://play.google.com/store/apps/details?id=com.spicypick.app';
 const APP_SCHEME = 'spicypick';
 
+/**
+ * Escape a string for safe embedding inside a JavaScript single-quoted string literal.
+ * Prevents XSS when interpolating user-controlled values into inline <script> blocks.
+ */
+function escapeJsString(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/</g, '\\x3c')
+    .replace(/>/g, '\\x3e')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
 function renderFallbackPage(
   scenarioId: string,
   title?: string,
   body?: string,
 ) {
-  const appLink = `${APP_SCHEME}://scenario/${scenarioId}`;
-  const universalLink = `https://spicypick.app/scenario/${scenarioId}`;
+  const safeScenarioId = escapeJsString(scenarioId);
+  const appLink = `${APP_SCHEME}://scenario/${safeScenarioId}`;
+  const htmlSafeId = scenarioId.replace(/[^a-zA-Z0-9\-]/g, '');
+  const universalLink = `https://spicypick.app/scenario/${htmlSafeId}`;
   const ogTitle = title || 'SpicyPick — Daily Moral Dilemma';
   const ogDescription =
     body?.slice(0, 160) || 'Can you handle the spiciest moral dilemma of the day?';
@@ -141,7 +158,7 @@ function renderFallbackPage(
           <h1>${ogTitle}</h1>
           <p>${ogDescription}</p>
           <div class="buttons">
-            <a href="${appLink}" class="btn btn-primary">Open in SpicyPick</a>
+            <a href="${APP_SCHEME}://scenario/${htmlSafeId}" class="btn btn-primary">Open in SpicyPick</a>
             <div class="divider">or download the app</div>
             <a href="${APP_STORE_URL}" class="btn btn-ios">
               🍎 Download on App Store
@@ -163,7 +180,7 @@ deeplink.get('/scenario/:id', async (c) => {
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(scenarioId)) {
-    return c.html(renderFallbackPage(scenarioId), 200);
+    return c.html(renderFallbackPage('invalid'), 404);
   }
 
   // Try to fetch scenario metadata for OG tags

@@ -6,6 +6,7 @@ import { eq, desc, and, sql, count } from 'drizzle-orm';
 
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
+import { VALID_TIMEZONES } from '../cron/timezoneUtils.js';
 
 const userRoutes = new Hono<AppEnv>();
 
@@ -13,7 +14,10 @@ const updateProfileSchema = z.object({
   username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/).optional(),
   avatarUrl: z.string().url().optional().nullable(),
   locale: z.string().max(5).optional(),
-  timezone: z.string().max(50).optional(),
+  timezone: z.string().max(50).refine(
+    (tz) => VALID_TIMEZONES.has(tz),
+    { message: 'Invalid IANA timezone' },
+  ).optional(),
 });
 
 // GET /api/users/me
