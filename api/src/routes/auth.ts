@@ -245,7 +245,7 @@ auth.post('/forgot-password', rateLimit(5, 60_000), async (c) => {
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       });
     });
-    await sendPasswordResetEmail(email, rawToken);
+    await sendPasswordResetEmail(email, rawToken, user.locale);
   } catch (err) {
     console.error('Password reset failed:', err);
   }

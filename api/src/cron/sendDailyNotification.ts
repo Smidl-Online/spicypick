@@ -2,6 +2,7 @@ import { db } from '../db/index.js';
 import { users, scenarios } from '../db/schema.js';
 import { eq, and, isNotNull, isNull, ne, or, inArray } from 'drizzle-orm';
 import { sendBulkPushNotifications } from '../services/pushNotifications.js';
+import { dailyScenario, t } from '../i18n/notifications.js';
 import { getTimezonesForHour, todayInTimezone } from './timezoneUtils.js';
 
 const TARGET_HOUR = 9; // 9:00 local time
@@ -50,12 +51,15 @@ export async function sendDailyNotification() {
 
   if (notYetPlayed.length === 0) return;
 
-  const messages = notYetPlayed.map((user) => ({
-    pushToken: user.pushToken!,
-    title: '🌶️ New scenario is here!',
-    body: scenario.title,
-    data: { type: 'daily_scenario', scenarioId: scenario.id } as Record<string, unknown>,
-  }));
+  const messages = notYetPlayed.map((user) => {
+    const { title, body } = t(dailyScenario, user.locale);
+    return {
+      pushToken: user.pushToken!,
+      title,
+      body,
+      data: { type: 'daily_scenario', scenarioId: scenario.id } as Record<string, unknown>,
+    };
+  });
 
   const sent = await sendBulkPushNotifications(messages);
   console.log(`[CRON] Sent ${sent}/${messages.length} daily notifications`);
