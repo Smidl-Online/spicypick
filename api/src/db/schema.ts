@@ -35,6 +35,9 @@ export const users = pgTable('users', {
   isPremium: boolean('is_premium').default(false).notNull(),
   premiumUntil: timestamp('premium_until'),
 
+  // Admin
+  isAdmin: boolean('is_admin').default(false).notNull(),
+
   // Meta
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   timezone: varchar('timezone', { length: 50 }).default('UTC').notNull(),

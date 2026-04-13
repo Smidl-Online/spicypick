@@ -91,7 +91,8 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
-  analytics.identify(user.id, { email: user.email, username: user.username });
+  const emailHash = crypto.createHash('sha256').update(user.email.toLowerCase()).digest('hex');
+  analytics.identify(user.id, { email_hash: emailHash, username: user.username });
   analytics.track('user_registered', user.id, { method: 'email' });
 
   return c.json({
