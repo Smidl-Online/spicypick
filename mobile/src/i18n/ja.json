@@ -74,10 +74,23 @@
     "premium_active": "有効",
     "logout": "ログアウト",
     "archive": "シナリオアーカイブ",
+    "creator_mode": "クリエイターモード",
     "appearance": "外観",
     "theme_light": "ライト",
     "theme_dark": "ダーク",
     "theme_system": "システム"
+  },
+  "creator": {
+    "title": "クリエイターモード",
+    "instructions": "今日のシナリオにリアクションしながら画面を録画しましょう。TikTok縦型フォーマット（9:16）に最適化されています。",
+    "start": "録画開始",
+    "get_ready": "準備して...",
+    "vote_first": "まず今日のシナリオに投票して、判決を解除しよう！",
+    "no_scenario": "今日はシナリオがありません。明日また来てください！",
+    "show_verdict": "判決を表示",
+    "reset": "リセット",
+    "back_to_scenario": "シナリオに戻る",
+    "my_verdict": "私の判決"
   },
   "packs": {
     "title": "テーマパック",

@@ -97,6 +97,12 @@ export default function SettingsScreen() {
         <Text style={chevron}>›</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={row} onPress={() => router.push('/settings/creator-mode')}>
+        <Text style={styles.rowIcon}>🎬</Text>
+        <Text style={rowText}>{t('settings.creator_mode')}</Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={row} onPress={() => router.push('/scenario/packs')}>
         <Text style={styles.rowIcon}>🎭</Text>
         <Text style={rowText}>{t('packs.title')}</Text>

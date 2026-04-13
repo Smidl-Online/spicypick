@@ -74,10 +74,23 @@
     "premium_active": "Ativo",
     "logout": "Sair",
     "archive": "Arquivo de cenários",
+    "creator_mode": "Modo Criador",
     "appearance": "Aparência",
     "theme_light": "Claro",
     "theme_dark": "Escuro",
     "theme_system": "Sistema"
+  },
+  "creator": {
+    "title": "Modo Criador",
+    "instructions": "Grave sua tela enquanto reage ao cenário de hoje. Otimizado para formato vertical do TikTok (9:16).",
+    "start": "Iniciar gravação",
+    "get_ready": "Prepare-se...",
+    "vote_first": "Vote primeiro no cenário de hoje para desbloquear o veredito!",
+    "no_scenario": "Nenhum cenário disponível hoje. Volte amanhã!",
+    "show_verdict": "Mostrar veredito",
+    "reset": "Reiniciar",
+    "back_to_scenario": "Voltar ao cenário",
+    "my_verdict": "Meu veredito"
   },
   "packs": {
     "title": "Pacotes temáticos",

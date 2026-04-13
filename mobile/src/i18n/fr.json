@@ -74,10 +74,23 @@
     "premium_active": "Actif",
     "logout": "Se déconnecter",
     "archive": "Archive des scénarios",
+    "creator_mode": "Mode Créateur",
     "appearance": "Apparence",
     "theme_light": "Clair",
     "theme_dark": "Sombre",
     "theme_system": "Système"
+  },
+  "creator": {
+    "title": "Mode Créateur",
+    "instructions": "Enregistrez votre écran en réagissant au scénario du jour. Optimisé pour le format vertical TikTok (9:16).",
+    "start": "Lancer l'enregistrement",
+    "get_ready": "Préparez-vous...",
+    "vote_first": "Votez d'abord sur le scénario du jour pour débloquer le verdict !",
+    "no_scenario": "Aucun scénario disponible aujourd'hui. Revenez demain !",
+    "show_verdict": "Afficher le verdict",
+    "reset": "Réinitialiser",
+    "back_to_scenario": "Retour au scénario",
+    "my_verdict": "Mon verdict"
   },
   "packs": {
     "title": "Packs thématiques",
