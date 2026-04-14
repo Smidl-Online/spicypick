@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/store/authStore';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { i18nReady } from '../src/i18n';
@@ -15,6 +16,8 @@ import { analytics } from '../src/services/analytics';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
 import { initRevenueCat, loginRevenueCat, checkPremiumStatus } from '../src/services/revenueCat';
 import { api } from '../src/api/client';
+
+const LAST_HANDLED_NOTIF_KEY = 'lastHandledNotificationId';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -110,15 +113,13 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // Only handle if notification was received within the last 30 seconds
-    // to prevent navigating on stale notifications from days ago
-    const COLD_START_MAX_AGE_MS = 30_000;
-    Notifications.getLastNotificationResponseAsync().then((response) => {
+    // Track last handled notification ID to avoid re-navigating on subsequent cold starts
+    Notifications.getLastNotificationResponseAsync().then(async (response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        // notification.date is Unix timestamp in seconds, Date.now() returns milliseconds
-        const notifDateMs = response.notification.date * 1000;
-        const age = Date.now() - notifDateMs;
-        if (age > 0 && age < COLD_START_MAX_AGE_MS) {
+        const notifId = response.notification.request.identifier;
+        const lastHandled = await AsyncStorage.getItem(LAST_HANDLED_NOTIF_KEY);
+        if (notifId !== lastHandled) {
+          await AsyncStorage.setItem(LAST_HANDLED_NOTIF_KEY, notifId);
           setTimeout(() => handleNotificationResponse(response), 500);
         }
       }
