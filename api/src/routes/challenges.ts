@@ -69,7 +69,7 @@ challengeRoutes.post('/', authMiddleware, async (c) => {
   }).returning();
 
   // Send push notification to challenged user
-  if (challengedUser.pushToken) {
+  if (challengedUser.pushToken && challengedUser.notifChallenges) {
     sendPushNotification(challengedUser.pushToken, {
       title: '⚡ New Challenge!',
       body: `${challenger?.username || 'Someone'} challenged you!`,

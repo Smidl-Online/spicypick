@@ -696,7 +696,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const newAchievements = await checkAchievements(userId);
 
   // Send push notification for new achievements (fire and forget)
-  if (newAchievements.length > 0 && user.pushToken) {
+  if (newAchievements.length > 0 && user.pushToken && user.notifAchievements) {
     sendPushNotification(user.pushToken, {
       title: '🏆 Achievement Unlocked!',
       body: newAchievements.length === 1

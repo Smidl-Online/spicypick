@@ -608,7 +608,7 @@ adminRoutes.post('/ai/config', async (c) => {
   try {
     await setModelConfig(useCase as AiUseCase, model);
   } catch (err) {
-    return c.html(layout('Error', `<div class="flash flash-error">Failed to save config: ${err instanceof Error ? err.message : 'database error'}</div><a href="/admin/ai/config">Back</a>`), 500);
+    return c.html(layout('Error', `<div class="flash flash-error">Failed to save config: ${escapeHtml(err instanceof Error ? err.message : 'database error')}</div><a href="/admin/ai/config">Back</a>`), 500);
   }
   return c.redirect('/admin/ai/config');
 });
