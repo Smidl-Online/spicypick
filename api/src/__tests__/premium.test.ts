@@ -111,6 +111,45 @@ describe('premium routes', () => {
       });
       expect(res.status).toBe(402);
     });
+
+    it('should accept android platform', async () => {
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'dev-receipt', platform: 'android' }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.message).toContain('dev mode');
+    });
+
+    it('should return 400 when RevenueCat validation throws', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      (validateReceipt as any).mockRejectedValueOnce(new Error('Network error'));
+
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'bad-receipt', platform: 'ios' }),
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe('Receipt validation failed');
+    });
+
+    it('should return 503 in production without REVENUECAT_API_KEY', async () => {
+      const origEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receipt: 'some-receipt', platform: 'ios' }),
+      });
+      expect(res.status).toBe(503);
+
+      process.env.NODE_ENV = origEnv;
+    });
   });
 
   describe('GET /api/premium/status', () => {
@@ -153,6 +192,46 @@ describe('premium routes', () => {
         headers: { Authorization: 'Bearer mock-token' },
       });
       expect(res.status).toBe(404);
+    });
+
+    it('should sync status from RevenueCat when configured', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      const expiresAt = new Date(Date.now() + 86400000);
+      (db.query.users.findFirst as any).mockResolvedValueOnce({
+        id: 'user-1',
+        isPremium: false,
+        premiumUntil: null,
+      });
+      (getSubscriptionStatus as any).mockResolvedValueOnce({
+        isActive: true,
+        expiresAt,
+        productId: 'premium_monthly',
+      });
+
+      const res = await app.request('/api/premium/status', {
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.isPremium).toBe(true);
+      expect(body.features).toContain('ad_free');
+    });
+
+    it('should fall back to DB when RevenueCat fails', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      (db.query.users.findFirst as any).mockResolvedValueOnce({
+        id: 'user-1',
+        isPremium: true,
+        premiumUntil: new Date(Date.now() + 86400000),
+      });
+      (getSubscriptionStatus as any).mockRejectedValueOnce(new Error('RC down'));
+
+      const res = await app.request('/api/premium/status', {
+        headers: { Authorization: 'Bearer mock-token' },
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.isPremium).toBe(true);
     });
   });
 });
