@@ -78,7 +78,8 @@
     "appearance": "Darstellung",
     "theme_light": "Hell",
     "theme_dark": "Dunkel",
-    "theme_system": "System"
+    "theme_system": "System",
+    "demographics": "Demografie"
   },
   "creator": {
     "title": "Creator-Modus",
@@ -166,6 +167,63 @@
     "error_create": "Gilde konnte nicht erstellt werden",
     "error_join": "Beitritt zur Gilde fehlgeschlagen",
     "error_leave": "Verlassen der Gilde fehlgeschlagen"
+  },
+  "prediction": {
+    "title": "Mehrheit vorhersagen",
+    "subtitle": "Wie hat die Community abgestimmt?",
+    "correct": "Richtig getippt! +{{xp}} XP",
+    "incorrect": "Diesmal nicht!",
+    "skip": "Vorhersage überspringen",
+    "stats_title": "Vorhersagen",
+    "stats_total": "{{count}} Vorhersagen",
+    "stats_correct": "{{count}} richtig",
+    "stats_accuracy": "{{percent}}% Genauigkeit",
+    "stats_xp": "{{xp}} XP aus Vorhersagen",
+    "yourPick": "Deine Vorhersage: {{verdict}}"
+  },
+  "moralProfile": {
+    "title": "Dein Moralprofil",
+    "dimensions": {
+      "forgiving": "Verzeihend",
+      "pragmatic": "Pragmatisch",
+      "empathetic": "Empathisch",
+      "confrontational": "Konfrontativ",
+      "majorityAligned": "Mainstream",
+      "consistent": "Konsistent"
+    },
+    "descriptions": {
+      "forgiving": "Verzeihend vs Streng",
+      "pragmatic": "Pragmatiker vs Idealist",
+      "empathetic": "Empathisch vs Analytisch",
+      "confrontational": "Konfrontativ vs Friedlich",
+      "majorityAligned": "Mainstream vs Unabhängig",
+      "consistent": "Konsistent vs Kontextuell"
+    },
+    "notReady": "Dein Moralprofil wird erstellt",
+    "votesNeeded": "Noch {{count}} Stimmen nötig",
+    "share": "Profil teilen",
+    "basedOn": "Basierend auf {{count}} Stimmen",
+    "revealed": "Dein Moralprofil ist fertig!"
+  },
+  "demographics": {
+    "title": "Demografie",
+    "subtitle": "Optional. Zeigt, wie verschiedene Gruppen abgestimmt haben. Alle Daten sind anonym.",
+    "tabs": { "all": "Alle", "age": "Alter", "country": "Land", "gender": "Geschlecht" },
+    "selectFilter": "Wähle einen Filter für die demografische Aufschlüsselung",
+    "noData": "Noch nicht genügend Daten für diese Gruppe",
+    "voteRequired": "Sie müssen zuerst über dieses Szenario abstimmen",
+    "birthYear": "Geburtsjahr",
+    "birthYearPlaceholder": "z.B. 1995",
+    "country": "Land",
+    "countryPlaceholder": "z.B. DE",
+    "gender": "Geschlecht",
+    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
+    "genders": { "male": "Männlich", "female": "Weiblich", "non_binary": "Nicht-binär", "prefer_not_to_say": "Keine Angabe" },
+    "premium": { "required": "Premium-Abo erforderlich", "cta": "Upgrade auf Premium um zu sehen, wie verschiedene Gruppen abgestimmt haben" },
+    "deleteTitle": "Demografische Daten löschen",
+    "deleteConfirm": "Dadurch werden Geburtsjahr, Land und Geschlecht entfernt. Deine Stimmen sind nicht betroffen.",
+    "deleteData": "Meine demografischen Daten löschen",
+    "privacyNote": "Deine Daten werden nur für anonyme Gruppenstatistiken verwendet. Gruppen mit weniger als 5 Stimmen werden ausgeblendet. Du kannst diese Daten jederzeit löschen."
   },
   "common": {
     "loading": "Laden...",

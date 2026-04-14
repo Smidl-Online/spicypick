@@ -635,4 +635,11 @@ adminRoutes.patch('/ai/config', async (c) => {
   return c.json({ updated, config });
 });
 
+// POST /admin/backfill-demographics — one-time backfill of demographic_stats from historical votes
+adminRoutes.post('/backfill-demographics', async (c) => {
+  const { backfillDemographicStats } = await import('../services/demographics.js');
+  const result = await backfillDemographicStats();
+  return c.json({ message: `Backfill complete: ${result.processed} votes processed` });
+});
+
 export default adminRoutes;

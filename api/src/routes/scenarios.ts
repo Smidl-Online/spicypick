@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { scenarios, votes, users } from '../db/schema.js';
+import { scenarios, votes, users, predictions, demographicStats } from '../db/schema.js';
 import { eq, sql, and, desc, lte, isNotNull } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
@@ -9,6 +9,8 @@ import { sendPushNotification } from '../services/pushNotifications.js';
 import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { analytics } from '../services/analytics.js';
+import { recalculateMoralProfile } from '../services/moralProfileCalculator.js';
+import { updateDemographicStats, K_ANONYMITY_THRESHOLD } from '../services/demographics.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
@@ -78,6 +80,14 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
     ),
   });
 
+  // Check if user has a prediction
+  const existingPrediction = await db.query.predictions.findFirst({
+    where: and(
+      eq(predictions.userId, userId),
+      eq(predictions.scenarioId, scenario.id),
+    ),
+  });
+
   if (existingVote) {
     return c.json({
       scenario: {
@@ -100,6 +110,11 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
         complicated: scenario.votesComplicated,
         bothWrong: scenario.votesBothWrong,
       },
+      prediction: existingPrediction ? {
+        predictedVerdict: existingPrediction.predictedVerdict,
+        isCorrect: existingPrediction.isCorrect,
+        xpEarned: existingPrediction.xpEarned,
+      } : null,
     });
   }
 
@@ -115,6 +130,10 @@ scenarioRoutes.get('/today', authMiddleware, async (c) => {
     },
     scenarioNumber,
     voted: false,
+    predicted: !!existingPrediction,
+    prediction: existingPrediction ? {
+      predictedVerdict: existingPrediction.predictedVerdict,
+    } : null,
   });
 });
 
@@ -357,6 +376,128 @@ scenarioRoutes.get('/:id', authMiddleware, async (c) => {
   });
 });
 
+// POST /api/scenarios/:id/predict
+scenarioRoutes.post('/:id/predict', authMiddleware, async (c) => {
+  const scenarioId = c.req.param('id')!;
+  const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  const parsed = verdictSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'Invalid verdict. Must be: guilty, not_guilty, complicated, both_wrong' }, 400);
+  }
+
+  const { verdict: predictedVerdict } = parsed.data;
+
+  // Check scenario exists and is published
+  const scenario = await db.query.scenarios.findFirst({
+    where: eq(scenarios.id, scenarioId),
+  });
+  if (!scenario || scenario.status !== 'published') {
+    return c.json({ error: 'Scenario not found or not published' }, 404);
+  }
+
+  // Check if user already has a prediction for this scenario
+  const existingPrediction = await db.query.predictions.findFirst({
+    where: and(
+      eq(predictions.userId, userId),
+      eq(predictions.scenarioId, scenarioId),
+    ),
+  });
+  if (existingPrediction) {
+    return c.json({ error: 'Already predicted on this scenario' }, 409);
+  }
+
+  // Check if user already voted (can't predict after voting)
+  const existingVote = await db.query.votes.findFirst({
+    where: and(
+      eq(votes.userId, userId),
+      eq(votes.scenarioId, scenarioId),
+    ),
+  });
+  if (existingVote) {
+    return c.json({ error: 'Cannot predict after voting' }, 409);
+  }
+
+  try {
+    const [prediction] = await db.insert(predictions).values({
+      userId,
+      scenarioId,
+      predictedVerdict,
+    }).returning({ id: predictions.id });
+
+    analytics.track('prediction_submitted', userId, {
+      scenarioId,
+      predictedVerdict,
+    });
+
+    return c.json({
+      predictionId: prediction.id,
+      predictedVerdict,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error && 'code' in err && (err as { code: string }).code === '23505') {
+      return c.json({ error: 'Already predicted on this scenario' }, 409);
+    }
+    throw err;
+  }
+});
+
+// GET /api/scenarios/:id/demographics — demographic breakdown of votes (premium only)
+scenarioRoutes.get('/:id/demographics', authMiddleware, async (c) => {
+  const scenarioId = c.req.param('id')!;
+  const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
+
+  const typeParam = c.req.query('type');
+  const validTypes = ['age_group', 'country', 'gender'] as const;
+  if (!typeParam || !validTypes.includes(typeParam as typeof validTypes[number])) {
+    return c.json({ error: 'Invalid type. Must be: age_group, country, gender' }, 400);
+  }
+
+  // Check user has voted on this scenario
+  const userVote = await db.query.votes.findFirst({
+    where: and(eq(votes.userId, userId), eq(votes.scenarioId, scenarioId)),
+  });
+  if (!userVote) {
+    return c.json({ error: 'You must vote on this scenario first', code: 'vote_required' }, 403);
+  }
+
+  // Premium check
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user || !user.isPremium) {
+    return c.json({ error: 'Premium subscription required', code: 'premium_required' }, 403);
+  }
+
+  // Get demographic stats for this scenario and type
+  const stats = await db.select().from(demographicStats).where(
+    and(
+      eq(demographicStats.scenarioId, scenarioId),
+      eq(demographicStats.demographicType, typeParam),
+    ),
+  );
+
+  // Apply k-anonymity filter
+  const groups = stats
+    .filter(s => s.totalVotes >= K_ANONYMITY_THRESHOLD)
+    .map(s => ({
+      value: s.demographicValue,
+      total: s.totalVotes,
+      guilty: s.votesGuilty,
+      notGuilty: s.votesNotGuilty,
+      complicated: s.votesComplicated,
+      bothWrong: s.votesBothWrong,
+    }));
+
+  return c.json({ type: typeParam, groups });
+});
+
 // POST /api/scenarios/:id/vote
 scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const scenarioId = c.req.param('id')!;
@@ -491,7 +632,67 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     await db.update(users).set({ level: newLevel }).where(eq(users.id, userId));
   }
 
-  // Check achievements
+  // Evaluate prediction if exists (BEFORE checkAchievements so prediction achievements are up-to-date)
+  const PREDICTION_XP_REWARD = 15;
+  let predictionResult: { predictedVerdict: string; isCorrect: boolean; xpEarned: number } | null = null;
+
+  const existingPrediction = await db.query.predictions.findFirst({
+    where: and(
+      eq(predictions.userId, userId),
+      eq(predictions.scenarioId, scenarioId),
+    ),
+  });
+
+  if (existingPrediction) {
+    // Majority verdict = the verdict with most votes (deterministic tie-break: alphabetical order)
+    const verdictPriority = ['both_wrong', 'complicated', 'guilty', 'not_guilty'] as const;
+    let majorityVerdict: typeof verdictPriority[number] = verdictPriority[0];
+    let majorityCount = verdictCounts[majorityVerdict] || 0;
+    for (const v of verdictPriority) {
+      const c = verdictCounts[v] || 0;
+      if (c > majorityCount) {
+        majorityVerdict = v;
+        majorityCount = c;
+      }
+    }
+
+    const isCorrect = existingPrediction.predictedVerdict === majorityVerdict;
+    const predictionXp = isCorrect ? PREDICTION_XP_REWARD : 0;
+
+    await db.update(predictions).set({
+      isCorrect,
+      xpEarned: predictionXp,
+    }).where(eq(predictions.id, existingPrediction.id));
+
+    if (isCorrect) {
+      await db.update(users).set({
+        xp: sql`${users.xp} + ${predictionXp}`,
+      }).where(eq(users.id, userId));
+
+      // Recalculate level after prediction XP
+      const [refreshedUser] = await db.select({ xp: users.xp, level: users.level }).from(users).where(eq(users.id, userId));
+      const levelAfterPrediction = calculateLevel(refreshedUser.xp);
+      if (levelAfterPrediction !== refreshedUser.level) {
+        await db.update(users).set({ level: levelAfterPrediction }).where(eq(users.id, userId));
+      }
+    }
+
+    predictionResult = {
+      predictedVerdict: existingPrediction.predictedVerdict,
+      isCorrect,
+      xpEarned: predictionXp,
+    };
+
+    analytics.track('prediction_evaluated', userId, {
+      scenarioId,
+      predictedVerdict: existingPrediction.predictedVerdict,
+      majorityVerdict,
+      isCorrect,
+      xpEarned: predictionXp,
+    });
+  }
+
+  // Check achievements (after prediction evaluation so oracle_10 / mind_reader_50 are current)
   const newAchievements = await checkAchievements(userId);
 
   // Send push notification for new achievements (fire and forget)
@@ -524,6 +725,12 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     }
   }
 
+  // Async moral profile recalculation (fire and forget)
+  recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
+
+  // Async demographic stats update (fire and forget)
+  updateDemographicStats(scenarioId, userId, verdict).catch(err => console.error('Demographic stats update failed:', err));
+
   return c.json({
     xpEarned: finalXpEarned,
     totalXp: newTotalXp,
@@ -539,6 +746,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
       bothWrong: updatedScenario.votesBothWrong,
     },
     expertAnalysis: updatedScenario.expertAnalysis,
+    prediction: predictionResult,
   });
 });
 

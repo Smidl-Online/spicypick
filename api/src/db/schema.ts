@@ -38,6 +38,11 @@ export const users = pgTable('users', {
   // Admin
   isAdmin: boolean('is_admin').default(false).notNull(),
 
+  // Demographics (optional)
+  birthYear: integer('birth_year'),
+  country: varchar('country', { length: 2 }),
+  gender: varchar('gender', { length: 20 }),
+
   // Meta
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   timezone: varchar('timezone', { length: 50 }).default('UTC').notNull(),
@@ -96,6 +101,23 @@ export const votes = pgTable('votes', {
   uniqueIndex('idx_votes_user_scenario').on(table.userId, table.scenarioId),
   index('idx_votes_user').on(table.userId),
   index('idx_votes_scenario').on(table.scenarioId),
+]);
+
+// ============================================
+// PREDICTIONS (prediction mode)
+// ============================================
+export const predictions = pgTable('predictions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  scenarioId: uuid('scenario_id').notNull().references(() => scenarios.id),
+  predictedVerdict: varchar('predicted_verdict', { length: 20 }).notNull(),
+  isCorrect: boolean('is_correct'),
+  xpEarned: integer('xp_earned').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_predictions_user_scenario').on(table.userId, table.scenarioId),
+  index('idx_predictions_user').on(table.userId),
+  index('idx_predictions_scenario').on(table.scenarioId),
 ]);
 
 // ============================================
@@ -239,6 +261,44 @@ export const guildMembers = pgTable('guild_members', {
 ]);
 
 // ============================================
+// MORAL PROFILES (personalized moral dimensions)
+// ============================================
+export const moralProfiles = pgTable('moral_profiles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  forgiving: integer('forgiving').default(50).notNull(),
+  pragmatic: integer('pragmatic').default(50).notNull(),
+  empathetic: integer('empathetic').default(50).notNull(),
+  confrontational: integer('confrontational').default(50).notNull(),
+  majorityAligned: integer('majority_aligned').default(50).notNull(),
+  consistent: integer('consistent').default(50).notNull(),
+  totalVotesAnalyzed: integer('total_votes_analyzed').default(0).notNull(),
+  lastCalculatedAt: timestamp('last_calculated_at'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_moral_profiles_user').on(table.userId),
+]);
+
+// ============================================
+// DEMOGRAPHIC STATS (aggregated vote stats by demographic group)
+// ============================================
+export const demographicStats = pgTable('demographic_stats', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  scenarioId: uuid('scenario_id').notNull().references(() => scenarios.id, { onDelete: 'cascade' }),
+  demographicType: varchar('demographic_type', { length: 20 }).notNull(), // 'age_group' | 'country' | 'gender'
+  demographicValue: varchar('demographic_value', { length: 20 }).notNull(), // '18-24' | 'CZ' | 'male' etc.
+  totalVotes: integer('total_votes').default(0).notNull(),
+  votesGuilty: integer('votes_guilty').default(0).notNull(),
+  votesNotGuilty: integer('votes_not_guilty').default(0).notNull(),
+  votesComplicated: integer('votes_complicated').default(0).notNull(),
+  votesBothWrong: integer('votes_both_wrong').default(0).notNull(),
+}, (table) => [
+  uniqueIndex('idx_demo_stats_unique').on(table.scenarioId, table.demographicType, table.demographicValue),
+  index('idx_demo_stats_scenario').on(table.scenarioId),
+  index('idx_demo_stats_type').on(table.scenarioId, table.demographicType),
+]);
+
+// ============================================
 // EXPERIMENTS (A/B testing)
 // ============================================
 export const experiments = pgTable('experiments', {
@@ -296,8 +356,9 @@ export const appConfig = pgTable('app_config', {
 // ============================================
 // RELATIONS
 // ============================================
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   votes: many(votes),
+  predictions: many(predictions),
   leagueMembers: many(leagueMembers),
   userAchievements: many(userAchievements),
   submissions: many(scenarioSubmissions),
@@ -305,15 +366,31 @@ export const usersRelations = relations(users, ({ many }) => ({
   challengesReceived: many(challenges, { relationName: 'challenged' }),
   guildMemberships: many(guildMembers),
   experimentAssignments: many(experimentAssignments),
+  moralProfile: one(moralProfiles),
+}));
+
+export const moralProfilesRelations = relations(moralProfiles, ({ one }) => ({
+  user: one(users, { fields: [moralProfiles.userId], references: [users.id] }),
 }));
 
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
   votes: many(votes),
+  predictions: many(predictions),
+  demographicStats: many(demographicStats),
+}));
+
+export const demographicStatsRelations = relations(demographicStats, ({ one }) => ({
+  scenario: one(scenarios, { fields: [demographicStats.scenarioId], references: [scenarios.id] }),
 }));
 
 export const votesRelations = relations(votes, ({ one }) => ({
   user: one(users, { fields: [votes.userId], references: [users.id] }),
   scenario: one(scenarios, { fields: [votes.scenarioId], references: [scenarios.id] }),
+}));
+
+export const predictionsRelations = relations(predictions, ({ one }) => ({
+  user: one(users, { fields: [predictions.userId], references: [users.id] }),
+  scenario: one(scenarios, { fields: [predictions.scenarioId], references: [scenarios.id] }),
 }));
 
 export const leagueMembersRelations = relations(leagueMembers, ({ one }) => ({

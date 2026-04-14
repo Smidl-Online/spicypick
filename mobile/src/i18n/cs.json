@@ -78,7 +78,8 @@
     "appearance": "Vzhled",
     "theme_light": "Světlý",
     "theme_dark": "Tmavý",
-    "theme_system": "Systém"
+    "theme_system": "Systém",
+    "demographics": "Demografie"
   },
   "creator": {
     "title": "Režim tvůrce",
@@ -166,6 +167,84 @@
     "error_create": "Nepodarilo se zalozit guildu",
     "error_join": "Nepodarilo se pripojit ke guilde",
     "error_leave": "Nepodarilo se opustit guildu"
+  },
+  "prediction": {
+    "title": "Tipni většinu",
+    "subtitle": "Jak myslíš, že hlasovala komunita?",
+    "correct": "Trefil ses! +{{xp}} XP",
+    "incorrect": "Tentokrát ne!",
+    "skip": "Přeskočit tip",
+    "stats_title": "Predikce",
+    "stats_total": "{{count}} predikcí",
+    "stats_correct": "{{count}} správných",
+    "stats_accuracy": "{{percent}}% úspěšnost",
+    "stats_xp": "{{xp}} XP z predikcí",
+    "yourPick": "Tipoval/a jsi: {{verdict}}"
+  },
+  "moralProfile": {
+    "title": "Tvůj morální profil",
+    "dimensions": {
+      "forgiving": "Odpouštějící",
+      "pragmatic": "Pragmatický",
+      "empathetic": "Empatický",
+      "confrontational": "Konfrontační",
+      "majorityAligned": "Mainstreamový",
+      "consistent": "Konzistentní"
+    },
+    "descriptions": {
+      "forgiving": "Odpouštějící vs Přísný",
+      "pragmatic": "Pragmatik vs Idealista",
+      "empathetic": "Empatický vs Analytický",
+      "confrontational": "Konfrontační vs Usmiřující",
+      "majorityAligned": "Mainstreamový vs Nezávislý",
+      "consistent": "Konzistentní vs Kontextový"
+    },
+    "notReady": "Tvůj morální profil se právě tvoří",
+    "votesNeeded": "Potřebuješ ještě {{count}} hlasování",
+    "share": "Sdílet profil",
+    "basedOn": "Na základě {{count}} hlasování",
+    "revealed": "Tvůj morální profil je připraven!"
+  },
+  "demographics": {
+    "title": "Demografie",
+    "subtitle": "Volitelné. Pomáhá zobrazit, jak hlasovaly různé skupiny. Všechna data jsou anonymní.",
+    "tabs": {
+      "all": "Všichni",
+      "age": "Věk",
+      "country": "Země",
+      "gender": "Pohlaví"
+    },
+    "selectFilter": "Vyber filtr pro zobrazení demografického rozložení",
+    "noData": "Pro tuto skupinu zatím není dostatek dat",
+    "voteRequired": "Nejprve musíte hlasovat v tomto scénáři",
+    "birthYear": "Rok narození",
+    "birthYearPlaceholder": "např. 1995",
+    "country": "Země",
+    "countryPlaceholder": "např. CZ",
+    "gender": "Pohlaví",
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Muž",
+      "female": "Žena",
+      "non_binary": "Nebinární",
+      "prefer_not_to_say": "Nechci uvádět"
+    },
+    "premium": {
+      "required": "Vyžadováno Premium předplatné",
+      "cta": "Upgraduj na Premium a podívej se, jak hlasovaly různé skupiny"
+    },
+    "deleteTitle": "Smazat demografická data",
+    "deleteConfirm": "Tímto smažeš svůj rok narození, zemi a pohlaví. Tvoje hlasy nebudou ovlivněny.",
+    "deleteData": "Smazat moje demografická data",
+    "privacyNote": "Tvoje data se používají pouze pro anonymní skupinové statistiky. Skupiny s méně než 5 hlasy jsou skryté. Data můžeš kdykoli smazat."
   },
   "common": {
     "loading": "Načítání...",

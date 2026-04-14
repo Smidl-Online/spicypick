@@ -78,7 +78,8 @@
     "appearance": "Aparência",
     "theme_light": "Claro",
     "theme_dark": "Escuro",
-    "theme_system": "Sistema"
+    "theme_system": "Sistema",
+    "demographics": "Demografia"
   },
   "creator": {
     "title": "Modo Criador",
@@ -166,6 +167,63 @@
     "error_create": "Falha ao criar guilda",
     "error_join": "Falha ao entrar na guilda",
     "error_leave": "Falha ao sair da guilda"
+  },
+  "prediction": {
+    "title": "Preveja a maioria",
+    "subtitle": "Como você acha que a comunidade votou?",
+    "correct": "Acertou! +{{xp}} XP",
+    "incorrect": "Dessa vez não!",
+    "skip": "Pular previsão",
+    "stats_title": "Previsões",
+    "stats_total": "{{count}} previsões",
+    "stats_correct": "{{count}} corretas",
+    "stats_accuracy": "{{percent}}% de acerto",
+    "stats_xp": "{{xp}} XP de previsões",
+    "yourPick": "Sua previsão: {{verdict}}"
+  },
+  "moralProfile": {
+    "title": "Seu Perfil Moral",
+    "dimensions": {
+      "forgiving": "Indulgente",
+      "pragmatic": "Pragmático",
+      "empathetic": "Empático",
+      "confrontational": "Confrontador",
+      "majorityAligned": "Convencional",
+      "consistent": "Consistente"
+    },
+    "descriptions": {
+      "forgiving": "Indulgente vs Rigoroso",
+      "pragmatic": "Pragmático vs Idealista",
+      "empathetic": "Empático vs Analítico",
+      "confrontational": "Confrontador vs Pacificador",
+      "majorityAligned": "Convencional vs Independente",
+      "consistent": "Consistente vs Contextual"
+    },
+    "notReady": "Seu perfil moral está sendo construído",
+    "votesNeeded": "Mais {{count}} votos necessários",
+    "share": "Compartilhar perfil",
+    "basedOn": "Baseado em {{count}} votos",
+    "revealed": "Seu perfil moral está pronto!"
+  },
+  "demographics": {
+    "title": "Demografia",
+    "subtitle": "Opcional. Mostra como diferentes grupos votaram. Todos os dados são anônimos.",
+    "tabs": { "all": "Todos", "age": "Idade", "country": "País", "gender": "Gênero" },
+    "selectFilter": "Selecione um filtro para ver a distribuição demográfica",
+    "noData": "Dados insuficientes para este grupo ainda",
+    "voteRequired": "Você precisa votar neste cenário primeiro",
+    "birthYear": "Ano de nascimento",
+    "birthYearPlaceholder": "ex. 1995",
+    "country": "País",
+    "countryPlaceholder": "ex. BR",
+    "gender": "Gênero",
+    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
+    "genders": { "male": "Masculino", "female": "Feminino", "non_binary": "Não-binário", "prefer_not_to_say": "Prefiro não dizer" },
+    "premium": { "required": "Assinatura Premium necessária", "cta": "Atualize para Premium para ver como diferentes grupos votaram" },
+    "deleteTitle": "Excluir dados demográficos",
+    "deleteConfirm": "Isso removerá seu ano de nascimento, país e gênero. Seus votos não serão afetados.",
+    "deleteData": "Excluir meus dados demográficos",
+    "privacyNote": "Seus dados são usados apenas para estatísticas de grupo anônimas. Grupos com menos de 5 votos ficam ocultos. Você pode excluir esses dados a qualquer momento."
   },
   "common": {
     "loading": "Carregando...",

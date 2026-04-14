@@ -26,8 +26,22 @@
     {
       "idx": 3,
       "version": "7",
+      "when": 1776156520769,
+      "tag": "0003_tired_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776163512000,
+      "tag": "0004_demographic_stats",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
       "when": 1776155414000,
-      "tag": "0003_lazy_wrecking_crew",
+      "tag": "0005_lazy_wrecking_crew",
       "breakpoints": true
     }
   ]

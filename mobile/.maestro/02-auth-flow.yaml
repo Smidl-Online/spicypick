@@ -1,0 +1,12 @@
+appId: com.spicypick.app
+---
+- launchApp
+- assertVisible:
+    text: "Sign In"
+    optional: true
+- tapOn:
+    text: "Sign In"
+    optional: true
+- assertVisible:
+    text: "Email"
+    optional: true
