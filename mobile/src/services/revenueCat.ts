@@ -50,7 +50,7 @@ export async function getOfferings(): Promise<PurchasesPackage[]> {
   return offerings.current?.availablePackages ?? [];
 }
 
-export async function purchasePremium(): Promise<{
+export async function purchasePremium(userId?: string): Promise<{
   sdkConfigured: boolean;
   platform: 'ios' | 'android';
   customerInfo: CustomerInfo;
@@ -68,6 +68,12 @@ export async function purchasePremium(): Promise<{
       platform,
       customerInfo: {} as CustomerInfo,
     };
+  }
+
+  // Ensure RC is logged in as the correct user before purchase
+  // to prevent entitlement being attached to anonymous RC user
+  if (userId) {
+    await Purchases.logIn(userId);
   }
 
   const offerings = await Purchases.getOfferings();
@@ -100,9 +106,13 @@ export async function checkPremiumStatus(): Promise<boolean> {
   return !!info.entitlements.active['premium'];
 }
 
-export async function restorePurchases(): Promise<CustomerInfo | null> {
+export async function restorePurchases(userId?: string): Promise<CustomerInfo | null> {
   await initRevenueCat();
   if (!isConfigured) return null;
+  // Ensure RC is logged in as the correct user before restore
+  if (userId) {
+    await Purchases.logIn(userId);
+  }
   return Purchases.restorePurchases();
 }
 

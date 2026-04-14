@@ -13,7 +13,7 @@ const FEATURE_EMOJIS = ['📅', '📚', '🎭', '🧠', '🚫', '❄️'];
 export default function PremiumScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { fetchProfile } = useAuthStore();
+  const { fetchProfile, user } = useAuthStore();
   const [status, setStatus] = useState<PremiumStatus | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -23,7 +23,7 @@ export default function PremiumScreen() {
   const handleSubscribe = async () => {
     setPurchasing(true);
     try {
-      const result = await purchasePremium();
+      const result = await purchasePremium(user?.id);
       if (!result) { setPurchasing(false); return; }
 
       if (!result.sdkConfigured) {
@@ -52,7 +52,7 @@ export default function PremiumScreen() {
   const handleRestore = async () => {
     setRestoring(true);
     try {
-      await restorePurchases();
+      await restorePurchases(user?.id);
       const isPremium = await checkPremiumStatus();
       if (isPremium) {
         await fetchProfile();
