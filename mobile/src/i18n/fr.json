@@ -180,6 +180,30 @@
     "stats_xp": "{{xp}} XP des prédictions",
     "yourPick": "Votre prédiction : {{verdict}}"
   },
+  "moralProfile": {
+    "title": "Ton Profil Moral",
+    "dimensions": {
+      "forgiving": "Indulgent",
+      "pragmatic": "Pragmatique",
+      "empathetic": "Empathique",
+      "confrontational": "Confrontateur",
+      "majorityAligned": "Conventionnel",
+      "consistent": "Cohérent"
+    },
+    "descriptions": {
+      "forgiving": "Indulgent vs Strict",
+      "pragmatic": "Pragmatique vs Idéaliste",
+      "empathetic": "Empathique vs Analytique",
+      "confrontational": "Confrontateur vs Pacificateur",
+      "majorityAligned": "Conventionnel vs Indépendant",
+      "consistent": "Cohérent vs Contextuel"
+    },
+    "notReady": "Ton profil moral est en construction",
+    "votesNeeded": "Encore {{count}} votes nécessaires",
+    "share": "Partager le profil",
+    "basedOn": "Basé sur {{count}} votes",
+    "revealed": "Ton profil moral est prêt !"
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue",

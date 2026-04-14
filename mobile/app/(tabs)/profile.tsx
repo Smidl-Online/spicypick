@@ -9,6 +9,7 @@ import { api } from '../../src/api/client';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
 import { ProfileSkeleton } from '../../src/components/SkeletonLoader';
+import { MoralProfileSection } from '../../src/components/MoralProfileSection';
 
 type Achievement = {
   id: string;
@@ -116,6 +117,9 @@ export default function ProfileScreen() {
             </View>
           </>
         )}
+
+        {/* Moral Profile */}
+        <MoralProfileSection />
 
         {/* Achievements */}
         <Text style={styles.sectionTitle}>{t('profile.achievements')}</Text>

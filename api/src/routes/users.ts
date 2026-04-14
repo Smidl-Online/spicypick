@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { users, votes, scenarios, predictions } from '../db/schema.js';
+import { users, votes, scenarios, predictions, moralProfiles } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
+import { MIN_VOTES, recalculateMoralProfile } from '../services/moralProfileCalculator.js';
 
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
@@ -174,6 +175,105 @@ userRoutes.get('/me/prediction-stats', authMiddleware, async (c) => {
     correctPredictions,
     accuracy,
     totalXpFromPredictions: xpResult.total,
+  });
+});
+
+// GET /api/users/me/moral-profile
+userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const profile = await db.query.moralProfiles.findFirst({
+    where: eq(moralProfiles.userId, userId),
+  });
+
+  const [voteCount] = await db.select({ count: count() }).from(votes).where(eq(votes.userId, userId));
+
+  const hasEnoughVotes = voteCount.count >= MIN_VOTES;
+
+  if (!hasEnoughVotes) {
+    return c.json({
+      profile: null,
+      totalVotesAnalyzed: 0,
+      minimumVotesRequired: MIN_VOTES,
+      isReady: false,
+      lastCalculatedAt: null,
+      votesUntilReady: Math.max(0, MIN_VOTES - voteCount.count),
+    });
+  }
+
+  // If no profile exists or profile is stale (fewer votes analyzed than current count),
+  // synchronously recalculate before responding
+  const isStale = profile && profile.totalVotesAnalyzed < voteCount.count;
+  if (!profile || isStale) {
+    try {
+      await recalculateMoralProfile(userId);
+      const recalculated = await db.query.moralProfiles.findFirst({
+        where: eq(moralProfiles.userId, userId),
+      });
+      if (recalculated) {
+        return c.json({
+          profile: {
+            forgiving: recalculated.forgiving,
+            pragmatic: recalculated.pragmatic,
+            empathetic: recalculated.empathetic,
+            confrontational: recalculated.confrontational,
+            majorityAligned: recalculated.majorityAligned,
+            consistent: recalculated.consistent,
+          },
+          totalVotesAnalyzed: recalculated.totalVotesAnalyzed,
+          minimumVotesRequired: MIN_VOTES,
+          isReady: true,
+          lastCalculatedAt: recalculated.lastCalculatedAt,
+          votesUntilReady: 0,
+        });
+      }
+    } catch (err) {
+      console.error('Moral profile recalc failed:', err);
+      // If we had a stale profile, return it rather than failing
+      if (profile) {
+        return c.json({
+          profile: {
+            forgiving: profile.forgiving,
+            pragmatic: profile.pragmatic,
+            empathetic: profile.empathetic,
+            confrontational: profile.confrontational,
+            majorityAligned: profile.majorityAligned,
+            consistent: profile.consistent,
+          },
+          totalVotesAnalyzed: profile.totalVotesAnalyzed,
+          minimumVotesRequired: MIN_VOTES,
+          isReady: true,
+          lastCalculatedAt: profile.lastCalculatedAt,
+          votesUntilReady: 0,
+        });
+      }
+    }
+    // No profile existed and recalc failed — indicate pending state
+    return c.json({
+      profile: null,
+      totalVotesAnalyzed: 0,
+      minimumVotesRequired: MIN_VOTES,
+      isReady: false,
+      lastCalculatedAt: null,
+      votesUntilReady: 0,
+      retryable: true,
+    });
+  }
+
+  return c.json({
+    profile: {
+      forgiving: profile.forgiving,
+      pragmatic: profile.pragmatic,
+      empathetic: profile.empathetic,
+      confrontational: profile.confrontational,
+      majorityAligned: profile.majorityAligned,
+      consistent: profile.consistent,
+    },
+    totalVotesAnalyzed: profile.totalVotesAnalyzed,
+    minimumVotesRequired: MIN_VOTES,
+    isReady: true,
+    lastCalculatedAt: profile.lastCalculatedAt,
+    votesUntilReady: 0,
   });
 });
 

@@ -180,6 +180,30 @@
     "stats_xp": "{{xp}} XP z predikcí",
     "yourPick": "Tipoval/a jsi: {{verdict}}"
   },
+  "moralProfile": {
+    "title": "Tvůj morální profil",
+    "dimensions": {
+      "forgiving": "Odpouštějící",
+      "pragmatic": "Pragmatický",
+      "empathetic": "Empatický",
+      "confrontational": "Konfrontační",
+      "majorityAligned": "Mainstreamový",
+      "consistent": "Konzistentní"
+    },
+    "descriptions": {
+      "forgiving": "Odpouštějící vs Přísný",
+      "pragmatic": "Pragmatik vs Idealista",
+      "empathetic": "Empatický vs Analytický",
+      "confrontational": "Konfrontační vs Usmiřující",
+      "majorityAligned": "Mainstreamový vs Nezávislý",
+      "consistent": "Konzistentní vs Kontextový"
+    },
+    "notReady": "Tvůj morální profil se právě tvoří",
+    "votesNeeded": "Potřebuješ ještě {{count}} hlasování",
+    "share": "Sdílet profil",
+    "basedOn": "Na základě {{count}} hlasování",
+    "revealed": "Tvůj morální profil je připraven!"
+  },
   "common": {
     "loading": "Načítání...",
     "error": "Něco se pokazilo",

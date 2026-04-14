@@ -180,6 +180,30 @@
     "stats_xp": "予測で{{xp}} XP獲得",
     "yourPick": "あなたの予測: {{verdict}}"
   },
+  "moralProfile": {
+    "title": "あなたのモラルプロフィール",
+    "dimensions": {
+      "forgiving": "寛容",
+      "pragmatic": "実用的",
+      "empathetic": "共感的",
+      "confrontational": "対立的",
+      "majorityAligned": "多数派",
+      "consistent": "一貫性"
+    },
+    "descriptions": {
+      "forgiving": "寛容 vs 厳格",
+      "pragmatic": "実用主義 vs 理想主義",
+      "empathetic": "共感的 vs 分析的",
+      "confrontational": "対立的 vs 平和的",
+      "majorityAligned": "多数派 vs 独立派",
+      "consistent": "一貫性 vs 状況依存"
+    },
+    "notReady": "モラルプロフィールを作成中",
+    "votesNeeded": "あと{{count}}票必要",
+    "share": "プロフィールを共有",
+    "basedOn": "{{count}}票に基づく",
+    "revealed": "モラルプロフィールが完成しました！"
+  },
   "common": {
     "loading": "読み込み中...",
     "error": "エラーが発生しました",

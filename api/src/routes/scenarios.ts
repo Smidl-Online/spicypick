@@ -9,6 +9,7 @@ import { sendPushNotification } from '../services/pushNotifications.js';
 import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { analytics } from '../services/analytics.js';
+import { recalculateMoralProfile } from '../services/moralProfileCalculator.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
@@ -671,6 +672,9 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
       });
     }
   }
+
+  // Async moral profile recalculation (fire and forget)
+  recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
 
   return c.json({
     xpEarned: finalXpEarned,

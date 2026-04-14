@@ -180,6 +180,30 @@
     "stats_xp": "{{xp}} XP from predictions",
     "yourPick": "You predicted: {{verdict}}"
   },
+  "moralProfile": {
+    "title": "Your Moral Profile",
+    "dimensions": {
+      "forgiving": "Forgiving",
+      "pragmatic": "Pragmatic",
+      "empathetic": "Empathetic",
+      "confrontational": "Confrontational",
+      "majorityAligned": "Mainstream",
+      "consistent": "Consistent"
+    },
+    "descriptions": {
+      "forgiving": "Forgiving vs Strict",
+      "pragmatic": "Pragmatic vs Idealist",
+      "empathetic": "Empathetic vs Analytical",
+      "confrontational": "Confrontational vs Peacemaker",
+      "majorityAligned": "Mainstream vs Independent",
+      "consistent": "Consistent vs Contextual"
+    },
+    "notReady": "Your moral profile is being built",
+    "votesNeeded": "{{count}} more votes needed",
+    "share": "Share your profile",
+    "basedOn": "Based on {{count}} votes",
+    "revealed": "Your moral profile is ready!"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
