@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, setTokens, clearTokens } from '../api/client';
+import { api, ApiError, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
 import { offlineCache } from '../services/offlineCache';
 import { useExperimentStore } from './experimentStore';
@@ -87,8 +87,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user, isAuthenticated: true });
       analytics.identify(user.id);
       await offlineCache.cacheUserProfile(user).catch(() => {});
-    } catch {
-      const cached = await offlineCache.getCachedUserProfile<User>();
+    } catch (error) {
+      // Auth errors (401/403) = token invalid or account gone → force logout
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+      // Network/other errors → try offline cache before logging out
+      const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
       if (cached) {
         set({ user: cached, isAuthenticated: true });
         analytics.identify(cached.id);
