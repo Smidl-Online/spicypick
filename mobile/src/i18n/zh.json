@@ -136,7 +136,6 @@
       "每月 3 次连续天数保护"
     ],
     "subscribe": "订阅",
-    "active": "高级版有效期至 {{date}}",
     "feature_scenarios": "每天 3 个话题",
     "feature_archive": "完整话题存档",
     "feature_expert": "详细专家分析",
