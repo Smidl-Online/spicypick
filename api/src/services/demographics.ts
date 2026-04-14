@@ -49,8 +49,8 @@ export async function updateDemographicStats(
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user) return;
 
-  const verdictCol = verdictToColumn(verdict);
-  if (!verdictCol) return;
+  const validVerdicts = ['guilty', 'not_guilty', 'complicated', 'both_wrong'];
+  if (!validVerdicts.includes(verdict)) return;
 
   const groups: { type: string; value: string }[] = [];
 

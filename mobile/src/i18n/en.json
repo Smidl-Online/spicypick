@@ -245,7 +245,7 @@
     "deleteData": "Delete my demographic data",
     "privacyNote": "Your data is only used for anonymous group statistics. Groups with fewer than 5 votes are hidden. You can delete this data anytime."
   },
-  "settings": {
+  "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",

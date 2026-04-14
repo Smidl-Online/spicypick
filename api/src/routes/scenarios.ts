@@ -10,7 +10,7 @@ import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { analytics } from '../services/analytics.js';
 import { recalculateMoralProfile } from '../services/moralProfileCalculator.js';
-import { updateDemographicStats } from '../services/demographics.js';
+import { updateDemographicStats, K_ANONYMITY_THRESHOLD } from '../services/demographics.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
@@ -483,8 +483,7 @@ scenarioRoutes.get('/:id/demographics', authMiddleware, async (c) => {
     ),
   );
 
-  // Apply k-anonymity filter: hide groups with < 5 votes
-  const K_ANONYMITY_THRESHOLD = 5;
+  // Apply k-anonymity filter
   const groups = stats
     .filter(s => s.totalVotes >= K_ANONYMITY_THRESHOLD)
     .map(s => ({
