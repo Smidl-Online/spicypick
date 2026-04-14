@@ -39,7 +39,7 @@ vi.mock('../services/scenarioGenerator.js', () => ({
   })),
 }));
 
-// Mock aiClient
+// Mock aiClient with updated model IDs (SMI-47 v3)
 const mockGetAiConfig = vi.fn();
 const mockSetModelConfig = vi.fn();
 
@@ -47,20 +47,22 @@ vi.mock('../services/aiClient.js', () => ({
   getAiConfig: (...args: any[]) => mockGetAiConfig(...args),
   setModelConfig: (...args: any[]) => mockSetModelConfig(...args),
   isAllowedModel: (model: string) => [
-    'claude-haiku-4-5-20241022',
-    'claude-sonnet-4-20250514',
-    'claude-opus-4-20250514',
-    'gpt-4o-mini',
-    'gpt-4o',
-    'gemini-2.5-flash',
+    'claude-haiku-4-5-20251001',
+    'claude-sonnet-4-6-20250514',
+    'claude-opus-4-6-20250414',
+    'gpt-5.4-nano',
+    'gpt-5.4-mini',
+    'gemini-3.0-flash',
+    'gemini-3.0-flash-lite',
   ].includes(model),
   ALLOWED_MODELS: [
-    'claude-haiku-4-5-20241022',
-    'claude-sonnet-4-20250514',
-    'claude-opus-4-20250514',
-    'gpt-4o-mini',
-    'gpt-4o',
-    'gemini-2.5-flash',
+    'claude-haiku-4-5-20251001',
+    'claude-sonnet-4-6-20250514',
+    'claude-opus-4-6-20250414',
+    'gpt-5.4-nano',
+    'gpt-5.4-mini',
+    'gemini-3.0-flash',
+    'gemini-3.0-flash-lite',
   ],
 }));
 
@@ -73,9 +75,9 @@ describe('admin AI config routes', () => {
     vi.clearAllMocks();
 
     mockGetAiConfig.mockResolvedValue({
-      generation: { model: 'claude-haiku-4-5-20241022', source: 'default' },
-      moderation: { model: 'claude-haiku-4-5-20241022', source: 'default' },
-      analysis: { model: 'claude-sonnet-4-20250514', source: 'default' },
+      generation: { model: 'gpt-5.4-mini', provider: 'openai', source: 'default' },
+      moderation: { model: 'gpt-5.4-mini', provider: 'openai', source: 'default' },
+      analysis: { model: 'claude-sonnet-4-6-20250514', provider: 'anthropic', source: 'default' },
     });
 
     const { default: adminRoutes } = await import('../routes/admin.js');
@@ -94,7 +96,7 @@ describe('admin AI config routes', () => {
       expect(html).toContain('Scenario Generation');
       expect(html).toContain('Content Moderation');
       expect(html).toContain('Expert Analysis');
-      expect(html).toContain('claude-haiku-4-5-20241022');
+      expect(html).toContain('gpt-5.4-mini');
     });
 
     it('should return JSON when Accept: application/json', async () => {
@@ -106,9 +108,11 @@ describe('admin AI config routes', () => {
       });
       expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.config.generation.model).toBe('claude-haiku-4-5-20241022');
-      expect(data.config.analysis.model).toBe('claude-sonnet-4-20250514');
-      expect(data.allowedModels).toContain('gpt-4o-mini');
+      expect(data.config.generation.model).toBe('gpt-5.4-mini');
+      expect(data.config.generation.provider).toBe('openai');
+      expect(data.config.analysis.model).toBe('claude-sonnet-4-6-20250514');
+      expect(data.config.analysis.provider).toBe('anthropic');
+      expect(data.allowedModels).toContain('gpt-5.4-mini');
     });
 
     it('should require authentication', async () => {
@@ -126,12 +130,12 @@ describe('admin AI config routes', () => {
           ADMIN_TOKEN: 'test-admin-token',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ generation: 'gpt-4o-mini' }),
+        body: JSON.stringify({ generation: 'gpt-5.4-nano' }),
       });
       expect(res.status).toBe(200);
-      expect(mockSetModelConfig).toHaveBeenCalledWith('generation', 'gpt-4o-mini');
+      expect(mockSetModelConfig).toHaveBeenCalledWith('generation', 'gpt-5.4-nano');
       const data = await res.json();
-      expect(data.updated.generation).toBe('gpt-4o-mini');
+      expect(data.updated.generation).toBe('gpt-5.4-nano');
     });
 
     it('should update multiple use-cases at once', async () => {
@@ -142,8 +146,8 @@ describe('admin AI config routes', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          generation: 'gpt-4o-mini',
-          analysis: 'claude-opus-4-20250514',
+          generation: 'gemini-3.0-flash',
+          analysis: 'claude-opus-4-6-20250414',
         }),
       });
       expect(res.status).toBe(200);
@@ -168,7 +172,7 @@ describe('admin AI config routes', () => {
       const res = await app.request('/admin/ai/config', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ generation: 'gpt-4o-mini' }),
+        body: JSON.stringify({ generation: 'gpt-5.4-mini' }),
       });
       expect(res.status).toBe(403);
     });
@@ -182,11 +186,11 @@ describe('admin AI config routes', () => {
           ADMIN_TOKEN: 'test-admin-token',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'useCase=generation&model=gpt-4o-mini',
+        body: 'useCase=generation&model=gpt-5.4-nano',
       });
       // Should redirect back to config page
       expect(res.status).toBe(302);
-      expect(mockSetModelConfig).toHaveBeenCalledWith('generation', 'gpt-4o-mini');
+      expect(mockSetModelConfig).toHaveBeenCalledWith('generation', 'gpt-5.4-nano');
     });
 
     it('should reject invalid use-case', async () => {
@@ -196,7 +200,7 @@ describe('admin AI config routes', () => {
           ADMIN_TOKEN: 'test-admin-token',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'useCase=invalid&model=gpt-4o-mini',
+        body: 'useCase=invalid&model=gpt-5.4-mini',
       });
       expect(res.status).toBe(400);
     });

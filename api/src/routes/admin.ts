@@ -6,7 +6,7 @@ import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
-import { getAiConfig, setModelConfig, isAllowedModel, ALLOWED_MODELS, type AiUseCase } from '../services/aiClient.js';
+import { getAiConfig, setModelConfig, isAllowedModel, ALLOWED_MODELS, type AiUseCase, type AiUseCaseConfig } from '../services/aiClient.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
@@ -551,10 +551,11 @@ adminRoutes.get('/ai/config', async (c) => {
     default: 'Default',
   };
 
-  const rows = (Object.entries(config) as [AiUseCase, { model: string; source: string }][]).map(([useCase, cfg]) => `
+  const rows = (Object.entries(config) as [AiUseCase, AiUseCaseConfig][]).map(([useCase, cfg]) => `
     <tr>
       <td><strong>${useCaseLabels[useCase]}</strong></td>
       <td><code>${escapeHtml(cfg.model)}</code></td>
+      <td>${escapeHtml(cfg.provider)}</td>
       <td>${sourceLabels[cfg.source] || cfg.source}</td>
       <td>
         <form method="POST" action="/admin/ai/config" style="display:flex;gap:8px;margin:0;">
@@ -573,7 +574,7 @@ adminRoutes.get('/ai/config', async (c) => {
     <div class="card">
       <p>Configure which AI model is used for each use-case. Changes take effect within 1 minute (cached).</p>
       <table>
-        <thead><tr><th>Use Case</th><th>Current Model</th><th>Source</th><th>Change</th></tr></thead>
+        <thead><tr><th>Use Case</th><th>Current Model</th><th>Provider</th><th>Source</th><th>Change</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>

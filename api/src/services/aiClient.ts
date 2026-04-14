@@ -8,15 +8,16 @@ import { eq } from 'drizzle-orm';
 export type AiUseCase = 'generation' | 'moderation' | 'analysis';
 
 // ============================================
-// Allowed Models Whitelist
+// Allowed Models Whitelist (based on SMI-47 v3 analysis)
 // ============================================
 export const ALLOWED_MODELS = [
-  'claude-haiku-4-5-20241022',
-  'claude-sonnet-4-20250514',
-  'claude-opus-4-20250514',
-  'gpt-4o-mini',
-  'gpt-4o',
-  'gemini-2.5-flash',
+  'claude-haiku-4-5-20251001',
+  'claude-sonnet-4-6-20250514',
+  'claude-opus-4-6-20250414',
+  'gpt-5.4-nano',
+  'gpt-5.4-mini',
+  'gemini-3.0-flash',
+  'gemini-3.0-flash-lite',
 ] as const;
 
 export type AllowedModel = typeof ALLOWED_MODELS[number];
@@ -26,26 +27,26 @@ export function isAllowedModel(model: string): model is AllowedModel {
 }
 
 // ============================================
-// Default Models per Use-Case (from SMI-47 analysis)
+// Default Models per Use-Case (from SMI-47 v3 analysis)
 // ============================================
 const DEFAULT_MODELS: Record<AiUseCase, AllowedModel> = {
-  generation: 'claude-haiku-4-5-20241022',
-  moderation: 'claude-haiku-4-5-20241022',
-  analysis: 'claude-sonnet-4-20250514',
+  generation: 'gpt-5.4-mini',
+  moderation: 'gpt-5.4-mini',
+  analysis: 'claude-sonnet-4-6-20250514',
 };
 
 // Env var names per use-case
 const ENV_VAR_MAP: Record<AiUseCase, string> = {
-  generation: 'AI_MODEL_GENERATION',
+  generation: 'AI_MODEL_SCENARIO',
   moderation: 'AI_MODEL_MODERATION',
-  analysis: 'AI_MODEL_ANALYSIS',
+  analysis: 'AI_MODEL_EXPERT',
 };
 
-// DB config keys per use-case
-const DB_CONFIG_KEY_MAP: Record<AiUseCase, string> = {
-  generation: 'ai_model_generation',
-  moderation: 'ai_model_moderation',
-  analysis: 'ai_model_analysis',
+// DB config keys per use-case (provider + model)
+const DB_CONFIG_KEY_MAP: Record<AiUseCase, { provider: string; model: string }> = {
+  generation: { provider: 'ai.scenario.provider', model: 'ai.scenario.model' },
+  moderation: { provider: 'ai.moderation.provider', model: 'ai.moderation.model' },
+  analysis: { provider: 'ai.expert.provider', model: 'ai.expert.model' },
 };
 
 // ============================================
@@ -94,9 +95,9 @@ export function invalidateConfigCache(): void {
 }
 
 export async function getModelForUseCase(useCase: AiUseCase): Promise<string> {
-  // 1. Check DB config
+  // 1. Check DB config (model key)
   const config = await loadDbConfig();
-  const dbModel = config.get(DB_CONFIG_KEY_MAP[useCase]);
+  const dbModel = config.get(DB_CONFIG_KEY_MAP[useCase].model);
   if (dbModel && isAllowedModel(dbModel)) return dbModel;
 
   // 2. Check use-case specific env var
@@ -114,30 +115,37 @@ export async function getModelForUseCase(useCase: AiUseCase): Promise<string> {
 // ============================================
 // Get Current Config (for admin endpoint)
 // ============================================
-export async function getAiConfig(): Promise<Record<AiUseCase, { model: string; source: string }>> {
+export interface AiUseCaseConfig {
+  model: string;
+  provider: Provider;
+  source: string;
+}
+
+export async function getAiConfig(): Promise<Record<AiUseCase, AiUseCaseConfig>> {
   const config = await loadDbConfig();
-  const result = {} as Record<AiUseCase, { model: string; source: string }>;
+  const result = {} as Record<AiUseCase, AiUseCaseConfig>;
 
   for (const useCase of ['generation', 'moderation', 'analysis'] as AiUseCase[]) {
-    const dbModel = config.get(DB_CONFIG_KEY_MAP[useCase]);
+    const dbModel = config.get(DB_CONFIG_KEY_MAP[useCase].model);
     if (dbModel && isAllowedModel(dbModel)) {
-      result[useCase] = { model: dbModel, source: 'database' };
+      result[useCase] = { model: dbModel, provider: detectProvider(dbModel), source: 'database' };
       continue;
     }
 
     const envModel = process.env[ENV_VAR_MAP[useCase]];
     if (envModel && isAllowedModel(envModel)) {
-      result[useCase] = { model: envModel, source: 'env' };
+      result[useCase] = { model: envModel, provider: detectProvider(envModel), source: 'env' };
       continue;
     }
 
     const genericModel = process.env.AI_MODEL;
     if (genericModel && isAllowedModel(genericModel)) {
-      result[useCase] = { model: genericModel, source: 'env_generic' };
+      result[useCase] = { model: genericModel, provider: detectProvider(genericModel), source: 'env_generic' };
       continue;
     }
 
-    result[useCase] = { model: DEFAULT_MODELS[useCase], source: 'default' };
+    const defaultModel = DEFAULT_MODELS[useCase];
+    result[useCase] = { model: defaultModel, provider: detectProvider(defaultModel), source: 'default' };
   }
 
   return result;
@@ -151,13 +159,20 @@ export async function setModelConfig(useCase: AiUseCase, model: string): Promise
     throw new Error(`Model "${model}" is not in the allowed models list`);
   }
 
-  const key = DB_CONFIG_KEY_MAP[useCase];
+  const keys = DB_CONFIG_KEY_MAP[useCase];
+  const provider = detectProvider(model);
 
-  // Upsert: insert or update
+  // Upsert model
   await db
     .insert(appConfig)
-    .values({ key, value: model })
+    .values({ key: keys.model, value: model })
     .onConflictDoUpdate({ target: appConfig.key, set: { value: model, updatedAt: new Date() } });
+
+  // Upsert provider
+  await db
+    .insert(appConfig)
+    .values({ key: keys.provider, value: provider })
+    .onConflictDoUpdate({ target: appConfig.key, set: { value: provider, updatedAt: new Date() } });
 
   invalidateConfigCache();
 }

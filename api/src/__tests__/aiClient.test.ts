@@ -40,9 +40,9 @@ describe('aiClient', () => {
     // Default env
     process.env.AI_API_KEY = 'test-anthropic-key';
     delete process.env.AI_MODEL;
-    delete process.env.AI_MODEL_GENERATION;
+    delete process.env.AI_MODEL_SCENARIO;
     delete process.env.AI_MODEL_MODERATION;
-    delete process.env.AI_MODEL_ANALYSIS;
+    delete process.env.AI_MODEL_EXPERT;
     delete process.env.OPENAI_API_KEY;
     delete process.env.GOOGLE_AI_API_KEY;
 
@@ -52,14 +52,19 @@ describe('aiClient', () => {
 
   describe('isAllowedModel', () => {
     it('should accept allowed models', () => {
-      expect(aiClient.isAllowedModel('claude-haiku-4-5-20241022')).toBe(true);
-      expect(aiClient.isAllowedModel('claude-sonnet-4-20250514')).toBe(true);
-      expect(aiClient.isAllowedModel('gpt-4o-mini')).toBe(true);
-      expect(aiClient.isAllowedModel('gemini-2.5-flash')).toBe(true);
+      expect(aiClient.isAllowedModel('claude-haiku-4-5-20251001')).toBe(true);
+      expect(aiClient.isAllowedModel('claude-sonnet-4-6-20250514')).toBe(true);
+      expect(aiClient.isAllowedModel('claude-opus-4-6-20250414')).toBe(true);
+      expect(aiClient.isAllowedModel('gpt-5.4-nano')).toBe(true);
+      expect(aiClient.isAllowedModel('gpt-5.4-mini')).toBe(true);
+      expect(aiClient.isAllowedModel('gemini-3.0-flash')).toBe(true);
+      expect(aiClient.isAllowedModel('gemini-3.0-flash-lite')).toBe(true);
     });
 
     it('should reject unknown models', () => {
       expect(aiClient.isAllowedModel('gpt-3.5-turbo')).toBe(false);
+      expect(aiClient.isAllowedModel('gpt-4o-mini')).toBe(false);
+      expect(aiClient.isAllowedModel('claude-sonnet-4-20250514')).toBe(false);
       expect(aiClient.isAllowedModel('random-model')).toBe(false);
       expect(aiClient.isAllowedModel('')).toBe(false);
     });
@@ -68,91 +73,104 @@ describe('aiClient', () => {
   describe('getModelForUseCase — fallback chain', () => {
     it('should return default model when nothing is configured', async () => {
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('claude-haiku-4-5-20241022');
+      expect(model).toBe('gpt-5.4-mini');
     });
 
-    it('should return default analysis model (Sonnet)', async () => {
+    it('should return default analysis model (Sonnet 4.6)', async () => {
       const model = await aiClient.getModelForUseCase('analysis');
-      expect(model).toBe('claude-sonnet-4-20250514');
+      expect(model).toBe('claude-sonnet-4-6-20250514');
+    });
+
+    it('should return default moderation model (gpt-5.4-mini)', async () => {
+      const model = await aiClient.getModelForUseCase('moderation');
+      expect(model).toBe('gpt-5.4-mini');
     });
 
     it('should use generic AI_MODEL env var as fallback', async () => {
-      process.env.AI_MODEL = 'claude-opus-4-20250514';
+      process.env.AI_MODEL = 'claude-opus-4-6-20250414';
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('claude-opus-4-20250514');
+      expect(model).toBe('claude-opus-4-6-20250414');
     });
 
     it('should prefer use-case specific env var over generic', async () => {
-      process.env.AI_MODEL = 'claude-opus-4-20250514';
-      process.env.AI_MODEL_GENERATION = 'gpt-4o-mini';
+      process.env.AI_MODEL = 'claude-opus-4-6-20250414';
+      process.env.AI_MODEL_SCENARIO = 'gpt-5.4-nano';
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('gpt-4o-mini');
+      expect(model).toBe('gpt-5.4-nano');
+    });
+
+    it('should use AI_MODEL_EXPERT for analysis use-case', async () => {
+      process.env.AI_MODEL_EXPERT = 'claude-haiku-4-5-20251001';
+      aiClient.invalidateConfigCache();
+      const model = await aiClient.getModelForUseCase('analysis');
+      expect(model).toBe('claude-haiku-4-5-20251001');
     });
 
     it('should prefer DB config over env vars', async () => {
-      process.env.AI_MODEL_GENERATION = 'gpt-4o-mini';
+      process.env.AI_MODEL_SCENARIO = 'gpt-5.4-nano';
       mockSelect.mockResolvedValue([
-        { key: 'ai_model_generation', value: 'claude-sonnet-4-20250514' },
+        { key: 'ai.scenario.model', value: 'claude-sonnet-4-6-20250514' },
       ]);
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('claude-sonnet-4-20250514');
+      expect(model).toBe('claude-sonnet-4-6-20250514');
     });
 
     it('should ignore invalid model in DB and fall through to env', async () => {
-      process.env.AI_MODEL_MODERATION = 'claude-haiku-4-5-20241022';
+      process.env.AI_MODEL_MODERATION = 'claude-haiku-4-5-20251001';
       mockSelect.mockResolvedValue([
-        { key: 'ai_model_moderation', value: 'invalid-model-name' },
+        { key: 'ai.moderation.model', value: 'invalid-model-name' },
       ]);
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('moderation');
-      expect(model).toBe('claude-haiku-4-5-20241022');
+      expect(model).toBe('claude-haiku-4-5-20251001');
     });
 
     it('should ignore invalid model in env and use default', async () => {
       process.env.AI_MODEL = 'not-a-real-model';
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('claude-haiku-4-5-20241022');
+      expect(model).toBe('gpt-5.4-mini');
     });
   });
 
   describe('getAiConfig', () => {
-    it('should return all use-case configs with sources', async () => {
+    it('should return all use-case configs with sources and providers', async () => {
       const config = await aiClient.getAiConfig();
-      expect(config.generation).toEqual({ model: 'claude-haiku-4-5-20241022', source: 'default' });
-      expect(config.moderation).toEqual({ model: 'claude-haiku-4-5-20241022', source: 'default' });
-      expect(config.analysis).toEqual({ model: 'claude-sonnet-4-20250514', source: 'default' });
+      expect(config.generation).toEqual({ model: 'gpt-5.4-mini', provider: 'openai', source: 'default' });
+      expect(config.moderation).toEqual({ model: 'gpt-5.4-mini', provider: 'openai', source: 'default' });
+      expect(config.analysis).toEqual({ model: 'claude-sonnet-4-6-20250514', provider: 'anthropic', source: 'default' });
     });
 
     it('should report DB source when model is set in DB', async () => {
       mockSelect.mockResolvedValue([
-        { key: 'ai_model_generation', value: 'gpt-4o-mini' },
+        { key: 'ai.scenario.model', value: 'gemini-3.0-flash' },
       ]);
       aiClient.invalidateConfigCache();
       const config = await aiClient.getAiConfig();
-      expect(config.generation).toEqual({ model: 'gpt-4o-mini', source: 'database' });
+      expect(config.generation).toEqual({ model: 'gemini-3.0-flash', provider: 'google', source: 'database' });
     });
 
     it('should report env source when set via env var', async () => {
-      process.env.AI_MODEL_ANALYSIS = 'claude-opus-4-20250514';
+      process.env.AI_MODEL_EXPERT = 'claude-opus-4-6-20250414';
       aiClient.invalidateConfigCache();
       const config = await aiClient.getAiConfig();
-      expect(config.analysis).toEqual({ model: 'claude-opus-4-20250514', source: 'env' });
+      expect(config.analysis).toEqual({ model: 'claude-opus-4-6-20250414', provider: 'anthropic', source: 'env' });
     });
   });
 
   describe('callAi — Anthropic provider', () => {
     it('should call Anthropic API with correct params', async () => {
+      // Set analysis use-case which defaults to Anthropic
       mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ content: [{ text: 'Hello world' }] }),
       });
 
       const result = await aiClient.callAi({
-        useCase: 'generation',
+        useCase: 'analysis',
         system: 'You are a test assistant',
         messages: [{ role: 'user', content: 'Say hello' }],
         maxTokens: 100,
@@ -171,16 +189,22 @@ describe('aiClient', () => {
       );
     });
 
-    it('should throw when AI_API_KEY is not set', async () => {
+    it('should throw when AI_API_KEY is not set for Anthropic model', async () => {
       delete process.env.AI_API_KEY;
+      // Force Anthropic model via env
+      process.env.AI_MODEL_EXPERT = 'claude-sonnet-4-6-20250514';
+      aiClient.invalidateConfigCache();
       await expect(aiClient.callAi({
-        useCase: 'generation',
+        useCase: 'analysis',
         messages: [{ role: 'user', content: 'test' }],
         maxTokens: 100,
       })).rejects.toThrow('AI_API_KEY not configured');
     });
 
     it('should throw on API error', async () => {
+      // Force Anthropic via env
+      process.env.AI_MODEL_SCENARIO = 'claude-haiku-4-5-20251001';
+      aiClient.invalidateConfigCache();
       mockFetch.mockResolvedValue({ ok: false, status: 500 });
       await expect(aiClient.callAi({
         useCase: 'generation',
@@ -193,9 +217,7 @@ describe('aiClient', () => {
   describe('callAi — OpenAI provider', () => {
     it('should call OpenAI API when model is gpt-*', async () => {
       process.env.OPENAI_API_KEY = 'test-openai-key';
-      mockSelect.mockResolvedValue([
-        { key: 'ai_model_generation', value: 'gpt-4o-mini' },
-      ]);
+      // Default generation model is gpt-5.4-mini (OpenAI)
       aiClient.invalidateConfigCache();
 
       mockFetch.mockResolvedValue({
@@ -212,10 +234,20 @@ describe('aiClient', () => {
 
       expect(result.text).toBe('OpenAI response');
       expect(result.provider).toBe('openai');
+      expect(result.model).toBe('gpt-5.4-mini');
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.openai.com/v1/chat/completions',
         expect.anything(),
       );
+    });
+
+    it('should throw when OPENAI_API_KEY is not set for OpenAI model', async () => {
+      // Default generation model is gpt-5.4-mini, no OPENAI_API_KEY
+      await expect(aiClient.callAi({
+        useCase: 'generation',
+        messages: [{ role: 'user', content: 'test' }],
+        maxTokens: 100,
+      })).rejects.toThrow('OPENAI_API_KEY not configured');
     });
   });
 
@@ -223,7 +255,7 @@ describe('aiClient', () => {
     it('should call Google AI API when model is gemini-*', async () => {
       process.env.GOOGLE_AI_API_KEY = 'test-google-key';
       mockSelect.mockResolvedValue([
-        { key: 'ai_model_generation', value: 'gemini-2.5-flash' },
+        { key: 'ai.scenario.model', value: 'gemini-3.0-flash' },
       ]);
       aiClient.invalidateConfigCache();
 
@@ -240,6 +272,7 @@ describe('aiClient', () => {
 
       expect(result.text).toBe('Gemini response');
       expect(result.provider).toBe('google');
+      expect(result.model).toBe('gemini-3.0-flash');
     });
   });
 
