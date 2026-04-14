@@ -177,7 +177,8 @@
     "stats_total": "{{count}} previsões",
     "stats_correct": "{{count}} corretas",
     "stats_accuracy": "{{percent}}% de acerto",
-    "stats_xp": "{{xp}} XP de previsões"
+    "stats_xp": "{{xp}} XP de previsões",
+    "yourPick": "Sua previsão: {{verdict}}"
   },
   "common": {
     "loading": "Carregando...",

@@ -177,7 +177,8 @@
     "stats_total": "{{count}} prédictions",
     "stats_correct": "{{count}} correctes",
     "stats_accuracy": "{{percent}}% de précision",
-    "stats_xp": "{{xp}} XP des prédictions"
+    "stats_xp": "{{xp}} XP des prédictions",
+    "yourPick": "Votre prédiction : {{verdict}}"
   },
   "common": {
     "loading": "Chargement...",

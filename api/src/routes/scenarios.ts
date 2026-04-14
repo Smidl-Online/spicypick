@@ -579,21 +579,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
     await db.update(users).set({ level: newLevel }).where(eq(users.id, userId));
   }
 
-  // Check achievements
-  const newAchievements = await checkAchievements(userId);
-
-  // Send push notification for new achievements (fire and forget)
-  if (newAchievements.length > 0 && user.pushToken) {
-    sendPushNotification(user.pushToken, {
-      title: '🏆 Achievement Unlocked!',
-      body: newAchievements.length === 1
-        ? `You unlocked: ${newAchievements[0]}`
-        : `You unlocked ${newAchievements.length} achievements!`,
-      data: { type: 'achievement' },
-    }).catch(() => {});
-  }
-
-  // Evaluate prediction if exists
+  // Evaluate prediction if exists (BEFORE checkAchievements so prediction achievements are up-to-date)
   const PREDICTION_XP_REWARD = 15;
   let predictionResult: { predictedVerdict: string; isCorrect: boolean; xpEarned: number } | null = null;
 
@@ -605,8 +591,18 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   });
 
   if (existingPrediction) {
-    // Majority verdict = the verdict with most votes
-    const majorityVerdict = Object.entries(verdictCounts).reduce((a, b) => a[1] >= b[1] ? a : b)[0];
+    // Majority verdict = the verdict with most votes (deterministic tie-break: alphabetical order)
+    const verdictPriority = ['both_wrong', 'complicated', 'guilty', 'not_guilty'] as const;
+    let majorityVerdict = verdictPriority[0];
+    let majorityCount = verdictCounts[majorityVerdict] || 0;
+    for (const v of verdictPriority) {
+      const c = verdictCounts[v] || 0;
+      if (c > majorityCount) {
+        majorityVerdict = v;
+        majorityCount = c;
+      }
+    }
+
     const isCorrect = existingPrediction.predictedVerdict === majorityVerdict;
     const predictionXp = isCorrect ? PREDICTION_XP_REWARD : 0;
 
@@ -619,6 +615,13 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
       await db.update(users).set({
         xp: sql`${users.xp} + ${predictionXp}`,
       }).where(eq(users.id, userId));
+
+      // Recalculate level after prediction XP
+      const [refreshedUser] = await db.select({ xp: users.xp, level: users.level }).from(users).where(eq(users.id, userId));
+      const levelAfterPrediction = calculateLevel(refreshedUser.xp);
+      if (levelAfterPrediction !== refreshedUser.level) {
+        await db.update(users).set({ level: levelAfterPrediction }).where(eq(users.id, userId));
+      }
     }
 
     predictionResult = {
@@ -634,6 +637,20 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
       isCorrect,
       xpEarned: predictionXp,
     });
+  }
+
+  // Check achievements (after prediction evaluation so oracle_10 / mind_reader_50 are current)
+  const newAchievements = await checkAchievements(userId);
+
+  // Send push notification for new achievements (fire and forget)
+  if (newAchievements.length > 0 && user.pushToken) {
+    sendPushNotification(user.pushToken, {
+      title: '🏆 Achievement Unlocked!',
+      body: newAchievements.length === 1
+        ? `You unlocked: ${newAchievements[0]}`
+        : `You unlocked ${newAchievements.length} achievements!`,
+      data: { type: 'achievement' },
+    }).catch(() => {});
   }
 
   // Server-side analytics

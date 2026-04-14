@@ -28,11 +28,16 @@ export function PredictionResult({ isCorrect, xpEarned, predictedVerdict }: Prop
       <Animated.Text entering={BounceIn.delay(600)} style={styles.emoji}>
         {isCorrect ? '🎯' : '😅'}
       </Animated.Text>
-      <Text style={[styles.text, { color: isCorrect ? colors.success : colors.textSecondary }]}>
-        {isCorrect
-          ? t('prediction.correct', { xp: xpEarned })
-          : t('prediction.incorrect')}
-      </Text>
+      <View style={styles.textContainer}>
+        <Text style={[styles.text, { color: isCorrect ? colors.success : colors.textSecondary }]}>
+          {isCorrect
+            ? t('prediction.correct', { xp: xpEarned })
+            : t('prediction.incorrect')}
+        </Text>
+        <Text style={[styles.subtext, { color: colors.textSecondary }]}>
+          {t('prediction.yourPick', { verdict: t(`verdicts.${predictedVerdict}`) })}
+        </Text>
+      </View>
     </Animated.View>
   );
 }
@@ -49,5 +54,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   emoji: { fontSize: 28 },
+  textContainer: { flex: 1 },
   text: { fontSize: 16, fontWeight: '700' },
+  subtext: { fontSize: 13, marginTop: 2 },
 });

@@ -177,7 +177,8 @@
     "stats_total": "{{count}} predictions",
     "stats_correct": "{{count}} correct",
     "stats_accuracy": "{{percent}}% accuracy",
-    "stats_xp": "{{xp}} XP from predictions"
+    "stats_xp": "{{xp}} XP from predictions",
+    "yourPick": "You predicted: {{verdict}}"
   },
   "common": {
     "loading": "Loading...",

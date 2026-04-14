@@ -177,7 +177,8 @@
     "stats_total": "{{count}}件の予測",
     "stats_correct": "{{count}}件的中",
     "stats_accuracy": "的中率{{percent}}%",
-    "stats_xp": "予測で{{xp}} XP獲得"
+    "stats_xp": "予測で{{xp}} XP獲得",
+    "yourPick": "あなたの予測: {{verdict}}"
   },
   "common": {
     "loading": "読み込み中...",

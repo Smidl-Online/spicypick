@@ -177,7 +177,8 @@
     "stats_total": "{{count}} predikcí",
     "stats_correct": "{{count}} správných",
     "stats_accuracy": "{{percent}}% úspěšnost",
-    "stats_xp": "{{xp}} XP z predikcí"
+    "stats_xp": "{{xp}} XP z predikcí",
+    "yourPick": "Tipoval/a jsi: {{verdict}}"
   },
   "common": {
     "loading": "Načítání...",
