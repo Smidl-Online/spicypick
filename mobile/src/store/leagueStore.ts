@@ -13,11 +13,11 @@ export const useLeagueStore = create<LeagueState>((set) => ({
     try {
       const data = await api<{ league: League | null; userRank?: number; userWeeklyXp?: number; leaderboard?: LeaderboardEntry[]; }>('/api/leagues/current');
       set({ league: data.league, userRank: data.userRank || 0, userWeeklyXp: data.userWeeklyXp || 0, leaderboard: data.leaderboard || [], isLoading: false });
-      offlineCache.cacheLeague(data);
+      offlineCache.cacheLeague(data).catch(() => {});
     } catch (error) {
-      // Auth errors → don't use stale cache
+      // Auth errors → clear stale data, don't use cache
       if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-        set({ isLoading: false });
+        set({ league: null, userRank: 0, userWeeklyXp: 0, leaderboard: [], isLoading: false });
         return;
       }
       const cached = await offlineCache.getCachedLeague<{ league: League | null; userRank?: number; userWeeklyXp?: number; leaderboard?: LeaderboardEntry[]; }>().catch(() => null);

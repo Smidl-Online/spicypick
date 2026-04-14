@@ -76,7 +76,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     analytics.track('user_logged_out');
     analytics.reset();
     useExperimentStore.getState().reset();
-    await offlineCache.clearUserData();
+    try { await offlineCache.clearUserData(); } catch {}
     await clearTokens();
     set({ user: null, isAuthenticated: false });
   },
@@ -88,9 +88,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       analytics.identify(user.id);
       await offlineCache.cacheUserProfile(user).catch(() => {});
     } catch (error) {
-      // Auth errors (401/403) = token invalid or account gone → force logout
+      // Auth errors (401/403) = token invalid or account gone → full cleanup
       if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
         analytics.reset();
+        await offlineCache.clearUserData().catch(() => {});
+        await clearTokens().catch(() => {});
         set({ user: null, isAuthenticated: false });
         return;
       }
