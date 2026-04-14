@@ -110,7 +110,10 @@ function RootLayoutInner() {
     // regardless of notification age. Only skip if there was no explicit interaction.
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        setTimeout(() => handleNotificationResponse(response), 500);
+        const age = Date.now() - response.notification.date * 1000;
+        if (age < 30_000) {
+          setTimeout(() => handleNotificationResponse(response), 500);
+        }
       }
     });
 

@@ -11,7 +11,6 @@ vi.mock('../db/index.js', () => ({
 }));
 
 vi.mock('../services/revenueCat.js', () => ({
-  validateReceipt: vi.fn(),
   getSubscriptionStatus: vi.fn(),
 }));
 
@@ -24,7 +23,7 @@ vi.mock('jsonwebtoken', () => ({
 process.env.JWT_SECRET = 'test-secret';
 
 import { db } from '../db/index.js';
-import { validateReceipt, getSubscriptionStatus } from '../services/revenueCat.js';
+import { getSubscriptionStatus } from '../services/revenueCat.js';
 
 describe('premium routes', () => {
   let app: Hono;
@@ -42,16 +41,16 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'r', platform: 'ios' }),
+        body: JSON.stringify({ platform: 'ios' }),
       });
       expect(res.status).toBe(401);
     });
 
-    it('should return 400 for missing receipt', async () => {
+    it('should return 400 for missing platform', async () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ platform: 'ios' }),
+        body: JSON.stringify({}),
       });
       expect(res.status).toBe(400);
     });
@@ -60,7 +59,7 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'token', platform: 'windows' }),
+        body: JSON.stringify({ platform: 'windows' }),
       });
       expect(res.status).toBe(400);
     });
@@ -69,7 +68,7 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'dev-receipt', platform: 'ios' }),
+        body: JSON.stringify({ platform: 'ios' }),
       });
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -80,7 +79,7 @@ describe('premium routes', () => {
     it('should validate via RevenueCat when configured', async () => {
       process.env.REVENUECAT_API_KEY = 'test-key';
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      (validateReceipt as any).mockResolvedValueOnce({
+      (getSubscriptionStatus as any).mockResolvedValueOnce({
         isActive: true,
         expiresAt,
         productId: 'premium_monthly',
@@ -89,7 +88,7 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'real-receipt', platform: 'ios' }),
+        body: JSON.stringify({ platform: 'ios' }),
       });
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -98,7 +97,7 @@ describe('premium routes', () => {
 
     it('should return 402 when subscription is not active', async () => {
       process.env.REVENUECAT_API_KEY = 'test-key';
-      (validateReceipt as any).mockResolvedValueOnce({
+      (getSubscriptionStatus as any).mockResolvedValueOnce({
         isActive: false,
         expiresAt: null,
         productId: null,
@@ -107,7 +106,7 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'expired-receipt', platform: 'android' }),
+        body: JSON.stringify({ platform: 'android' }),
       });
       expect(res.status).toBe(402);
     });
@@ -116,25 +115,25 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'dev-receipt', platform: 'android' }),
+        body: JSON.stringify({ platform: 'android' }),
       });
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.message).toContain('dev mode');
     });
 
-    it('should return 400 when RevenueCat validation throws', async () => {
+    it('should return 400 when RevenueCat verification throws', async () => {
       process.env.REVENUECAT_API_KEY = 'test-key';
-      (validateReceipt as any).mockRejectedValueOnce(new Error('Network error'));
+      (getSubscriptionStatus as any).mockRejectedValueOnce(new Error('Network error'));
 
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'bad-receipt', platform: 'ios' }),
+        body: JSON.stringify({ platform: 'ios' }),
       });
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.error).toBe('Receipt validation failed');
+      expect(body.error).toBe('Subscription verification failed');
     });
 
     it('should return 503 in production without REVENUECAT_API_KEY', async () => {
@@ -144,7 +143,7 @@ describe('premium routes', () => {
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',
         headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receipt: 'some-receipt', platform: 'ios' }),
+        body: JSON.stringify({ platform: 'ios' }),
       });
       expect(res.status).toBe(503);
 

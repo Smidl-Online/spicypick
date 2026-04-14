@@ -43,11 +43,16 @@ export default function PremiumScreen() {
         return;
       }
 
-      // Send receipt to backend for server-side validation
-      await api('/api/premium/subscribe', {
-        method: 'POST',
-        body: { receipt: result.receipt, platform: result.platform },
-      });
+      if (result.sdkConfigured) {
+        // RevenueCat SDK handled the purchase — just sync status from backend
+        await api<PremiumStatus>('/api/premium/status');
+      } else {
+        // Dev fallback — tell backend to auto-activate
+        await api('/api/premium/subscribe', {
+          method: 'POST',
+          body: { platform: result.platform },
+        });
+      }
 
       await fetchProfile();
       analytics.track('premium_subscribe', { platform: result.platform });
@@ -70,10 +75,10 @@ export default function PremiumScreen() {
       const isPremium = await checkPremiumStatus();
 
       if (isPremium) {
-        // Sync with backend — just refresh status, RevenueCat already validated the restore
-        await fetchProfile();
+        // Sync with backend via status endpoint — RevenueCat already validated the restore
         const updatedStatus = await api<PremiumStatus>('/api/premium/status');
         setStatus(updatedStatus);
+        await fetchProfile();
         Alert.alert(t('premium.restored_title', 'Restored!'), t('premium.restored_msg', 'Your premium subscription has been restored.'));
       } else {
         Alert.alert(t('premium.no_purchase_title', 'No purchase found'), t('premium.no_purchase_msg', 'No active subscription found to restore.'));
