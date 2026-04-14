@@ -61,12 +61,19 @@
       ],
       "react-native-purchases"
     ],
+    "owner": "smidl-online",
     "extra": {
       "revenueCatIosKey": "",
       "revenueCatAndroidKey": "",
       "eas": {
-        "projectId": ""
+        "projectId": "YOUR_EAS_PROJECT_ID"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
