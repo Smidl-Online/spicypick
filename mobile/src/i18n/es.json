@@ -167,6 +167,19 @@
     "error_join": "Error al unirse al gremio",
     "error_leave": "Error al abandonar el gremio"
   },
+  "prediction": {
+    "title": "Predice la mayoría",
+    "subtitle": "¿Cómo crees que votó la comunidad?",
+    "correct": "¡Acertaste! +{{xp}} XP",
+    "incorrect": "¡Esta vez no!",
+    "skip": "Saltar predicción",
+    "stats_title": "Predicciones",
+    "stats_total": "{{count}} predicciones",
+    "stats_correct": "{{count}} correctas",
+    "stats_accuracy": "{{percent}}% de aciertos",
+    "stats_xp": "{{xp}} XP de predicciones",
+    "yourPick": "Tu predicción: {{verdict}}"
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Algo salió mal",

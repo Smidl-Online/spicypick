@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { users, votes, scenarios } from '../db/schema.js';
+import { users, votes, scenarios, predictions } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
 
 import { authMiddleware } from '../middleware/auth.js';
@@ -146,6 +146,34 @@ userRoutes.post('/me/streak-freeze', authMiddleware, async (c) => {
     message: 'Streak freeze used',
     remainingFreezes: result[0].remaining,
     currentStreak: user.currentStreak,
+  });
+});
+
+// GET /api/users/me/prediction-stats
+userRoutes.get('/me/prediction-stats', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  const [totalResult] = await db.select({ count: count() })
+    .from(predictions)
+    .where(eq(predictions.userId, userId));
+
+  const [correctResult] = await db.select({ count: count() })
+    .from(predictions)
+    .where(and(eq(predictions.userId, userId), eq(predictions.isCorrect, true)));
+
+  const [xpResult] = await db.select({ total: sql<number>`COALESCE(SUM(${predictions.xpEarned}), 0)::int` })
+    .from(predictions)
+    .where(eq(predictions.userId, userId));
+
+  const totalPredictions = totalResult.count;
+  const correctPredictions = correctResult.count;
+  const accuracy = totalPredictions > 0 ? Math.round((correctPredictions / totalPredictions) * 100) : 0;
+
+  return c.json({
+    totalPredictions,
+    correctPredictions,
+    accuracy,
+    totalXpFromPredictions: xpResult.total,
   });
 });
 

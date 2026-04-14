@@ -167,6 +167,19 @@
     "error_join": "Beitritt zur Gilde fehlgeschlagen",
     "error_leave": "Verlassen der Gilde fehlgeschlagen"
   },
+  "prediction": {
+    "title": "Mehrheit vorhersagen",
+    "subtitle": "Wie hat die Community abgestimmt?",
+    "correct": "Richtig getippt! +{{xp}} XP",
+    "incorrect": "Diesmal nicht!",
+    "skip": "Vorhersage überspringen",
+    "stats_title": "Vorhersagen",
+    "stats_total": "{{count}} Vorhersagen",
+    "stats_correct": "{{count}} richtig",
+    "stats_accuracy": "{{percent}}% Genauigkeit",
+    "stats_xp": "{{xp}} XP aus Vorhersagen",
+    "yourPick": "Deine Vorhersage: {{verdict}}"
+  },
   "common": {
     "loading": "Laden...",
     "error": "Etwas ist schiefgelaufen",

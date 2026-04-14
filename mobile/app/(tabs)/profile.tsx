@@ -19,15 +19,26 @@ type Achievement = {
   unlockedAt: string | null;
 };
 
+type PredictionStats = {
+  totalPredictions: number;
+  correctPredictions: number;
+  accuracy: number;
+  totalXpFromPredictions: number;
+};
+
 export default function ProfileScreen() {
   const { t } = useTranslation();
   const { user, fetchProfile } = useAuthStore();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [predictionStats, setPredictionStats] = useState<PredictionStats | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     api<{ achievements: Achievement[] }>('/api/achievements')
       .then((data) => setAchievements(data.achievements))
+      .catch(() => {});
+    api<PredictionStats>('/api/users/me/prediction-stats')
+      .then((data) => setPredictionStats(data))
       .catch(() => {});
   }, []);
 
@@ -85,6 +96,27 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Prediction Stats */}
+        {predictionStats && predictionStats.totalPredictions > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>{t('prediction.stats_title')}</Text>
+            <View style={styles.predictionStats}>
+              <View style={styles.predStatItem}>
+                <Text style={styles.predStatValue}>{predictionStats.totalPredictions}</Text>
+                <Text style={styles.statLabel}>{t('prediction.stats_total', { count: predictionStats.totalPredictions }).replace(`${predictionStats.totalPredictions} `, '')}</Text>
+              </View>
+              <View style={styles.predStatItem}>
+                <Text style={[styles.predStatValue, { color: colors.success }]}>{predictionStats.accuracy}%</Text>
+                <Text style={styles.statLabel}>{t('prediction.stats_accuracy', { percent: predictionStats.accuracy }).replace(`${predictionStats.accuracy}% `, '')}</Text>
+              </View>
+              <View style={styles.predStatItem}>
+                <Text style={[styles.predStatValue, { color: colors.xp }]}>{predictionStats.totalXpFromPredictions}</Text>
+                <Text style={styles.statLabel}>XP</Text>
+              </View>
+            </View>
+          </>
+        )}
+
         {/* Achievements */}
         <Text style={styles.sectionTitle}>{t('profile.achievements')}</Text>
         <View style={styles.achievementsGrid}>
@@ -141,6 +173,9 @@ const styles = StyleSheet.create({
   achievementIcon: { fontSize: 28, marginBottom: 6 },
   achievementName: { fontSize: 11, color: colors.text, textAlign: 'center', fontWeight: '600' },
   lockOverlay: { position: 'absolute', top: 4, right: 4 },
+  predictionStats: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: colors.bgCard, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border },
+  predStatItem: { alignItems: 'center' },
+  predStatValue: { fontSize: 20, fontWeight: '800', color: colors.text },
   settingsBtn: {
     backgroundColor: colors.bgCard,
     borderRadius: 12,

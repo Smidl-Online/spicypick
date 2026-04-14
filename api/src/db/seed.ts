@@ -13,6 +13,8 @@ const ACHIEVEMENTS_DATA = [
   { id: 'league_amethyst', name: 'Legendary Judge', description: 'Reach Amethyst tier', icon: '🟣', xpReward: 200 },
   { id: 'submit_approved', name: 'Story Author', description: 'Get your scenario approved', icon: '✍️', xpReward: 75 },
   { id: 'challenge_win_5', name: 'Challenger', description: 'Complete 5 friend challenges', icon: '⚔️', xpReward: 50 },
+  { id: 'oracle_10', name: 'Oracle', description: '10 correct predictions in a row', icon: '🔮', xpReward: 100 },
+  { id: 'mind_reader_50', name: 'Mind Reader', description: '50 correct predictions total', icon: '🧠', xpReward: 150 },
 ];
 
 // 95 scenarios for launch — morally ambiguous, realistic, first-person

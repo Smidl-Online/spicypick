@@ -167,6 +167,19 @@
     "error_join": "Falha ao entrar na guilda",
     "error_leave": "Falha ao sair da guilda"
   },
+  "prediction": {
+    "title": "Preveja a maioria",
+    "subtitle": "Como você acha que a comunidade votou?",
+    "correct": "Acertou! +{{xp}} XP",
+    "incorrect": "Dessa vez não!",
+    "skip": "Pular previsão",
+    "stats_title": "Previsões",
+    "stats_total": "{{count}} previsões",
+    "stats_correct": "{{count}} corretas",
+    "stats_accuracy": "{{percent}}% de acerto",
+    "stats_xp": "{{xp}} XP de previsões",
+    "yourPick": "Sua previsão: {{verdict}}"
+  },
   "common": {
     "loading": "Carregando...",
     "error": "Algo deu errado",
