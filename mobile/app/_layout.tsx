@@ -115,9 +115,10 @@ function RootLayoutInner() {
     const COLD_START_MAX_AGE_MS = 30_000;
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        const notifDate = response.notification.date;
-        const age = Date.now() - notifDate;
-        if (age < COLD_START_MAX_AGE_MS) {
+        // notification.date is Unix timestamp in seconds, Date.now() returns milliseconds
+        const notifDateMs = response.notification.date * 1000;
+        const age = Date.now() - notifDateMs;
+        if (age > 0 && age < COLD_START_MAX_AGE_MS) {
           setTimeout(() => handleNotificationResponse(response), 500);
         }
       }
