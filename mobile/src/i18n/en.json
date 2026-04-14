@@ -78,7 +78,8 @@
     "appearance": "Appearance",
     "theme_light": "Light",
     "theme_dark": "Dark",
-    "theme_system": "System"
+    "theme_system": "System",
+    "demographics": "Demographics"
   },
   "creator": {
     "title": "Creator Mode",
@@ -204,7 +205,47 @@
     "basedOn": "Based on {{count}} votes",
     "revealed": "Your moral profile is ready!"
   },
-  "common": {
+  "demographics": {
+    "title": "Demographics",
+    "subtitle": "Optional. Helps show how different groups voted. All data is anonymous.",
+    "tabs": {
+      "all": "All",
+      "age": "Age",
+      "country": "Country",
+      "gender": "Gender"
+    },
+    "selectFilter": "Select a filter to see demographic breakdown",
+    "noData": "Not enough data for this group yet",
+    "birthYear": "Birth Year",
+    "birthYearPlaceholder": "e.g. 1995",
+    "country": "Country",
+    "countryPlaceholder": "e.g. US",
+    "gender": "Gender",
+    "ageGroups": {
+      "13-17": "13-17",
+      "18-24": "18-24",
+      "25-34": "25-34",
+      "35-44": "35-44",
+      "45-54": "45-54",
+      "55-64": "55-64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "non_binary": "Non-binary",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "premium": {
+      "required": "Premium subscription required",
+      "cta": "Upgrade to Premium to see how different groups voted"
+    },
+    "deleteTitle": "Delete Demographic Data",
+    "deleteConfirm": "This will remove your birth year, country, and gender. Your votes won't be affected.",
+    "deleteData": "Delete my demographic data",
+    "privacyNote": "Your data is only used for anonymous group statistics. Groups with fewer than 5 votes are hidden. You can delete this data anytime."
+  },
+  "settings": {
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",

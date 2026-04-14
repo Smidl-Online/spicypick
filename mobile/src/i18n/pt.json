@@ -78,7 +78,8 @@
     "appearance": "Aparência",
     "theme_light": "Claro",
     "theme_dark": "Escuro",
-    "theme_system": "Sistema"
+    "theme_system": "Sistema",
+    "demographics": "Demografia"
   },
   "creator": {
     "title": "Modo Criador",
@@ -203,6 +204,25 @@
     "share": "Compartilhar perfil",
     "basedOn": "Baseado em {{count}} votos",
     "revealed": "Seu perfil moral está pronto!"
+  },
+  "demographics": {
+    "title": "Demografia",
+    "subtitle": "Opcional. Mostra como diferentes grupos votaram. Todos os dados são anônimos.",
+    "tabs": { "all": "Todos", "age": "Idade", "country": "País", "gender": "Gênero" },
+    "selectFilter": "Selecione um filtro para ver a distribuição demográfica",
+    "noData": "Dados insuficientes para este grupo ainda",
+    "birthYear": "Ano de nascimento",
+    "birthYearPlaceholder": "ex. 1995",
+    "country": "País",
+    "countryPlaceholder": "ex. BR",
+    "gender": "Gênero",
+    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
+    "genders": { "male": "Masculino", "female": "Feminino", "non_binary": "Não-binário", "prefer_not_to_say": "Prefiro não dizer" },
+    "premium": { "required": "Assinatura Premium necessária", "cta": "Atualize para Premium para ver como diferentes grupos votaram" },
+    "deleteTitle": "Excluir dados demográficos",
+    "deleteConfirm": "Isso removerá seu ano de nascimento, país e gênero. Seus votos não serão afetados.",
+    "deleteData": "Excluir meus dados demográficos",
+    "privacyNote": "Seus dados são usados apenas para estatísticas de grupo anônimas. Grupos com menos de 5 votos ficam ocultos. Você pode excluir esses dados a qualquer momento."
   },
   "common": {
     "loading": "Carregando...",
