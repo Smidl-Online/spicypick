@@ -13,7 +13,8 @@ import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { analytics } from '../src/services/analytics';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
-import { initRevenueCat, loginRevenueCat } from '../src/services/revenueCat';
+import { initRevenueCat, loginRevenueCat, checkPremiumStatus } from '../src/services/revenueCat';
+import { api } from '../src/api/client';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -48,12 +49,15 @@ function RootLayoutInner() {
   // Register push token when authenticated
   usePushNotifications(isAuthenticated);
 
-  // Sync RevenueCat user identity when authenticated
+  // Sync RevenueCat user identity and subscription status when authenticated
   useEffect(() => {
     if (user?.id) {
-      loginRevenueCat(user.id).catch((err) =>
-        console.warn('RevenueCat login failed:', err),
-      );
+      loginRevenueCat(user.id)
+        .then(() =>
+          // Sync subscription status with backend — handles renewals/expirations while app was closed
+          api('/api/premium/status').then(() => fetchProfile()).catch(() => {}),
+        )
+        .catch((err) => console.warn('RevenueCat login failed:', err));
     }
   }, [user?.id]);
 
