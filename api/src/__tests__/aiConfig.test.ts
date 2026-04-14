@@ -55,6 +55,7 @@ vi.mock('../services/aiClient.js', () => ({
     'gemini-3.0-flash',
     'gemini-3.0-flash-lite',
   ].includes(model),
+  hasKeyForModel: () => true,
   ALLOWED_MODELS: [
     'claude-haiku-4-5-20251001',
     'claude-sonnet-4-6-20250514',
@@ -75,8 +76,8 @@ describe('admin AI config routes', () => {
     vi.clearAllMocks();
 
     mockGetAiConfig.mockResolvedValue({
-      generation: { model: 'gpt-5.4-mini', provider: 'openai', source: 'default' },
-      moderation: { model: 'gpt-5.4-mini', provider: 'openai', source: 'default' },
+      generation: { model: 'claude-haiku-4-5-20251001', provider: 'anthropic', source: 'default' },
+      moderation: { model: 'claude-haiku-4-5-20251001', provider: 'anthropic', source: 'default' },
       analysis: { model: 'claude-sonnet-4-6-20250514', provider: 'anthropic', source: 'default' },
     });
 
@@ -108,8 +109,8 @@ describe('admin AI config routes', () => {
       });
       expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.config.generation.model).toBe('gpt-5.4-mini');
-      expect(data.config.generation.provider).toBe('openai');
+      expect(data.config.generation.model).toBe('claude-haiku-4-5-20251001');
+      expect(data.config.generation.provider).toBe('anthropic');
       expect(data.config.analysis.model).toBe('claude-sonnet-4-6-20250514');
       expect(data.config.analysis.provider).toBe('anthropic');
       expect(data.allowedModels).toContain('gpt-5.4-mini');

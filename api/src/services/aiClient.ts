@@ -61,6 +61,22 @@ function detectProvider(model: string): Provider {
   return 'anthropic'; // fallback
 }
 
+const PROVIDER_KEY_MAP: Record<Provider, string> = {
+  anthropic: 'AI_API_KEY',
+  openai: 'OPENAI_API_KEY',
+  google: 'GOOGLE_AI_API_KEY',
+};
+
+/** Check whether the API key for a given provider is configured */
+export function hasProviderKey(provider: Provider): boolean {
+  return !!process.env[PROVIDER_KEY_MAP[provider]];
+}
+
+/** Check whether the API key for a given model's provider is configured */
+export function hasKeyForModel(model: string): boolean {
+  return hasProviderKey(detectProvider(model));
+}
+
 // ============================================
 // Model Resolution (DB → env var → default)
 // ============================================

@@ -6,7 +6,7 @@ import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
-import { getAiConfig, setModelConfig, isAllowedModel, ALLOWED_MODELS, type AiUseCase, type AiUseCaseConfig } from '../services/aiClient.js';
+import { getAiConfig, setModelConfig, isAllowedModel, hasKeyForModel, ALLOWED_MODELS, type AiUseCase, type AiUseCaseConfig } from '../services/aiClient.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
@@ -601,6 +601,9 @@ adminRoutes.post('/ai/config', async (c) => {
   if (!model || !isAllowedModel(model)) {
     return c.html(layout('Error', `<div class="flash flash-error">Invalid model. Allowed: ${ALLOWED_MODELS.join(', ')}</div><a href="/admin/ai/config">Back</a>`), 400);
   }
+  if (!hasKeyForModel(model)) {
+    return c.html(layout('Error', `<div class="flash flash-error">API key for model "${model}" is not configured. Set the required environment variable first.</div><a href="/admin/ai/config">Back</a>`), 400);
+  }
 
   await setModelConfig(useCase as AiUseCase, model);
   return c.redirect('/admin/ai/config');
@@ -619,6 +622,9 @@ adminRoutes.patch('/ai/config', async (c) => {
     if (model !== undefined) {
       if (!isAllowedModel(model)) {
         return c.json({ error: `Invalid model "${model}" for ${useCase}. Allowed: ${ALLOWED_MODELS.join(', ')}` }, 400);
+      }
+      if (!hasKeyForModel(model)) {
+        return c.json({ error: `API key for model "${model}" is not configured. Set the required environment variable first.` }, 400);
       }
       await setModelConfig(useCase, model);
       updated[useCase] = model;

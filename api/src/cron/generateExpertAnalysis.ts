@@ -1,7 +1,7 @@
 import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
 import { eq, and, isNull, gt } from 'drizzle-orm';
-import { callAi } from '../services/aiClient.js';
+import { callAi, getModelForUseCase, hasKeyForModel } from '../services/aiClient.js';
 
 export async function generateExpertAnalysis() {
   // Find published scenarios without expert analysis that have votes
@@ -35,17 +35,19 @@ async function generateAnalysis(scenario: {
   votesBothWrong: number;
   totalVotes: number;
 }): Promise<string> {
-  // Fallback: if no AI provider key is configured, return a community-based summary
-  if (!process.env.AI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GOOGLE_AI_API_KEY) {
+  // Fallback: if the resolved model's provider key is not configured, return community summary
+  const resolvedModel = await getModelForUseCase('analysis');
+  if (!hasKeyForModel(resolvedModel)) {
     return buildCommunityFallback(scenario);
   }
 
-  const result = await callAi({
-    useCase: 'analysis',
-    messages: [
-      {
-        role: 'user',
-        content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
+  try {
+    const result = await callAi({
+      useCase: 'analysis',
+      messages: [
+        {
+          role: 'user',
+          content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
 
 Scenario: ${scenario.body}
 
@@ -56,12 +58,16 @@ Community vote results (${scenario.totalVotes} votes):
 - Both Wrong: ${scenario.votesBothWrong} (${Math.round((scenario.votesBothWrong / scenario.totalVotes) * 100)}%)
 
 Provide a brief expert analysis (2-3 sentences):`,
-      },
-    ],
-    maxTokens: 300,
-  });
+        },
+      ],
+      maxTokens: 300,
+    });
 
-  return result.text;
+    return result.text;
+  } catch (err) {
+    console.error('[CRON] AI call failed for expert analysis, using community fallback:', err);
+    return buildCommunityFallback(scenario);
+  }
 }
 
 function buildCommunityFallback(scenario: {
