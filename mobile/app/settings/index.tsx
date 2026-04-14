@@ -6,6 +6,7 @@ import { api } from '../../src/api/client';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, saveLocale } from '../../src/i18n';
+import Constants from 'expo-constants';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -192,7 +193,7 @@ export default function SettingsScreen() {
         <Text style={[rowText, { color: colors.error }]}>{t('settings.delete_account')}</Text>
       </TouchableOpacity>
 
-      <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 32 }}>SpicyPick v1.0.0</Text>
+      <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 32 }}>SpicyPick v{Constants.expoConfig?.version ?? '1.0.0'}</Text>
     </View>
   );
 }
