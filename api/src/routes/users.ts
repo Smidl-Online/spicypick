@@ -201,8 +201,10 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
     });
   }
 
-  // If user has enough votes but no profile yet, await recalculation
-  if (!profile) {
+  // If no profile exists or profile is stale (fewer votes analyzed than current count),
+  // synchronously recalculate before responding
+  const isStale = profile && profile.totalVotesAnalyzed < voteCount.count;
+  if (!profile || isStale) {
     try {
       await recalculateMoralProfile(userId);
       const recalculated = await db.query.moralProfiles.findFirst({
@@ -227,8 +229,26 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
       }
     } catch (err) {
       console.error('Moral profile recalc failed:', err);
+      // If we had a stale profile, return it rather than failing
+      if (profile) {
+        return c.json({
+          profile: {
+            forgiving: profile.forgiving,
+            pragmatic: profile.pragmatic,
+            empathetic: profile.empathetic,
+            confrontational: profile.confrontational,
+            majorityAligned: profile.majorityAligned,
+            consistent: profile.consistent,
+          },
+          totalVotesAnalyzed: profile.totalVotesAnalyzed,
+          minimumVotesRequired: MIN_VOTES,
+          isReady: true,
+          lastCalculatedAt: profile.lastCalculatedAt,
+          votesUntilReady: 0,
+        });
+      }
     }
-    // Recalc failed or produced no result
+    // No profile existed and recalc failed — indicate pending state
     return c.json({
       profile: null,
       totalVotesAnalyzed: 0,
@@ -236,6 +256,7 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
       isReady: false,
       lastCalculatedAt: null,
       votesUntilReady: 0,
+      retryable: true,
     });
   }
 
@@ -252,6 +273,7 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
     minimumVotesRequired: MIN_VOTES,
     isReady: true,
     lastCalculatedAt: profile.lastCalculatedAt,
+    votesUntilReady: 0,
   });
 });
 
