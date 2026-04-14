@@ -35,14 +35,6 @@ async function generateAnalysis(scenario: {
   votesBothWrong: number;
   totalVotes: number;
 }): Promise<string> {
-  const apiKey = process.env.AI_API_KEY;
-
-  if (!apiKey) {
-    // Fallback when no AI key configured
-    const majorityVerdict = getMajorityVerdict(scenario);
-    return `Community verdict: ${majorityVerdict}. ${scenario.totalVotes} people weighed in on this scenario. The split in opinions suggests this is a genuinely complex situation with valid perspectives on multiple sides.`;
-  }
-
   const result = await callAi({
     useCase: 'analysis',
     messages: [
