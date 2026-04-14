@@ -106,10 +106,17 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // DEFAULT_ACTION_IDENTIFIER means user explicitly tapped — always handle regardless of age
+    // Only handle if notification was tapped recently (within 30 seconds)
+    // to prevent navigating on stale taps from previous app sessions
+    const COLD_START_MAX_AGE_MS = 30_000;
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        setTimeout(() => handleNotificationResponse(response), 500);
+        // notification.date is Unix timestamp in seconds, Date.now() returns milliseconds
+        const notifDateMs = response.notification.date * 1000;
+        const age = Date.now() - notifDateMs;
+        if (age > 0 && age < COLD_START_MAX_AGE_MS) {
+          setTimeout(() => handleNotificationResponse(response), 500);
+        }
       }
     });
 
