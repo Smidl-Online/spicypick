@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { api } from '../../src/api/client';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors } from '../../src/theme/colors';
@@ -70,11 +70,7 @@ export default function PremiumScreen() {
       const isPremium = await checkPremiumStatus();
 
       if (isPremium) {
-        // Sync with backend
-        await api('/api/premium/subscribe', {
-          method: 'POST',
-          body: { receipt: 'restored', platform: Platform.OS === 'ios' ? 'ios' : 'android' },
-        });
+        // Sync with backend — just refresh status, RevenueCat already validated the restore
         await fetchProfile();
         const updatedStatus = await api<PremiumStatus>('/api/premium/status');
         setStatus(updatedStatus);
