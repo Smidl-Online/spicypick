@@ -1,3 +1,5 @@
+import { callAi } from './aiClient.js';
+
 const MODERATION_SYSTEM_PROMPT = `You are a content moderator for SpicyPick, a social judgment game where users submit morally ambiguous scenarios.
 
 Review the submitted scenario and respond with JSON:
@@ -41,42 +43,24 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
   }
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        system: MODERATION_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `Review this scenario submission:\n\n<user_content>\n${text}\n</user_content>` }],
-      }),
+    const result = await callAi({
+      useCase: 'moderation',
+      system: MODERATION_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: `Review this scenario submission:\n\n<user_content>\n${text}\n</user_content>` }],
+      maxTokens: 300,
     });
 
-    if (!res.ok) {
-      console.error(`[MODERATION] AI API error: ${res.status}`);
-      return { approved: false, reason: 'AI moderation failed — queued for manual review', category: null, flags: [] };
-    }
-
-    const data = await res.json() as any;
-    if (!data.content?.[0]?.text) {
-      return { approved: false, reason: 'AI returned unexpected format — queued for manual review', category: null, flags: [] };
-    }
-
-    let responseText: string = data.content[0].text;
+    let responseText = result.text;
     // Strip markdown code fences
     const fenceMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (fenceMatch) responseText = fenceMatch[1].trim();
 
-    const result = JSON.parse(responseText) as ModerationResult;
+    const parsed = JSON.parse(responseText) as ModerationResult;
     return {
-      approved: !!result.approved,
-      reason: result.reason || '',
-      category: result.category || null,
-      flags: Array.isArray(result.flags) ? result.flags : [],
+      approved: !!parsed.approved,
+      reason: parsed.reason || '',
+      category: parsed.category || null,
+      flags: Array.isArray(parsed.flags) ? parsed.flags : [],
     };
   } catch (err) {
     console.error('[MODERATION] Error:', err);

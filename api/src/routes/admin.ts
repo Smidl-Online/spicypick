@@ -6,6 +6,7 @@ import { db } from '../db/index.js';
 import { scenarios, scenarioSubmissions, reports, users } from '../db/schema.js';
 import { eq, sql, desc, count } from 'drizzle-orm';
 import { generateAndSaveScenario } from '../services/scenarioGenerator.js';
+import { getAiConfig, setModelConfig, isAllowedModel, ALLOWED_MODELS, type AiUseCase } from '../services/aiClient.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
@@ -80,6 +81,7 @@ function layout(title: string, content: string): string {
   <a href="/admin/scenarios">Scenarios</a>
   <a href="/admin/submissions">Submissions</a>
   <a href="/admin/reports">Reports</a>
+  <a href="/admin/ai/config">AI Config</a>
 </nav>
 ${content}
 </body></html>`;
@@ -523,6 +525,107 @@ adminRoutes.get('/reports', async (c) => {
     </table>
   `;
   return c.html(layout('Reports', content));
+});
+
+// ============================
+// GET /admin/ai/config — View AI model configuration
+// ============================
+adminRoutes.get('/ai/config', async (c) => {
+  const acceptJson = c.req.header('Accept')?.includes('application/json');
+  const config = await getAiConfig();
+
+  if (acceptJson) {
+    return c.json({ config, allowedModels: ALLOWED_MODELS });
+  }
+
+  const useCaseLabels: Record<AiUseCase, string> = {
+    generation: 'Scenario Generation',
+    moderation: 'Content Moderation',
+    analysis: 'Expert Analysis',
+  };
+
+  const sourceLabels: Record<string, string> = {
+    database: 'Database (admin override)',
+    env: 'Environment variable (per use-case)',
+    env_generic: 'Environment variable (AI_MODEL)',
+    default: 'Default',
+  };
+
+  const rows = (Object.entries(config) as [AiUseCase, { model: string; source: string }][]).map(([useCase, cfg]) => `
+    <tr>
+      <td><strong>${useCaseLabels[useCase]}</strong></td>
+      <td><code>${escapeHtml(cfg.model)}</code></td>
+      <td>${sourceLabels[cfg.source] || cfg.source}</td>
+      <td>
+        <form method="POST" action="/admin/ai/config" style="display:flex;gap:8px;margin:0;">
+          <input type="hidden" name="useCase" value="${useCase}">
+          <select name="model" style="width:auto;">
+            ${ALLOWED_MODELS.map((m) => `<option value="${m}" ${m === cfg.model ? 'selected' : ''}>${m}</option>`).join('')}
+          </select>
+          <button type="submit" style="padding:4px 12px;font-size:0.85rem;">Set</button>
+        </form>
+      </td>
+    </tr>
+  `).join('');
+
+  const content = `
+    <h1>AI Model Configuration</h1>
+    <div class="card">
+      <p>Configure which AI model is used for each use-case. Changes take effect within 1 minute (cached).</p>
+      <table>
+        <thead><tr><th>Use Case</th><th>Current Model</th><th>Source</th><th>Change</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h2>Allowed Models</h2>
+      <ul>${ALLOWED_MODELS.map((m) => `<li><code>${m}</code></li>`).join('')}</ul>
+    </div>
+  `;
+  return c.html(layout('AI Config', content));
+});
+
+// ============================
+// POST /admin/ai/config — Update AI model (HTML form)
+// ============================
+adminRoutes.post('/ai/config', async (c) => {
+  const formData = await c.req.parseBody();
+  const useCase = formData.useCase as string;
+  const model = formData.model as string;
+
+  const validUseCases = ['generation', 'moderation', 'analysis'];
+  if (!validUseCases.includes(useCase)) {
+    return c.html(layout('Error', '<div class="flash flash-error">Invalid use case</div><a href="/admin/ai/config">Back</a>'), 400);
+  }
+  if (!model || !isAllowedModel(model)) {
+    return c.html(layout('Error', `<div class="flash flash-error">Invalid model. Allowed: ${ALLOWED_MODELS.join(', ')}</div><a href="/admin/ai/config">Back</a>`), 400);
+  }
+
+  await setModelConfig(useCase as AiUseCase, model);
+  return c.redirect('/admin/ai/config');
+});
+
+// ============================
+// PATCH /admin/ai/config — Update AI model (JSON API)
+// ============================
+adminRoutes.patch('/ai/config', async (c) => {
+  const body = await c.req.json() as Record<string, string>;
+  const validUseCases = ['generation', 'moderation', 'analysis'] as AiUseCase[];
+  const updated: Record<string, string> = {};
+
+  for (const useCase of validUseCases) {
+    const model = body[useCase];
+    if (model !== undefined) {
+      if (!isAllowedModel(model)) {
+        return c.json({ error: `Invalid model "${model}" for ${useCase}. Allowed: ${ALLOWED_MODELS.join(', ')}` }, 400);
+      }
+      await setModelConfig(useCase, model);
+      updated[useCase] = model;
+    }
+  }
+
+  const config = await getAiConfig();
+  return c.json({ updated, config });
 });
 
 export default adminRoutes;
