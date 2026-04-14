@@ -99,6 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err) {
       // Auth errors (401/403) — always log out, don't use cache
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        await clearTokens().catch(() => {});
         await offlineCache.clearUserProfile().catch(() => {});
         analytics.reset();
         set({ user: null, isAuthenticated: false });
