@@ -143,7 +143,14 @@
     "feature_expert": "Análisis experto extendido",
     "feature_adfree": "Experiencia sin anuncios",
     "feature_freezes": "3 congelaciones de racha por mes",
-    "active_until": "Premium activo hasta {{date}}"
+    "active_until": "Premium activo hasta {{date}}",
+    "activated_title": "¡Premium activado!",
+    "activated_msg": "Disfruta de todas las funciones premium.",
+    "restored_title": "¡Restaurado!",
+    "restored_msg": "Tu suscripción premium ha sido restaurada.",
+    "no_purchase_title": "No se encontró compra",
+    "no_purchase_msg": "No se encontró ninguna suscripción activa para restaurar.",
+    "restore": "Restaurar compras"
   },
   "guild": {
     "title": "Gremios",

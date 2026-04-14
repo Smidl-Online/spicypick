@@ -143,7 +143,14 @@
     "feature_expert": "Analyse d'expert étendue",
     "feature_adfree": "Expérience sans publicité",
     "feature_freezes": "3 gels de série par mois",
-    "active_until": "Premium actif jusqu'au {{date}}"
+    "active_until": "Premium actif jusqu'au {{date}}",
+    "activated_title": "Premium activé !",
+    "activated_msg": "Profitez de toutes les fonctionnalités premium.",
+    "restored_title": "Restauré !",
+    "restored_msg": "Votre abonnement premium a été restauré.",
+    "no_purchase_title": "Aucun achat trouvé",
+    "no_purchase_msg": "Aucun abonnement actif trouvé à restaurer.",
+    "restore": "Restaurer les achats"
   },
   "guild": {
     "title": "Guildes",

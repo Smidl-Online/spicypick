@@ -143,7 +143,14 @@
     "feature_expert": "Extended expert analysis",
     "feature_adfree": "Ad-free experience",
     "feature_freezes": "3 streak freezes per month",
-    "active_until": "Premium active until {{date}}"
+    "active_until": "Premium active until {{date}}",
+    "activated_title": "Premium activated!",
+    "activated_msg": "Enjoy all premium features.",
+    "restored_title": "Restored!",
+    "restored_msg": "Your premium subscription has been restored.",
+    "no_purchase_title": "No purchase found",
+    "no_purchase_msg": "No active subscription found to restore.",
+    "restore": "Restore purchases"
   },
   "guild": {
     "title": "Guilds",

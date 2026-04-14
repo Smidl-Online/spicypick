@@ -143,7 +143,14 @@
     "feature_expert": "拡張専門家分析",
     "feature_adfree": "広告なし体験",
     "feature_freezes": "月3回のストリークフリーズ",
-    "active_until": "プレミアム有効期限: {{date}}"
+    "active_until": "プレミアム有効期限: {{date}}",
+    "activated_title": "プレミアム有効化完了！",
+    "activated_msg": "すべてのプレミアム機能をお楽しみください。",
+    "restored_title": "復元完了！",
+    "restored_msg": "プレミアムサブスクリプションが復元されました。",
+    "no_purchase_title": "購入が見つかりません",
+    "no_purchase_msg": "復元可能なアクティブなサブスクリプションが見つかりませんでした。",
+    "restore": "購入を復元"
   },
   "guild": {
     "title": "ギルド",

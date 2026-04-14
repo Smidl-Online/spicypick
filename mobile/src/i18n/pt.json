@@ -143,7 +143,14 @@
     "feature_expert": "Análise especializada estendida",
     "feature_adfree": "Experiência sem anúncios",
     "feature_freezes": "3 congelamentos de sequência por mês",
-    "active_until": "Premium ativo até {{date}}"
+    "active_until": "Premium ativo até {{date}}",
+    "activated_title": "Premium ativado!",
+    "activated_msg": "Aproveite todos os recursos premium.",
+    "restored_title": "Restaurado!",
+    "restored_msg": "Sua assinatura premium foi restaurada.",
+    "no_purchase_title": "Nenhuma compra encontrada",
+    "no_purchase_msg": "Nenhuma assinatura ativa encontrada para restaurar.",
+    "restore": "Restaurar compras"
   },
   "guild": {
     "title": "Guildas",

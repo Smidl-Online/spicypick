@@ -142,7 +142,14 @@
     "feature_expert": "详细专家分析",
     "feature_adfree": "无广告体验",
     "feature_freezes": "每月 3 次连续天数保护",
-    "active_until": "高级版有效期至 {{date}}"
+    "active_until": "高级版有效期至 {{date}}",
+    "activated_title": "高级版已激活！",
+    "activated_msg": "尽情享受所有高级功能吧。",
+    "restored_title": "已恢复！",
+    "restored_msg": "你的高级版订阅已恢复。",
+    "no_purchase_title": "未找到购买记录",
+    "no_purchase_msg": "未找到可恢复的有效订阅。",
+    "restore": "恢复购买"
   },
   "guild": {
     "title": "公会",
