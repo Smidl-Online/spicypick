@@ -76,6 +76,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     analytics.track('user_logged_out');
     analytics.reset();
     useExperimentStore.getState().reset();
+    await offlineCache.clearUserData();
     await clearTokens();
     set({ user: null, isAuthenticated: false });
   },
@@ -85,7 +86,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const user = await api<User>('/api/users/me');
       set({ user, isAuthenticated: true });
       analytics.identify(user.id);
-      offlineCache.cacheUserProfile(user);
+      await offlineCache.cacheUserProfile(user).catch(() => {});
     } catch {
       const cached = await offlineCache.getCachedUserProfile<User>();
       if (cached) {
