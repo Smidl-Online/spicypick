@@ -106,16 +106,9 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // Only handle if notification was received within the last 30 seconds
-    // to prevent navigating on stale notifications from days ago
-    const COLD_START_MAX_AGE_MS = 30_000;
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        const notifDate = response.notification.date;
-        const age = Date.now() - notifDate;
-        if (age < COLD_START_MAX_AGE_MS) {
-          setTimeout(() => handleNotificationResponse(response), 500);
-        }
+        setTimeout(() => handleNotificationResponse(response), 500);
       }
     });
 

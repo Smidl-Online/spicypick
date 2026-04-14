@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, setTokens, clearTokens } from '../api/client';
+import { api, ApiError, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
 import { logoutRevenueCat } from '../services/revenueCat';
 import { offlineCache } from '../services/offlineCache';
@@ -81,6 +81,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await api('/api/users/me/push-token', { method: 'DELETE' }).catch(() => {});
     await logoutRevenueCat().catch(() => {});
     await clearTokens();
+    await offlineCache.clearUserProfile().catch(() => {});
+    await offlineCache.clearLeague().catch(() => {});
     useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
@@ -94,8 +96,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       analytics.identify(user.id);
       // Cache profile for offline fallback
       await offlineCache.cacheUserProfile(user).catch(() => {});
-    } catch {
-      // Try offline cache before logging out
+    } catch (err) {
+      // Auth errors (401/403) — always log out, don't use cache
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        await offlineCache.clearUserProfile().catch(() => {});
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+      // Network/other errors — try offline cache fallback
       const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
       if (cached) {
         set({ user: cached, isAuthenticated: true });
