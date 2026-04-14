@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
-import { demographicStats, users } from '../db/schema.js';
-import { eq, sql } from 'drizzle-orm';
+import { demographicStats, users, votes } from '../db/schema.js';
+import { eq, and, sql } from 'drizzle-orm';
 
 const AGE_GROUPS = ['13-17', '18-24', '25-34', '35-44', '45-54', '55-64', '65+'] as const;
 export type AgeGroup = typeof AGE_GROUPS[number];
