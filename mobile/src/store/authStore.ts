@@ -81,6 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await api('/api/users/me/push-token', { method: 'DELETE' }).catch(() => {});
     await logoutRevenueCat().catch(() => {});
     await clearTokens();
+    await offlineCache.clearUserProfile().catch(() => {});
     useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
@@ -94,8 +95,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       analytics.identify(user.id);
       // Cache profile for offline fallback
       await offlineCache.cacheUserProfile(user).catch(() => {});
-    } catch {
-      // Try offline cache before logging out
+    } catch (err: any) {
+      // Auth errors (401/403) — always log out, don't use stale cache
+      const status = err?.status;
+      if (status === 401 || status === 403) {
+        await offlineCache.clearUserProfile().catch(() => {});
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+      // Network/other errors — try offline cache fallback
       const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
       if (cached) {
         set({ user: cached, isAuthenticated: true });

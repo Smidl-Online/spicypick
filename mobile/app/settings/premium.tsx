@@ -3,9 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } fr
 import { api } from '../../src/api/client';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors } from '../../src/theme/colors';
+import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
-import { purchasePremium, restorePurchases, checkPremiumStatus } from '../../src/services/revenueCat';
+import { purchasePremium, restorePurchases, checkPremiumStatus, isRevenueCatConfigured } from '../../src/services/revenueCat';
 
 type PremiumStatus = {
   isPremium: boolean;
@@ -23,6 +24,7 @@ const FEATURE_KEYS = [
 
 export default function PremiumScreen() {
   const { t } = useTranslation();
+  const { colors: themeColors } = useTheme();
   const { fetchProfile, user } = useAuthStore();
   const [status, setStatus] = useState<PremiumStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,17 +129,19 @@ export default function PremiumScreen() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.restoreBtn}
-            onPress={handleRestore}
-            disabled={isLoading || isRestoring}
-          >
-            {isRestoring ? (
-              <ActivityIndicator color={colors.textSecondary} />
-            ) : (
-              <Text style={styles.restoreBtnText}>{t('premium.restore', 'Restore purchases')}</Text>
-            )}
-          </TouchableOpacity>
+          {isRevenueCatConfigured && (
+            <TouchableOpacity
+              style={styles.restoreBtn}
+              onPress={handleRestore}
+              disabled={isLoading || isRestoring}
+            >
+              {isRestoring ? (
+                <ActivityIndicator color={colors.textSecondary} />
+              ) : (
+                <Text style={styles.restoreBtnText}>{t('premium.restore', 'Restore purchases')}</Text>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>

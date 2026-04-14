@@ -72,6 +72,10 @@ export const offlineCache = {
     }
   },
 
+  async clearUserProfile() {
+    await AsyncStorage.removeItem(CACHE_KEYS.userProfile);
+  },
+
   async clearPendingVotes() {
     await AsyncStorage.removeItem(CACHE_KEYS.pendingVotes);
   },
