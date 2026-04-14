@@ -1,0 +1,8 @@
+appId: com.spicypick.app
+---
+- launchApp
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Today"
+    optional: true
+- takeScreenshot: main-screen

@@ -1,6 +1,7 @@
 import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
 import { VALID_CATEGORIES } from '../constants.js';
+import { callAi } from './aiClient.js';
 
 const LOCALE_PROMPTS: Record<string, string> = {
   en: 'Write the scenario in English.',
@@ -21,30 +22,17 @@ Return JSON: {"title": "...", "body": "..."}`;
 export async function generateScenario(category?: string, locale?: string) {
   const cat = category || VALID_CATEGORIES[Math.floor(Math.random() * VALID_CATEGORIES.length)];
   const lang = locale || 'en';
-  const apiKey = process.env.AI_API_KEY;
-  if (!apiKey) throw new Error('AI_API_KEY not configured');
 
   const langInstruction = LOCALE_PROMPTS[lang] || LOCALE_PROMPTS.en;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: process.env.AI_MODEL || 'claude-sonnet-4-20250514',
-      max_tokens: 500,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: `Generate a ${cat} scenario. ${langInstruction}` }],
-    }),
+  const result = await callAi({
+    useCase: 'generation',
+    system: SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: `Generate a ${cat} scenario. ${langInstruction}` }],
+    maxTokens: 500,
   });
 
-  if (!res.ok) throw new Error(`AI API error: ${res.status}`);
-  const data = await res.json() as any;
-  if (!data.content?.[0]?.text) throw new Error('AI returned unexpected response format');
-  let text: string = data.content[0].text;
+  let text = result.text;
   // Strip markdown code fences if AI wraps response in ```json ... ```
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) text = fenceMatch[1].trim();

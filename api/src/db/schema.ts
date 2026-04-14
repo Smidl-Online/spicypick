@@ -345,6 +345,15 @@ export const experimentEvents = pgTable('experiment_events', {
 ]);
 
 // ============================================
+// APP CONFIG (key-value store for runtime settings)
+// ============================================
+export const appConfig = pgTable('app_config', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// ============================================
 // RELATIONS
 // ============================================
 export const usersRelations = relations(users, ({ many, one }) => ({

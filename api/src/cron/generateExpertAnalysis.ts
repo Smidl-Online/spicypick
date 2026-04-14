@@ -1,6 +1,7 @@
 import { db } from '../db/index.js';
 import { scenarios } from '../db/schema.js';
-import { eq, and, isNull, lte, gt } from 'drizzle-orm';
+import { eq, and, isNull, gt } from 'drizzle-orm';
+import { callAi, getModelForUseCase, hasKeyForModel } from '../services/aiClient.js';
 
 export async function generateExpertAnalysis() {
   // Find published scenarios without expert analysis that have votes
@@ -34,29 +35,20 @@ async function generateAnalysis(scenario: {
   votesBothWrong: number;
   totalVotes: number;
 }): Promise<string> {
-  const apiKey = process.env.AI_API_KEY;
-
-  if (!apiKey) {
-    // Fallback when no AI key configured
-    const majorityVerdict = getMajorityVerdict(scenario);
-    return `Community verdict: ${majorityVerdict}. ${scenario.totalVotes} people weighed in on this scenario. The split in opinions suggests this is a genuinely complex situation with valid perspectives on multiple sides.`;
+  // Fallback: if the resolved model's provider key is not configured, return community summary
+  const resolvedModel = await getModelForUseCase('analysis');
+  if (!hasKeyForModel(resolvedModel)) {
+    return buildCommunityFallback(scenario);
   }
 
-  // Use Claude API for analysis
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      messages: [
-        {
-          role: 'user',
-          content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
+  // No try/catch here — let transient AI errors propagate so the outer loop
+  // skips this scenario and the cron can retry it on the next run.
+  const result = await callAi({
+    useCase: 'analysis',
+    messages: [
+      {
+        role: 'user',
+        content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
 
 Scenario: ${scenario.body}
 
@@ -67,31 +59,29 @@ Community vote results (${scenario.totalVotes} votes):
 - Both Wrong: ${scenario.votesBothWrong} (${Math.round((scenario.votesBothWrong / scenario.totalVotes) * 100)}%)
 
 Provide a brief expert analysis (2-3 sentences):`,
-        },
-      ],
-    }),
+      },
+    ],
+    maxTokens: 300,
   });
 
-  if (!response.ok) {
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json() as { content: Array<{ text: string }> };
-  return data.content[0].text;
+  return result.text;
 }
 
-function getMajorityVerdict(scenario: {
+function buildCommunityFallback(scenario: {
   votesGuilty: number;
   votesNotGuilty: number;
   votesComplicated: number;
   votesBothWrong: number;
+  totalVotes: number;
 }): string {
-  const map = [
+  const votes = [
     { label: 'Guilty', count: scenario.votesGuilty },
     { label: 'Not Guilty', count: scenario.votesNotGuilty },
     { label: "It's Complicated", count: scenario.votesComplicated },
     { label: 'Both Wrong', count: scenario.votesBothWrong },
   ];
-  map.sort((a, b) => b.count - a.count);
-  return map[0].label;
+  votes.sort((a, b) => b.count - a.count);
+  const top = votes[0];
+  const pct = Math.round((top.count / scenario.totalVotes) * 100);
+  return `The community verdict is "${top.label}" with ${pct}% of ${scenario.totalVotes} votes.`;
 }

@@ -646,7 +646,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   if (existingPrediction) {
     // Majority verdict = the verdict with most votes (deterministic tie-break: alphabetical order)
     const verdictPriority = ['both_wrong', 'complicated', 'guilty', 'not_guilty'] as const;
-    let majorityVerdict = verdictPriority[0];
+    let majorityVerdict: typeof verdictPriority[number] = verdictPriority[0];
     let majorityCount = verdictCounts[majorityVerdict] || 0;
     for (const v of verdictPriority) {
       const c = verdictCounts[v] || 0;

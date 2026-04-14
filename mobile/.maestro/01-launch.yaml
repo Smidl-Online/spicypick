@@ -1,0 +1,4 @@
+appId: com.spicypick.app
+---
+- launchApp
+- assertVisible: "SpicyPick"
