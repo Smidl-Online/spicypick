@@ -13,6 +13,7 @@ import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { analytics } from '../src/services/analytics';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
+import { initRevenueCat, loginRevenueCat } from '../src/services/revenueCat';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -38,7 +39,7 @@ function extractScenarioId(url: string): string | null {
 }
 
 function RootLayoutInner() {
-  const { fetchProfile, isAuthenticated } = useAuthStore();
+  const { fetchProfile, isAuthenticated, user } = useAuthStore();
   const { isDark, colors } = useTheme();
   const [ready, setReady] = useState(false);
   const fetchToday = useScenarioStore((s) => s.fetchToday);
@@ -46,6 +47,15 @@ function RootLayoutInner() {
 
   // Register push token when authenticated
   usePushNotifications(isAuthenticated);
+
+  // Sync RevenueCat user identity when authenticated
+  useEffect(() => {
+    if (user?.id) {
+      loginRevenueCat(user.id).catch((err) =>
+        console.warn('RevenueCat login failed:', err),
+      );
+    }
+  }, [user?.id]);
 
   const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
     const data = response.notification.request.content.data;
@@ -66,6 +76,7 @@ function RootLayoutInner() {
     analytics.track('app_open');
     fetchProfile();
     initSentry();
+    initRevenueCat().catch((err) => console.warn('RevenueCat init failed:', err));
     const unsubscribe = startNetworkListener(() => {
       fetchToday();
     });
@@ -95,15 +106,11 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // Use notification.date (Unix timestamp in seconds) to determine freshness
+    // Use actionIdentifier to detect explicit tap — if user tapped, always handle
+    // regardless of notification age. Only skip if there was no explicit interaction.
     Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        const notificationTime = response.notification.date * 1000;
-        const age = Date.now() - notificationTime;
-        // Only handle if notification is less than 30 seconds old (cold start can take time)
-        if (age < 30000) {
-          setTimeout(() => handleNotificationResponse(response), 500);
-        }
+      if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+        setTimeout(() => handleNotificationResponse(response), 500);
       }
     });
 

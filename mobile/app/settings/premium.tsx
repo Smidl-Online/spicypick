@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
 import { api } from '../../src/api/client';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors } from '../../src/theme/colors';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
+import { purchasePremium, restorePurchases, checkPremiumStatus } from '../../src/services/revenueCat';
 
 type PremiumStatus = {
   isPremium: boolean;
@@ -24,6 +25,8 @@ export default function PremiumScreen() {
   const { t } = useTranslation();
   const { fetchProfile } = useAuthStore();
   const [status, setStatus] = useState<PremiumStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
     api<PremiumStatus>('/api/premium/status')
@@ -32,19 +35,57 @@ export default function PremiumScreen() {
   }, []);
 
   const handleSubscribe = async () => {
+    setIsLoading(true);
     try {
-      // In production, this would trigger RevenueCat purchase flow
+      const result = await purchasePremium();
+      if (!result) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Send receipt to backend for server-side validation
       await api('/api/premium/subscribe', {
         method: 'POST',
-        body: { receipt: 'dev-receipt', platform: 'ios' },
+        body: { receipt: result.receipt, platform: result.platform },
       });
+
       await fetchProfile();
-      analytics.track('premium_subscribe', { platform: 'ios' });
-      Alert.alert('Premium activated!', 'Enjoy all premium features.');
+      analytics.track('premium_subscribe', { platform: result.platform });
+      Alert.alert(t('premium.activated_title', 'Premium activated!'), t('premium.activated_msg', 'Enjoy all premium features.'));
       const updatedStatus = await api<PremiumStatus>('/api/premium/status');
       setStatus(updatedStatus);
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      // User cancelled purchase — not an error
+      if (err?.userCancelled || err?.code === '1') return;
+      Alert.alert(t('common.error', 'Error'), err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsRestoring(true);
+    try {
+      await restorePurchases();
+      const isPremium = await checkPremiumStatus();
+
+      if (isPremium) {
+        // Sync with backend
+        await api('/api/premium/subscribe', {
+          method: 'POST',
+          body: { receipt: 'restored', platform: Platform.OS === 'ios' ? 'ios' : 'android' },
+        });
+        await fetchProfile();
+        const updatedStatus = await api<PremiumStatus>('/api/premium/status');
+        setStatus(updatedStatus);
+        Alert.alert(t('premium.restored_title', 'Restored!'), t('premium.restored_msg', 'Your premium subscription has been restored.'));
+      } else {
+        Alert.alert(t('premium.no_purchase_title', 'No purchase found'), t('premium.no_purchase_msg', 'No active subscription found to restore.'));
+      }
+    } catch (err: any) {
+      Alert.alert(t('common.error', 'Error'), err.message);
+    } finally {
+      setIsRestoring(false);
     }
   };
 
@@ -72,9 +113,31 @@ export default function PremiumScreen() {
           </Text>
         </View>
       ) : (
-        <TouchableOpacity style={styles.subscribeBtn} onPress={handleSubscribe}>
-          <Text style={styles.subscribeBtnText}>{t('premium.subscribe')}</Text>
-        </TouchableOpacity>
+        <View>
+          <TouchableOpacity
+            style={[styles.subscribeBtn, isLoading && styles.btnDisabled]}
+            onPress={handleSubscribe}
+            disabled={isLoading || isRestoring}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.subscribeBtnText}>{t('premium.subscribe')}</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.restoreBtn}
+            onPress={handleRestore}
+            disabled={isLoading || isRestoring}
+          >
+            {isRestoring ? (
+              <ActivityIndicator color={colors.textSecondary} />
+            ) : (
+              <Text style={styles.restoreBtnText}>{t('premium.restore', 'Restore purchases')}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -106,5 +169,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 16,
   },
+  btnDisabled: { opacity: 0.6 },
   subscribeBtnText: { fontSize: 18, fontWeight: '800', color: '#fff' },
+  restoreBtn: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  restoreBtnText: { fontSize: 14, color: colors.textSecondary, textDecorationLine: 'underline' },
 });

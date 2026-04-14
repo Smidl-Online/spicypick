@@ -405,12 +405,16 @@ userRoutes.patch('/me/notification-preferences', authMiddleware, async (c) => {
 
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
 
+  if (!user) {
+    return c.json({ error: 'User not found' }, 404);
+  }
+
   return c.json({
-    daily: user!.notifDaily,
-    streak: user!.notifStreak,
-    league: user!.notifLeague,
-    challenges: user!.notifChallenges,
-    achievements: user!.notifAchievements,
+    daily: user.notifDaily,
+    streak: user.notifStreak,
+    league: user.notifLeague,
+    challenges: user.notifChallenges,
+    achievements: user.notifAchievements,
   });
 });
 

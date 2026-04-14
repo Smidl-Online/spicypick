@@ -13,7 +13,13 @@ export function usePushNotifications(isAuthenticated: boolean) {
   const registered = useRef(false);
 
   useEffect(() => {
-    if (!isAuthenticated || registered.current) return;
+    if (!isAuthenticated) {
+      // Reset on logout so next login re-registers the token
+      registered.current = false;
+      return;
+    }
+
+    if (registered.current) return;
 
     registerForPushNotifications().then((token) => {
       if (token) {

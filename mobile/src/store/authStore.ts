@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
+import { logoutRevenueCat } from '../services/revenueCat';
 
 type User = {
   id: string;
@@ -74,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     analytics.track('user_logged_out');
     analytics.reset();
+    await logoutRevenueCat().catch(() => {});
     await clearTokens();
     set({ user: null, isAuthenticated: false });
   },
