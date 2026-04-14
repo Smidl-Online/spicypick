@@ -105,14 +105,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ user: null, isAuthenticated: false });
         return;
       }
-      // Network/other errors — try offline cache fallback
-      const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
-      if (cached) {
-        set({ user: cached, isAuthenticated: true });
-      } else {
-        analytics.reset();
-        set({ user: null, isAuthenticated: false });
+      // Network errors (no HTTP status) — try offline cache fallback
+      if (!(err instanceof ApiError)) {
+        const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
+        if (cached) {
+          set({ user: cached, isAuthenticated: true });
+          return;
+        }
       }
+      // HTTP errors (5xx, 404, etc.) or no cache — logout
+      analytics.reset();
+      set({ user: null, isAuthenticated: false });
     }
   },
 
