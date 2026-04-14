@@ -13,12 +13,12 @@ type PremiumStatus = {
   features: string[];
 };
 
-const FEATURES = [
-  { emoji: '📅', text: '3 scenarios per day' },
-  { emoji: '📚', text: 'Full scenario archive' },
-  { emoji: '🧠', text: 'Extended expert analysis' },
-  { emoji: '🚫', text: 'Ad-free experience' },
-  { emoji: '❄️', text: '3 streak freezes per month' },
+const FEATURE_KEYS = [
+  { emoji: '📅', key: 'premium.feature_scenarios' },
+  { emoji: '📚', key: 'premium.feature_archive' },
+  { emoji: '🧠', key: 'premium.feature_expert' },
+  { emoji: '🚫', key: 'premium.feature_adfree' },
+  { emoji: '❄️', key: 'premium.feature_freezes' },
 ];
 
 export default function PremiumScreen() {
@@ -95,14 +95,14 @@ export default function PremiumScreen() {
       <View style={styles.header}>
         <Text style={styles.crown}>👑</Text>
         <Text style={styles.title}>{t('premium.title')}</Text>
-        <Text style={styles.price}>$2.99/month</Text>
+        <Text style={styles.price}>{t('premium.price')}</Text>
       </View>
 
       <View style={styles.features}>
-        {FEATURES.map((f, i) => (
+        {FEATURE_KEYS.map((f, i) => (
           <View key={i} style={styles.featureRow}>
             <Text style={styles.featureEmoji}>{f.emoji}</Text>
-            <Text style={styles.featureText}>{f.text}</Text>
+            <Text style={styles.featureText}>{t(f.key)}</Text>
           </View>
         ))}
       </View>
@@ -110,7 +110,7 @@ export default function PremiumScreen() {
       {status?.isPremium ? (
         <View style={styles.activeBox}>
           <Text style={styles.activeText}>
-            ✅ Premium active until {status.premiumUntil?.split('T')[0]}
+            ✅ {t('premium.active_until', { date: status.premiumUntil?.split('T')[0] })}
           </Text>
         </View>
       ) : (

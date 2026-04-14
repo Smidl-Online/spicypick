@@ -62,7 +62,12 @@
     "username": "ユーザー名",
     "forgot_password": "パスワードを忘れた？",
     "no_account": "アカウントをお持ちでない？",
-    "has_account": "すでにアカウントをお持ち？"
+    "has_account": "すでにアカウントをお持ち？",
+    "reset_password": "パスワードをリセット",
+    "send_reset_link": "リセットリンクを送信",
+    "back_to_login": "ログインに戻る",
+    "check_email": "メールを確認してください",
+    "check_email_hint": "アカウントが存在する場合、リセットリンクを送信しました。"
   },
   "settings": {
     "title": "設定",
@@ -132,7 +137,13 @@
       "月3回のストリークフリーズ"
     ],
     "subscribe": "購読する",
-    "active": "プレミアム有効期限: {{date}}"
+    "active": "プレミアム有効期限: {{date}}",
+    "feature_scenarios": "1日3シナリオ",
+    "feature_archive": "シナリオアーカイブ全体",
+    "feature_expert": "拡張専門家分析",
+    "feature_adfree": "広告なし体験",
+    "feature_freezes": "月3回のストリークフリーズ",
+    "active_until": "プレミアム有効期限: {{date}}"
   },
   "guild": {
     "title": "ギルド",

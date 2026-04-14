@@ -62,7 +62,12 @@
     "username": "Nombre de usuario",
     "forgot_password": "¿Olvidaste tu contraseña?",
     "no_account": "¿No tienes cuenta?",
-    "has_account": "¿Ya tienes cuenta?"
+    "has_account": "¿Ya tienes cuenta?",
+    "reset_password": "Restablecer contraseña",
+    "send_reset_link": "Enviar enlace de restablecimiento",
+    "back_to_login": "Volver al inicio de sesión",
+    "check_email": "Revisa tu correo",
+    "check_email_hint": "Si existe una cuenta, hemos enviado un enlace de restablecimiento."
   },
   "settings": {
     "title": "Ajustes",
@@ -132,7 +137,13 @@
       "3 congelaciones de racha por mes"
     ],
     "subscribe": "Suscribirse",
-    "active": "Premium activo hasta {{date}}"
+    "active": "Premium activo hasta {{date}}",
+    "feature_scenarios": "3 escenarios por día",
+    "feature_archive": "Archivo completo de escenarios",
+    "feature_expert": "Análisis experto extendido",
+    "feature_adfree": "Experiencia sin anuncios",
+    "feature_freezes": "3 congelaciones de racha por mes",
+    "active_until": "Premium activo hasta {{date}}"
   },
   "guild": {
     "title": "Gremios",

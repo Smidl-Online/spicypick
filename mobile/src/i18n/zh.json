@@ -62,7 +62,12 @@
     "username": "用户名",
     "forgot_password": "忘记密码？",
     "no_account": "还没有账号？",
-    "has_account": "已有账号？"
+    "has_account": "已有账号？",
+    "reset_password": "重置密码",
+    "send_reset_link": "发送重置链接",
+    "back_to_login": "返回登录",
+    "check_email": "请查收邮件",
+    "check_email_hint": "如果账号存在，我们已发送重置链接。"
   },
   "settings": {
     "title": "设置",
@@ -131,7 +136,13 @@
       "每月 3 次连续天数保护"
     ],
     "subscribe": "订阅",
-    "active": "高级版有效期至 {{date}}"
+    "active": "高级版有效期至 {{date}}",
+    "feature_scenarios": "每天 3 个话题",
+    "feature_archive": "完整话题存档",
+    "feature_expert": "详细专家分析",
+    "feature_adfree": "无广告体验",
+    "feature_freezes": "每月 3 次连续天数保护",
+    "active_until": "高级版有效期至 {{date}}"
   },
   "guild": {
     "title": "公会",

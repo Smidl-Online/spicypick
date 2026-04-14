@@ -62,7 +62,12 @@
     "username": "Uživatelské jméno",
     "forgot_password": "Zapomněl jsi heslo?",
     "no_account": "Nemáš účet?",
-    "has_account": "Už máš účet?"
+    "has_account": "Už máš účet?",
+    "reset_password": "Obnovit heslo",
+    "send_reset_link": "Odeslat odkaz pro obnovení",
+    "back_to_login": "Zpět na přihlášení",
+    "check_email": "Zkontroluj e-mail",
+    "check_email_hint": "Pokud účet existuje, poslali jsme odkaz pro obnovení."
   },
   "settings": {
     "title": "Nastavení",
@@ -132,7 +137,13 @@
       "3 streak freeze měsíčně"
     ],
     "subscribe": "Předplatit",
-    "active": "Premium aktivní do {{date}}"
+    "active": "Premium aktivní do {{date}}",
+    "feature_scenarios": "3 scénáře denně",
+    "feature_archive": "Kompletní archiv scénářů",
+    "feature_expert": "Rozšířená expertní analýza",
+    "feature_adfree": "Bez reklam",
+    "feature_freezes": "3 streak freeze měsíčně",
+    "active_until": "Premium aktivní do {{date}}"
   },
   "guild": {
     "title": "Guildy",

@@ -62,7 +62,12 @@
     "username": "Nom d'utilisateur",
     "forgot_password": "Mot de passe oublié ?",
     "no_account": "Pas de compte ?",
-    "has_account": "Déjà un compte ?"
+    "has_account": "Déjà un compte ?",
+    "reset_password": "Réinitialiser le mot de passe",
+    "send_reset_link": "Envoyer le lien de réinitialisation",
+    "back_to_login": "Retour à la connexion",
+    "check_email": "Vérifiez votre e-mail",
+    "check_email_hint": "Si un compte existe, nous avons envoyé un lien de réinitialisation."
   },
   "settings": {
     "title": "Paramètres",
@@ -132,7 +137,13 @@
       "3 gels de série par mois"
     ],
     "subscribe": "S'abonner",
-    "active": "Premium actif jusqu'au {{date}}"
+    "active": "Premium actif jusqu'au {{date}}",
+    "feature_scenarios": "3 scénarios par jour",
+    "feature_archive": "Archive complète des scénarios",
+    "feature_expert": "Analyse d'expert étendue",
+    "feature_adfree": "Expérience sans publicité",
+    "feature_freezes": "3 gels de série par mois",
+    "active_until": "Premium actif jusqu'au {{date}}"
   },
   "guild": {
     "title": "Guildes",

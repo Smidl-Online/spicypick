@@ -62,7 +62,12 @@
     "username": "Benutzername",
     "forgot_password": "Passwort vergessen?",
     "no_account": "Noch kein Konto?",
-    "has_account": "Schon ein Konto?"
+    "has_account": "Schon ein Konto?",
+    "reset_password": "Passwort zurücksetzen",
+    "send_reset_link": "Link zum Zurücksetzen senden",
+    "back_to_login": "Zurück zur Anmeldung",
+    "check_email": "Überprüfe deine E-Mail",
+    "check_email_hint": "Falls ein Konto existiert, haben wir einen Link zum Zurücksetzen gesendet."
   },
   "settings": {
     "title": "Einstellungen",
@@ -132,7 +137,13 @@
       "3 Streak-Freezes pro Monat"
     ],
     "subscribe": "Abonnieren",
-    "active": "Premium aktiv bis {{date}}"
+    "active": "Premium aktiv bis {{date}}",
+    "feature_scenarios": "3 Szenarien pro Tag",
+    "feature_archive": "Vollständiges Szenario-Archiv",
+    "feature_expert": "Erweiterte Expertenanalyse",
+    "feature_adfree": "Werbefreies Erlebnis",
+    "feature_freezes": "3 Streak-Freezes pro Monat",
+    "active_until": "Premium aktiv bis {{date}}"
   },
   "guild": {
     "title": "Gilden",

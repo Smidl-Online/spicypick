@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
 import { logoutRevenueCat } from '../services/revenueCat';
+import { offlineCache } from '../services/offlineCache';
+import { useExperimentStore } from './experimentStore';
 
 type User = {
   id: string;
@@ -79,6 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await api('/api/users/me/push-token', { method: 'DELETE' }).catch(() => {});
     await logoutRevenueCat().catch(() => {});
     await clearTokens();
+    useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
 
@@ -89,9 +92,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Re-identify on every profile fetch so app resume with existing session
       // correctly tags analytics events (not just login/register)
       analytics.identify(user.id);
+      // Cache profile for offline fallback
+      await offlineCache.cacheUserProfile(user).catch(() => {});
     } catch {
-      analytics.reset();
-      set({ user: null, isAuthenticated: false });
+      // Try offline cache before logging out
+      const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
+      if (cached) {
+        set({ user: cached, isAuthenticated: true });
+      } else {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+      }
     }
   },
 

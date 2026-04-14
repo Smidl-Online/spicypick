@@ -62,7 +62,12 @@
     "username": "Nome de usuário",
     "forgot_password": "Esqueceu a senha?",
     "no_account": "Não tem conta?",
-    "has_account": "Já tem conta?"
+    "has_account": "Já tem conta?",
+    "reset_password": "Redefinir senha",
+    "send_reset_link": "Enviar link de redefinição",
+    "back_to_login": "Voltar ao login",
+    "check_email": "Verifique seu e-mail",
+    "check_email_hint": "Se uma conta existir, enviamos um link de redefinição."
   },
   "settings": {
     "title": "Configurações",
@@ -132,7 +137,13 @@
       "3 congelamentos de sequência por mês"
     ],
     "subscribe": "Assinar",
-    "active": "Premium ativo até {{date}}"
+    "active": "Premium ativo até {{date}}",
+    "feature_scenarios": "3 cenários por dia",
+    "feature_archive": "Arquivo completo de cenários",
+    "feature_expert": "Análise especializada estendida",
+    "feature_adfree": "Experiência sem anúncios",
+    "feature_freezes": "3 congelamentos de sequência por mês",
+    "active_until": "Premium ativo até {{date}}"
   },
   "guild": {
     "title": "Guildas",

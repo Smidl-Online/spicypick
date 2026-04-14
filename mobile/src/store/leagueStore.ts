@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
+import { offlineCache } from '../services/offlineCache';
 
 type LeaderboardEntry = {
   rank: number;
@@ -46,15 +47,35 @@ export const useLeagueStore = create<LeagueState>((set) => ({
         leaderboard?: LeaderboardEntry[];
       }>('/api/leagues/current');
 
-      set({
+      const state = {
         league: data.league,
         userRank: data.userRank || 0,
         userWeeklyXp: data.userWeeklyXp || 0,
         leaderboard: data.leaderboard || [],
         isLoading: false,
-      });
+      };
+      set(state);
+      // Cache league data for offline fallback
+      await offlineCache.cacheLeague(data).catch(() => {});
     } catch {
-      set({ isLoading: false });
+      // Try offline cache before giving up
+      const cached = await offlineCache.getCachedLeague<{
+        league: League | null;
+        userRank?: number;
+        userWeeklyXp?: number;
+        leaderboard?: LeaderboardEntry[];
+      }>().catch(() => null);
+      if (cached) {
+        set({
+          league: cached.league,
+          userRank: cached.userRank || 0,
+          userWeeklyXp: cached.userWeeklyXp || 0,
+          leaderboard: cached.leaderboard || [],
+          isLoading: false,
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 }));
