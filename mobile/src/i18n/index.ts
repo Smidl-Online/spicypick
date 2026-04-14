@@ -9,6 +9,7 @@ import es from './es.json';
 import pt from './pt.json';
 import fr from './fr.json';
 import ja from './ja.json';
+import zh from './zh.json';
 
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -18,6 +19,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'pt', name: 'Português' },
   { code: 'fr', name: 'Français' },
   { code: 'ja', name: '日本語' },
+  { code: 'zh', name: '中文' },
 ];
 
 const supportedCodes = SUPPORTED_LANGUAGES.map((l) => l.code);
@@ -41,6 +43,7 @@ const resources = {
   pt: { translation: pt },
   fr: { translation: fr },
   ja: { translation: ja },
+  zh: { translation: zh },
 };
 
 async function initI18n() {
