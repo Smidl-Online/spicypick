@@ -44,6 +44,7 @@ export async function logoutRevenueCat(): Promise<void> {
 }
 
 export async function getOfferings(): Promise<PurchasesPackage[]> {
+  await initRevenueCat();
   if (!isConfigured) return [];
   const offerings = await Purchases.getOfferings();
   return offerings.current?.availablePackages ?? [];
@@ -87,17 +88,20 @@ export async function purchasePremium(): Promise<{
 }
 
 export async function getCustomerInfo(): Promise<CustomerInfo | null> {
+  await initRevenueCat();
   if (!isConfigured) return null;
   return Purchases.getCustomerInfo();
 }
 
 export async function checkPremiumStatus(): Promise<boolean> {
+  await initRevenueCat();
   if (!isConfigured) return false;
   const info = await Purchases.getCustomerInfo();
   return !!info.entitlements.active['premium'];
 }
 
 export async function restorePurchases(): Promise<CustomerInfo | null> {
+  await initRevenueCat();
   if (!isConfigured) return null;
   return Purchases.restorePurchases();
 }
