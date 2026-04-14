@@ -605,7 +605,11 @@ adminRoutes.post('/ai/config', async (c) => {
     return c.html(layout('Error', `<div class="flash flash-error">API key for model "${model}" is not configured. Set the required environment variable first.</div><a href="/admin/ai/config">Back</a>`), 400);
   }
 
-  await setModelConfig(useCase as AiUseCase, model);
+  try {
+    await setModelConfig(useCase as AiUseCase, model);
+  } catch (err) {
+    return c.html(layout('Error', `<div class="flash flash-error">Failed to save config: ${err instanceof Error ? err.message : 'database error'}</div><a href="/admin/ai/config">Back</a>`), 500);
+  }
   return c.redirect('/admin/ai/config');
 });
 
@@ -613,7 +617,8 @@ adminRoutes.post('/ai/config', async (c) => {
 // PATCH /admin/ai/config — Update AI model (JSON API)
 // ============================
 adminRoutes.patch('/ai/config', async (c) => {
-  const body = await c.req.json() as Record<string, string>;
+  let body: Record<string, string>;
+  try { body = await c.req.json() as Record<string, string>; } catch { return c.json({ error: 'Invalid JSON' }, 400); }
   const validUseCases = ['generation', 'moderation', 'analysis'] as AiUseCase[];
   const updated: Record<string, string> = {};
 
@@ -626,7 +631,11 @@ adminRoutes.patch('/ai/config', async (c) => {
       if (!hasKeyForModel(model)) {
         return c.json({ error: `API key for model "${model}" is not configured. Set the required environment variable first.` }, 400);
       }
-      await setModelConfig(useCase, model);
+      try {
+        await setModelConfig(useCase, model);
+      } catch (err) {
+        return c.json({ error: `Failed to save config for ${useCase}: ${err instanceof Error ? err.message : 'database error'}` }, 500);
+      }
       updated[useCase] = model;
     }
   }

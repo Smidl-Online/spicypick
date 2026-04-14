@@ -47,6 +47,11 @@ export const users = pgTable('users', {
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   timezone: varchar('timezone', { length: 50 }).default('UTC').notNull(),
   pushToken: text('push_token'),
+  notifDaily: boolean('notif_daily').default(true).notNull(),
+  notifStreak: boolean('notif_streak').default(true).notNull(),
+  notifLeague: boolean('notif_league').default(true).notNull(),
+  notifChallenges: boolean('notif_challenges').default(true).notNull(),
+  notifAchievements: boolean('notif_achievements').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

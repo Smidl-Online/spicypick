@@ -71,7 +71,7 @@ export async function sendLeagueNotifications() {
 
   for (const member of allMembers) {
     const user = userMap.get(member.userId);
-    if (!user?.pushToken) continue;
+    if (!user?.pushToken || !user.notifLeague) continue;
 
     const locale = user.locale || 'en';
 

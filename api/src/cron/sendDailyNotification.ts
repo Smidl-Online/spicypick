@@ -40,8 +40,9 @@ export async function sendDailyNotification() {
     ),
   });
 
-  // Filter out users who already played today in their local timezone
+  // Filter out users who already played today or disabled daily notifications
   const notYetPlayed = eligibleUsers.filter((user) => {
+    if (!user.notifDaily) return false;
     if (!user.lastPlayedAt) return true;
     const userToday = todayInTimezone(user.timezone);
     return user.lastPlayedAt !== userToday;

@@ -5,13 +5,12 @@ import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
-import { validateReceipt, getSubscriptionStatus } from '../services/revenueCat.js';
+import { getSubscriptionStatus } from '../services/revenueCat.js';
 import { analytics } from '../services/analytics.js';
 
 const premiumRoutes = new Hono<AppEnv>();
 
 const subscribeSchema = z.object({
-  receipt: z.string().min(1),
   platform: z.enum(['ios', 'android']),
 });
 
@@ -23,15 +22,15 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
 
   const parsed = subscribeSchema.safeParse(body);
   if (!parsed.success) {
-    return c.json({ error: 'Receipt and platform (ios/android) required' }, 400);
+    return c.json({ error: 'Platform (ios/android) required' }, 400);
   }
 
-  const { receipt, platform } = parsed.data;
+  const { platform } = parsed.data;
 
-  // If RevenueCat is configured, validate receipt properly
+  // If RevenueCat is configured, verify subscription status
   if (process.env.REVENUECAT_API_KEY) {
     try {
-      const result = await validateReceipt(userId, receipt, platform);
+      const result = await getSubscriptionStatus(userId);
 
       if (!result.isActive || !result.expiresAt) {
         return c.json({ error: 'Subscription is not active' }, 402);
@@ -56,8 +55,8 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
         productId: result.productId,
       });
     } catch (err) {
-      console.error('RevenueCat validation error:', err);
-      return c.json({ error: 'Receipt validation failed' }, 400);
+      console.error('RevenueCat verification error:', err);
+      return c.json({ error: 'Subscription verification failed' }, 400);
     }
   }
 

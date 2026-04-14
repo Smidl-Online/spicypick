@@ -360,4 +360,62 @@ userRoutes.put('/me/push-token', authMiddleware, async (c) => {
   return c.json({ message: 'Push token saved' });
 });
 
+// GET /api/users/me/notification-preferences
+userRoutes.get('/me/notification-preferences', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user) return c.json({ error: 'User not found' }, 404);
+
+  return c.json({
+    daily: user.notifDaily,
+    streak: user.notifStreak,
+    league: user.notifLeague,
+    challenges: user.notifChallenges,
+    achievements: user.notifAchievements,
+  });
+});
+
+// PATCH /api/users/me/notification-preferences
+const notifPrefsSchema = z.object({
+  daily: z.boolean().optional(),
+  streak: z.boolean().optional(),
+  league: z.boolean().optional(),
+  challenges: z.boolean().optional(),
+  achievements: z.boolean().optional(),
+});
+
+userRoutes.patch('/me/notification-preferences', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+  let body: unknown;
+  try { body = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  const parsed = notifPrefsSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'Invalid input', details: parsed.error.flatten() }, 400);
+  }
+
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
+  if (parsed.data.daily !== undefined) updates.notifDaily = parsed.data.daily;
+  if (parsed.data.streak !== undefined) updates.notifStreak = parsed.data.streak;
+  if (parsed.data.league !== undefined) updates.notifLeague = parsed.data.league;
+  if (parsed.data.challenges !== undefined) updates.notifChallenges = parsed.data.challenges;
+  if (parsed.data.achievements !== undefined) updates.notifAchievements = parsed.data.achievements;
+
+  await db.update(users).set(updates).where(eq(users.id, userId));
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+
+  if (!user) {
+    return c.json({ error: 'User not found' }, 404);
+  }
+
+  return c.json({
+    daily: user.notifDaily,
+    streak: user.notifStreak,
+    league: user.notifLeague,
+    challenges: user.notifChallenges,
+    achievements: user.notifAchievements,
+  });
+});
+
 export default userRoutes;

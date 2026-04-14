@@ -58,9 +58,12 @@
           "icon": "./assets/icon.png",
           "color": "#e94560"
         }
-      ]
+      ],
+      "react-native-purchases"
     ],
     "extra": {
+      "revenueCatIosKey": "",
+      "revenueCatAndroidKey": "",
       "eas": {
         "projectId": ""
       }

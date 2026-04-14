@@ -27,8 +27,9 @@ export async function sendStreakWarnings() {
     ),
   });
 
-  // Filter to those who haven't played today in their local timezone
+  // Filter to those who haven't played today and have streak notifications enabled
   const notYetPlayed = atRiskUsers.filter((user) => {
+    if (!user.notifStreak) return false;
     if (!user.lastPlayedAt) return true;
     const userToday = todayInTimezone(user.timezone);
     return user.lastPlayedAt !== userToday;
