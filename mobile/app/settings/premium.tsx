@@ -23,7 +23,7 @@ const FEATURES = [
 
 export default function PremiumScreen() {
   const { t } = useTranslation();
-  const { fetchProfile } = useAuthStore();
+  const { fetchProfile, user } = useAuthStore();
   const [status, setStatus] = useState<PremiumStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -37,7 +37,7 @@ export default function PremiumScreen() {
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      const result = await purchasePremium();
+      const result = await purchasePremium(user?.id);
       if (!result) {
         setIsLoading(false);
         return;
@@ -71,7 +71,7 @@ export default function PremiumScreen() {
   const handleRestore = async () => {
     setIsRestoring(true);
     try {
-      await restorePurchases();
+      await restorePurchases(user?.id);
       const isPremium = await checkPremiumStatus();
 
       if (isPremium) {
