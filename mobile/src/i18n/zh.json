@@ -62,7 +62,12 @@
     "username": "用户名",
     "forgot_password": "忘记密码？",
     "no_account": "还没有账号？",
-    "has_account": "已有账号？"
+    "has_account": "已有账号？",
+    "reset_password": "重置密码",
+    "send_reset_link": "发送链接",
+    "check_email": "检查你的邮箱",
+    "reset_sent": "如果账户存在，我们已发送重置链接。",
+    "back_to_login": "返回登录"
   },
   "settings": {
     "title": "设置",

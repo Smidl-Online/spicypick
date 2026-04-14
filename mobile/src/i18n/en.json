@@ -62,7 +62,12 @@
     "username": "Username",
     "forgot_password": "Forgot password?",
     "no_account": "Don't have an account?",
-    "has_account": "Already have an account?"
+    "has_account": "Already have an account?",
+    "reset_password": "Reset Password",
+    "send_reset_link": "Send Reset Link",
+    "check_email": "Check your email",
+    "reset_sent": "If an account exists, we sent a reset link.",
+    "back_to_login": "Back to Login"
   },
   "settings": {
     "title": "Settings",

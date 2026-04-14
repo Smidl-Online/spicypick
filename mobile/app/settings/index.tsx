@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal, FlatList } from 'react-native';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -192,7 +193,7 @@ export default function SettingsScreen() {
         <Text style={[rowText, { color: colors.error }]}>{t('settings.delete_account')}</Text>
       </TouchableOpacity>
 
-      <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 32 }}>SpicyPick v1.0.0</Text>
+      <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 32 }}>SpicyPick v{Constants.expoConfig?.version ?? '1.0.0'}</Text>
     </View>
   );
 }

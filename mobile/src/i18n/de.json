@@ -62,7 +62,12 @@
     "username": "Benutzername",
     "forgot_password": "Passwort vergessen?",
     "no_account": "Noch kein Konto?",
-    "has_account": "Schon ein Konto?"
+    "has_account": "Schon ein Konto?",
+    "reset_password": "Passwort zurücksetzen",
+    "send_reset_link": "Link senden",
+    "check_email": "Überprüfe deine E-Mail",
+    "reset_sent": "Wenn ein Konto existiert, haben wir einen Reset-Link gesendet.",
+    "back_to_login": "Zurück zur Anmeldung"
   },
   "settings": {
     "title": "Einstellungen",
@@ -208,7 +213,12 @@
   "demographics": {
     "title": "Demografie",
     "subtitle": "Optional. Zeigt, wie verschiedene Gruppen abgestimmt haben. Alle Daten sind anonym.",
-    "tabs": { "all": "Alle", "age": "Alter", "country": "Land", "gender": "Geschlecht" },
+    "tabs": {
+      "all": "Alle",
+      "age": "Alter",
+      "country": "Land",
+      "gender": "Geschlecht"
+    },
     "selectFilter": "Wähle einen Filter für die demografische Aufschlüsselung",
     "noData": "Noch nicht genügend Daten für diese Gruppe",
     "voteRequired": "Sie müssen zuerst über dieses Szenario abstimmen",
@@ -217,9 +227,25 @@
     "country": "Land",
     "countryPlaceholder": "z.B. DE",
     "gender": "Geschlecht",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Männlich", "female": "Weiblich", "non_binary": "Nicht-binär", "prefer_not_to_say": "Keine Angabe" },
-    "premium": { "required": "Premium-Abo erforderlich", "cta": "Upgrade auf Premium um zu sehen, wie verschiedene Gruppen abgestimmt haben" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Männlich",
+      "female": "Weiblich",
+      "non_binary": "Nicht-binär",
+      "prefer_not_to_say": "Keine Angabe"
+    },
+    "premium": {
+      "required": "Premium-Abo erforderlich",
+      "cta": "Upgrade auf Premium um zu sehen, wie verschiedene Gruppen abgestimmt haben"
+    },
     "deleteTitle": "Demografische Daten löschen",
     "deleteConfirm": "Dadurch werden Geburtsjahr, Land und Geschlecht entfernt. Deine Stimmen sind nicht betroffen.",
     "deleteData": "Meine demografischen Daten löschen",

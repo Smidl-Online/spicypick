@@ -26,15 +26,15 @@ export default function PremiumScreen() {
       const result = await purchasePremium(user?.id);
       if (!result) { setPurchasing(false); return; }
 
-      if (!result.sdkConfigured) {
-        // Dev mode — use POST /subscribe with stub receipt
-        await api('/api/premium/subscribe', {
-          method: 'POST',
-          body: { platform: result.platform },
-        });
-      }
+      // Sync purchase to backend DB — in production the RC SDK already submitted
+      // the receipt; POST /subscribe verifies entitlement via RC API and activates.
+      // In dev mode (no RC key) it auto-activates for 30 days.
+      await api('/api/premium/subscribe', {
+        method: 'POST',
+        body: { platform: result.platform },
+      });
 
-      // Sync status from backend (GET /status queries RC API and syncs DB)
+      // Refresh local profile + status
       await fetchProfile();
       analytics.track('premium_subscribe', { platform: result.platform, sdkConfigured: result.sdkConfigured });
       Alert.alert(t('premium.activated_title', 'Premium activated!'), t('premium.activated_msg', 'Enjoy all premium features.'));

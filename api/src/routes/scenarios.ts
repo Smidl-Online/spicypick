@@ -695,8 +695,8 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   // Check achievements (after prediction evaluation so oracle_10 / mind_reader_50 are current)
   const newAchievements = await checkAchievements(userId);
 
-  // Send push notification for new achievements (fire and forget)
-  if (newAchievements.length > 0 && user.pushToken) {
+  // Send push notification for new achievements (respecting preferences)
+  if (newAchievements.length > 0 && user.pushToken && user.notifAchievements) {
     sendPushNotification(user.pushToken, {
       title: '🏆 Achievement Unlocked!',
       body: newAchievements.length === 1

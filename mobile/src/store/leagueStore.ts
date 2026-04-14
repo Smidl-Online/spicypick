@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { api } from '../api/client';
+import { api, ApiError } from '../api/client';
+import { offlineCache } from '../services/offlineCache';
 
 type LeaderboardEntry = {
   rank: number;
@@ -53,8 +54,30 @@ export const useLeagueStore = create<LeagueState>((set) => ({
         leaderboard: data.leaderboard || [],
         isLoading: false,
       });
-    } catch {
-      set({ isLoading: false });
+      await offlineCache.cacheLeague(data).catch(() => {});
+    } catch (error) {
+      // Auth errors → don't use stale cache
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        set({ isLoading: false });
+        return;
+      }
+      const cached = await offlineCache.getCachedLeague<{
+        league: League | null;
+        userRank?: number;
+        userWeeklyXp?: number;
+        leaderboard?: LeaderboardEntry[];
+      }>().catch(() => null);
+      if (cached) {
+        set({
+          league: cached.league,
+          userRank: cached.userRank || 0,
+          userWeeklyXp: cached.userWeeklyXp || 0,
+          leaderboard: cached.leaderboard || [],
+          isLoading: false,
+        });
+      } else {
+        set({ isLoading: false });
+      }
     }
   },
 }));

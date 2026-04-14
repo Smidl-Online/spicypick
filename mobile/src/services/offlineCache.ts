@@ -81,4 +81,14 @@ export const offlineCache = {
     const filtered = pending.filter((v) => v.scenarioId !== scenarioId);
     await AsyncStorage.setItem(CACHE_KEYS.pendingVotes, JSON.stringify(filtered));
   },
+
+
+  async clearUserData() {
+    await AsyncStorage.multiRemove([
+      CACHE_KEYS.userProfile,
+      CACHE_KEYS.league,
+      CACHE_KEYS.todayScenario,
+      CACHE_KEYS.pendingVotes,
+    ]);
+  },
 };

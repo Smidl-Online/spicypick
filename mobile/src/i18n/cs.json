@@ -62,7 +62,12 @@
     "username": "Uživatelské jméno",
     "forgot_password": "Zapomněl jsi heslo?",
     "no_account": "Nemáš účet?",
-    "has_account": "Už máš účet?"
+    "has_account": "Už máš účet?",
+    "reset_password": "Obnovení hesla",
+    "send_reset_link": "Odeslat odkaz",
+    "check_email": "Zkontroluj e-mail",
+    "reset_sent": "Pokud účet existuje, odeslali jsme odkaz na obnovení.",
+    "back_to_login": "Zpět na přihlášení"
   },
   "settings": {
     "title": "Nastavení",

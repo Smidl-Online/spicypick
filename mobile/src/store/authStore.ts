@@ -1,7 +1,9 @@
 import { create } from 'zustand';
-import { api, setTokens, clearTokens } from '../api/client';
+import { api, ApiError, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
 import { logoutRevenueCat } from '../services/revenueCat';
+import { offlineCache } from '../services/offlineCache';
+import { useExperimentStore } from './experimentStore';
 
 type User = {
   id: string;
@@ -76,7 +78,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     analytics.track('user_logged_out');
     analytics.reset();
     await logoutRevenueCat().catch(() => {});
+    await offlineCache.clearUserData().catch(() => {});
     await clearTokens();
+    useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
 
@@ -87,9 +91,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Re-identify on every profile fetch so app resume with existing session
       // correctly tags analytics events (not just login/register)
       analytics.identify(user.id);
-    } catch {
-      analytics.reset();
-      set({ user: null, isAuthenticated: false });
+      // Cache profile for offline fallback
+      await offlineCache.cacheUserProfile(user).catch(() => {});
+    } catch (error) {
+      // Auth errors (401/403) = token invalid or account gone → force logout
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+      // Network/other errors → try offline cache before logging out
+      const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
+      if (cached) {
+        set({ user: cached, isAuthenticated: true });
+        analytics.identify(cached.id);
+      } else {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+      }
     }
   },
 
