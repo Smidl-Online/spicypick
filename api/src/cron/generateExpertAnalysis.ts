@@ -35,6 +35,11 @@ async function generateAnalysis(scenario: {
   votesBothWrong: number;
   totalVotes: number;
 }): Promise<string> {
+  // Fallback: if no AI provider key is configured, return a community-based summary
+  if (!process.env.AI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.GOOGLE_AI_API_KEY) {
+    return buildCommunityFallback(scenario);
+  }
+
   const result = await callAi({
     useCase: 'analysis',
     messages: [
@@ -59,18 +64,21 @@ Provide a brief expert analysis (2-3 sentences):`,
   return result.text;
 }
 
-function getMajorityVerdict(scenario: {
+function buildCommunityFallback(scenario: {
   votesGuilty: number;
   votesNotGuilty: number;
   votesComplicated: number;
   votesBothWrong: number;
+  totalVotes: number;
 }): string {
-  const map = [
+  const votes = [
     { label: 'Guilty', count: scenario.votesGuilty },
     { label: 'Not Guilty', count: scenario.votesNotGuilty },
     { label: "It's Complicated", count: scenario.votesComplicated },
     { label: 'Both Wrong', count: scenario.votesBothWrong },
   ];
-  map.sort((a, b) => b.count - a.count);
-  return map[0].label;
+  votes.sort((a, b) => b.count - a.count);
+  const top = votes[0];
+  const pct = Math.round((top.count / scenario.totalVotes) * 100);
+  return `The community verdict is "${top.label}" with ${pct}% of ${scenario.totalVotes} votes.`;
 }

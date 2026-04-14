@@ -73,7 +73,7 @@ describe('aiClient', () => {
   describe('getModelForUseCase — fallback chain', () => {
     it('should return default model when nothing is configured', async () => {
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('gpt-5.4-mini');
+      expect(model).toBe('claude-haiku-4-5-20251001');
     });
 
     it('should return default analysis model (Sonnet 4.6)', async () => {
@@ -81,9 +81,9 @@ describe('aiClient', () => {
       expect(model).toBe('claude-sonnet-4-6-20250514');
     });
 
-    it('should return default moderation model (gpt-5.4-mini)', async () => {
+    it('should return default moderation model (claude-haiku-4-5)', async () => {
       const model = await aiClient.getModelForUseCase('moderation');
-      expect(model).toBe('gpt-5.4-mini');
+      expect(model).toBe('claude-haiku-4-5-20251001');
     });
 
     it('should use generic AI_MODEL env var as fallback', async () => {
@@ -132,15 +132,15 @@ describe('aiClient', () => {
       process.env.AI_MODEL = 'not-a-real-model';
       aiClient.invalidateConfigCache();
       const model = await aiClient.getModelForUseCase('generation');
-      expect(model).toBe('gpt-5.4-mini');
+      expect(model).toBe('claude-haiku-4-5-20251001');
     });
   });
 
   describe('getAiConfig', () => {
     it('should return all use-case configs with sources and providers', async () => {
       const config = await aiClient.getAiConfig();
-      expect(config.generation).toEqual({ model: 'gpt-5.4-mini', provider: 'openai', source: 'default' });
-      expect(config.moderation).toEqual({ model: 'gpt-5.4-mini', provider: 'openai', source: 'default' });
+      expect(config.generation).toEqual({ model: 'claude-haiku-4-5-20251001', provider: 'anthropic', source: 'default' });
+      expect(config.moderation).toEqual({ model: 'claude-haiku-4-5-20251001', provider: 'anthropic', source: 'default' });
       expect(config.analysis).toEqual({ model: 'claude-sonnet-4-6-20250514', provider: 'anthropic', source: 'default' });
     });
 
@@ -217,7 +217,7 @@ describe('aiClient', () => {
   describe('callAi — OpenAI provider', () => {
     it('should call OpenAI API when model is gpt-*', async () => {
       process.env.OPENAI_API_KEY = 'test-openai-key';
-      // Default generation model is gpt-5.4-mini (OpenAI)
+      process.env.AI_MODEL_SCENARIO = 'gpt-5.4-mini';
       aiClient.invalidateConfigCache();
 
       mockFetch.mockResolvedValue({
@@ -242,7 +242,8 @@ describe('aiClient', () => {
     });
 
     it('should throw when OPENAI_API_KEY is not set for OpenAI model', async () => {
-      // Default generation model is gpt-5.4-mini, no OPENAI_API_KEY
+      process.env.AI_MODEL_SCENARIO = 'gpt-5.4-mini';
+      aiClient.invalidateConfigCache();
       await expect(aiClient.callAi({
         useCase: 'generation',
         messages: [{ role: 'user', content: 'test' }],

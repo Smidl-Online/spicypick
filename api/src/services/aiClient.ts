@@ -30,8 +30,8 @@ export function isAllowedModel(model: string): model is AllowedModel {
 // Default Models per Use-Case (from SMI-47 v3 analysis)
 // ============================================
 const DEFAULT_MODELS: Record<AiUseCase, AllowedModel> = {
-  generation: 'gpt-5.4-mini',
-  moderation: 'gpt-5.4-mini',
+  generation: 'claude-haiku-4-5-20251001',
+  moderation: 'claude-haiku-4-5-20251001',
   analysis: 'claude-sonnet-4-6-20250514',
 };
 
@@ -168,11 +168,8 @@ export async function setModelConfig(useCase: AiUseCase, model: string): Promise
     .values({ key: keys.model, value: model })
     .onConflictDoUpdate({ target: appConfig.key, set: { value: model, updatedAt: new Date() } });
 
-  // Upsert provider
-  await db
-    .insert(appConfig)
-    .values({ key: keys.provider, value: provider })
-    .onConflictDoUpdate({ target: appConfig.key, set: { value: provider, updatedAt: new Date() } });
+  // Provider is always inferred from model name via detectProvider(),
+  // so we don't persist it separately to avoid a stale source of truth.
 
   invalidateConfigCache();
 }
