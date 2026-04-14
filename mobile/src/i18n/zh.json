@@ -62,7 +62,12 @@
     "username": "用户名",
     "forgot_password": "忘记密码？",
     "no_account": "还没有账号？",
-    "has_account": "已有账号？"
+    "has_account": "已有账号？",
+    "check_email": "请查看您的邮箱",
+    "reset_sent": "如果账户存在，我们已发送重置链接。",
+    "back_to_login": "返回登录",
+    "reset_password": "重置密码",
+    "send_reset_link": "发送链接"
   },
   "settings": {
     "title": "设置",
@@ -131,7 +136,9 @@
       "每月 3 次连续天数保护"
     ],
     "subscribe": "订阅",
-    "active": "高级版有效期至 {{date}}"
+    "active": "高级版有效期至 {{date}}",
+    "activated_title": "Premium已激活！",
+    "activated_msg": "享受所有Premium功能。"
   },
   "guild": {
     "title": "公会",

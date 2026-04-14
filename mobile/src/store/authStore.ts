@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
+import { offlineCache } from '../services/offlineCache';
+import { useExperimentStore } from './experimentStore';
 
 type User = {
   id: string;
@@ -24,7 +26,6 @@ type AuthState = {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -74,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     analytics.track('user_logged_out');
     analytics.reset();
+    useExperimentStore.getState().reset();
     await clearTokens();
     set({ user: null, isAuthenticated: false });
   },
@@ -82,12 +84,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await api<User>('/api/users/me');
       set({ user, isAuthenticated: true });
-      // Re-identify on every profile fetch so app resume with existing session
-      // correctly tags analytics events (not just login/register)
       analytics.identify(user.id);
+      offlineCache.cacheUserProfile(user);
     } catch {
-      analytics.reset();
-      set({ user: null, isAuthenticated: false });
+      const cached = await offlineCache.getCachedUserProfile<User>();
+      if (cached) {
+        set({ user: cached, isAuthenticated: true });
+        analytics.identify(cached.id);
+      } else {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+      }
     }
   },
 

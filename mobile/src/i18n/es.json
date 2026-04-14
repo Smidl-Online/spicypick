@@ -62,7 +62,12 @@
     "username": "Nombre de usuario",
     "forgot_password": "¿Olvidaste tu contraseña?",
     "no_account": "¿No tienes cuenta?",
-    "has_account": "¿Ya tienes cuenta?"
+    "has_account": "¿Ya tienes cuenta?",
+    "check_email": "Revisa tu correo",
+    "reset_sent": "Si la cuenta existe, enviamos un enlace para restablecer.",
+    "back_to_login": "Volver al inicio de sesión",
+    "reset_password": "Restablecer contraseña",
+    "send_reset_link": "Enviar enlace"
   },
   "settings": {
     "title": "Ajustes",
@@ -132,7 +137,9 @@
       "3 congelaciones de racha por mes"
     ],
     "subscribe": "Suscribirse",
-    "active": "Premium activo hasta {{date}}"
+    "active": "Premium activo hasta {{date}}",
+    "activated_title": "¡Premium activado!",
+    "activated_msg": "Disfruta de todas las funciones premium."
   },
   "guild": {
     "title": "Gremios",
@@ -208,7 +215,12 @@
   "demographics": {
     "title": "Demografía",
     "subtitle": "Opcional. Muestra cómo votaron diferentes grupos. Todos los datos son anónimos.",
-    "tabs": { "all": "Todos", "age": "Edad", "country": "País", "gender": "Género" },
+    "tabs": {
+      "all": "Todos",
+      "age": "Edad",
+      "country": "País",
+      "gender": "Género"
+    },
     "selectFilter": "Selecciona un filtro para ver el desglose demográfico",
     "noData": "Aún no hay suficientes datos para este grupo",
     "voteRequired": "Primero debes votar en este escenario",
@@ -217,9 +229,25 @@
     "country": "País",
     "countryPlaceholder": "ej. ES",
     "gender": "Género",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Masculino", "female": "Femenino", "non_binary": "No binario", "prefer_not_to_say": "Prefiero no decir" },
-    "premium": { "required": "Se requiere suscripción Premium", "cta": "Actualiza a Premium para ver cómo votaron diferentes grupos" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Masculino",
+      "female": "Femenino",
+      "non_binary": "No binario",
+      "prefer_not_to_say": "Prefiero no decir"
+    },
+    "premium": {
+      "required": "Se requiere suscripción Premium",
+      "cta": "Actualiza a Premium para ver cómo votaron diferentes grupos"
+    },
     "deleteTitle": "Eliminar datos demográficos",
     "deleteConfirm": "Esto eliminará tu año de nacimiento, país y género. Tus votos no se verán afectados.",
     "deleteData": "Eliminar mis datos demográficos",

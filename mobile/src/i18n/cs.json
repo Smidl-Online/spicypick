@@ -62,7 +62,12 @@
     "username": "Uživatelské jméno",
     "forgot_password": "Zapomněl jsi heslo?",
     "no_account": "Nemáš účet?",
-    "has_account": "Už máš účet?"
+    "has_account": "Už máš účet?",
+    "check_email": "Zkontroluj svůj e-mail",
+    "reset_sent": "Pokud účet existuje, poslali jsme ti odkaz pro resetování.",
+    "back_to_login": "Zpět na přihlášení",
+    "reset_password": "Resetovat heslo",
+    "send_reset_link": "Odeslat odkaz"
   },
   "settings": {
     "title": "Nastavení",
@@ -132,7 +137,9 @@
       "3 streak freeze měsíčně"
     ],
     "subscribe": "Předplatit",
-    "active": "Premium aktivní do {{date}}"
+    "active": "Premium aktivní do {{date}}",
+    "activated_title": "Premium aktivováno!",
+    "activated_msg": "Užij si všechny premium funkce."
   },
   "guild": {
     "title": "Guildy",
