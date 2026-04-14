@@ -66,11 +66,8 @@
       "revenueCatIosKey": "",
       "revenueCatAndroidKey": "",
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": ""
       }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
     },
     "runtimeVersion": {
       "policy": "appVersion"

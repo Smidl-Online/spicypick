@@ -9,23 +9,46 @@ import { api } from '../api/client';
  * Requests push notification permissions, obtains Expo push token,
  * and registers it with the backend. Should be called when user is authenticated.
  */
+const RETRY_DELAY_MS = 10_000;
+const MAX_RETRIES = 3;
+
 export function usePushNotifications(isAuthenticated: boolean) {
   const registered = useRef(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
       // Reset on logout so next login re-registers the token
       registered.current = false;
+      if (retryTimer.current) {
+        clearTimeout(retryTimer.current);
+        retryTimer.current = null;
+      }
       return;
     }
 
     if (registered.current) return;
 
-    registerForPushNotifications().then((token) => {
-      if (token) {
-        registered.current = true;
+    let attempt = 0;
+    const tryRegister = () => {
+      attempt++;
+      registerForPushNotifications().then((token) => {
+        if (token) {
+          registered.current = true;
+        } else if (attempt < MAX_RETRIES) {
+          retryTimer.current = setTimeout(tryRegister, RETRY_DELAY_MS);
+        }
+      });
+    };
+
+    tryRegister();
+
+    return () => {
+      if (retryTimer.current) {
+        clearTimeout(retryTimer.current);
+        retryTimer.current = null;
       }
-    });
+    };
   }, [isAuthenticated]);
 }
 
