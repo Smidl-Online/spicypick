@@ -42,6 +42,7 @@ export async function logoutRevenueCat(): Promise<void> {
 }
 
 export async function getOfferings(): Promise<PurchasesPackage[]> {
+  await initRevenueCat();
   if (!isConfigured) return [];
   const offerings = await Purchases.getOfferings();
   return offerings.current?.availablePackages ?? [];
@@ -52,6 +53,7 @@ export async function purchasePremium(userId?: string): Promise<{
   platform: 'ios' | 'android';
   customerInfo: CustomerInfo;
 } | null> {
+  await initRevenueCat();
   if (!isConfigured) {
     // Dev fallback — no SDK configured, use stub
     return {
