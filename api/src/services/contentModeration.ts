@@ -36,12 +36,6 @@ export interface ModerationResult {
 }
 
 export async function moderateContent(text: string): Promise<ModerationResult> {
-  const apiKey = process.env.AI_API_KEY;
-  if (!apiKey) {
-    // No API key — skip moderation, mark as pending for manual review
-    return { approved: false, reason: 'AI moderation unavailable — queued for manual review', category: null, flags: [] };
-  }
-
   try {
     const result = await callAi({
       useCase: 'moderation',

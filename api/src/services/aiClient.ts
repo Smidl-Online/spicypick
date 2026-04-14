@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import { appConfig } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+
 
 // ============================================
 // AI Use-Case Types
