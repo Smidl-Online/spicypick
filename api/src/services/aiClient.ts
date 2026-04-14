@@ -42,11 +42,11 @@ const ENV_VAR_MAP: Record<AiUseCase, string> = {
   analysis: 'AI_MODEL_EXPERT',
 };
 
-// DB config keys per use-case (provider + model)
-const DB_CONFIG_KEY_MAP: Record<AiUseCase, { provider: string; model: string }> = {
-  generation: { provider: 'ai.scenario.provider', model: 'ai.scenario.model' },
-  moderation: { provider: 'ai.moderation.provider', model: 'ai.moderation.model' },
-  analysis: { provider: 'ai.expert.provider', model: 'ai.expert.model' },
+// DB config keys per use-case
+const DB_CONFIG_KEY_MAP: Record<AiUseCase, { model: string }> = {
+  generation: { model: 'ai.scenario.model' },
+  moderation: { model: 'ai.moderation.model' },
+  analysis: { model: 'ai.expert.model' },
 };
 
 // ============================================

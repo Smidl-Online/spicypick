@@ -41,13 +41,14 @@ async function generateAnalysis(scenario: {
     return buildCommunityFallback(scenario);
   }
 
-  try {
-    const result = await callAi({
-      useCase: 'analysis',
-      messages: [
-        {
-          role: 'user',
-          content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
+  // No try/catch here — let transient AI errors propagate so the outer loop
+  // skips this scenario and the cron can retry it on the next run.
+  const result = await callAi({
+    useCase: 'analysis',
+    messages: [
+      {
+        role: 'user',
+        content: `Analyze this social scenario from a psychological/social perspective. Be balanced, empathetic, and insightful. 2-3 sentences max.
 
 Scenario: ${scenario.body}
 
@@ -58,16 +59,12 @@ Community vote results (${scenario.totalVotes} votes):
 - Both Wrong: ${scenario.votesBothWrong} (${Math.round((scenario.votesBothWrong / scenario.totalVotes) * 100)}%)
 
 Provide a brief expert analysis (2-3 sentences):`,
-        },
-      ],
-      maxTokens: 300,
-    });
+      },
+    ],
+    maxTokens: 300,
+  });
 
-    return result.text;
-  } catch (err) {
-    console.error('[CRON] AI call failed for expert analysis, using community fallback:', err);
-    return buildCommunityFallback(scenario);
-  }
+  return result.text;
 }
 
 function buildCommunityFallback(scenario: {
