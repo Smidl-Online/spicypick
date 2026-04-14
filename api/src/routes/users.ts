@@ -360,6 +360,18 @@ userRoutes.put('/me/push-token', authMiddleware, async (c) => {
   return c.json({ message: 'Push token saved' });
 });
 
+// DELETE /api/users/me/push-token — clear push token (e.g. on logout)
+userRoutes.delete('/me/push-token', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  await db.update(users).set({
+    pushToken: null,
+    updatedAt: new Date(),
+  }).where(eq(users.id, userId));
+
+  return c.json({ message: 'Push token cleared' });
+});
+
 // GET /api/users/me/notification-preferences
 userRoutes.get('/me/notification-preferences', authMiddleware, async (c) => {
   const userId = c.get('userId');

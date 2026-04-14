@@ -57,7 +57,7 @@ function RootLayoutInner() {
     }
   }, [user?.id]);
 
-  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
+  const handleNotificationResponse = React.useCallback((response: Notifications.NotificationResponse) => {
     const data = response.notification.request.content.data;
     if (data?.type === 'daily_scenario') {
       router.push('/');
@@ -68,7 +68,7 @@ function RootLayoutInner() {
     } else if (data?.type === 'achievement') {
       router.push('/(tabs)/profile');
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
@@ -106,10 +106,16 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // DEFAULT_ACTION_IDENTIFIER means user explicitly tapped — always handle regardless of age
+    // Only handle if notification was received within the last 30 seconds
+    // to prevent navigating on stale notifications from days ago
+    const COLD_START_MAX_AGE_MS = 30_000;
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        setTimeout(() => handleNotificationResponse(response), 500);
+        const notifDate = response.notification.date;
+        const age = Date.now() - notifDate;
+        if (age < COLD_START_MAX_AGE_MS) {
+          setTimeout(() => handleNotificationResponse(response), 500);
+        }
       }
     });
 
@@ -118,7 +124,7 @@ function RootLayoutInner() {
       linkSub.remove();
       notifSub.remove();
     };
-  }, []);
+  }, [handleNotificationResponse]);
 
   if (!ready) return null;
 

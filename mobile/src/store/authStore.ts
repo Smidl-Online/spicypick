@@ -75,6 +75,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     analytics.track('user_logged_out');
     analytics.reset();
+    // Clear push token on server before clearing auth tokens
+    await api('/api/users/me/push-token', { method: 'DELETE' }).catch(() => {});
     await logoutRevenueCat().catch(() => {});
     await clearTokens();
     set({ user: null, isAuthenticated: false });

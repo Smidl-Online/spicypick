@@ -128,6 +128,32 @@ describe('push token & notification preferences', () => {
     });
   });
 
+  describe('DELETE /api/users/me/push-token', () => {
+    it('should clear push token', async () => {
+      const res = await app.request('/api/users/me/push-token', {
+        method: 'DELETE',
+        headers: {
+          Authorization: 'Bearer mock-token',
+        },
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.message).toBe('Push token cleared');
+      // Verify update was called with null token
+      expect(mockUpdate).toHaveBeenCalled();
+      expect(mockUpdateSet).toHaveBeenCalledWith(
+        expect.objectContaining({ pushToken: null }),
+      );
+    });
+
+    it('should return 401 without auth', async () => {
+      const res = await app.request('/api/users/me/push-token', {
+        method: 'DELETE',
+      });
+      expect(res.status).toBe(401);
+    });
+  });
+
   describe('GET /api/users/me/notification-preferences', () => {
     it('should return notification preferences', async () => {
       mockFindFirst.mockResolvedValueOnce(mockUser);

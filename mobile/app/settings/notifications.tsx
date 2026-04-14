@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Switch, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Switch, StyleSheet, ActivityIndicator, TouchableOpacity, Linking, Platform, AppState, AppStateStatus } from 'react-native';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { api } from '../../src/api/client';
+import { getPushPermissionStatus } from '../../src/hooks/usePushNotifications';
 
 type NotifPrefs = {
   daily: boolean;
@@ -16,6 +17,12 @@ export default function NotificationsScreen() {
   const [prefs, setPrefs] = useState<NotifPrefs | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [osPermission, setOsPermission] = useState<string>('undetermined');
+
+  const checkPermission = useCallback(async () => {
+    const status = await getPushPermissionStatus();
+    setOsPermission(status);
+  }, []);
 
   const loadPrefs = useCallback(() => {
     setLoading(true);
@@ -30,7 +37,19 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     loadPrefs();
-  }, [loadPrefs]);
+    checkPermission();
+
+    // Re-check permission when returning from OS settings
+    const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') {
+        checkPermission();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [loadPrefs, checkPermission]);
 
   const toggle = useCallback((key: keyof NotifPrefs) => {
     if (!prefs || loadError) return;
@@ -43,7 +62,15 @@ export default function NotificationsScreen() {
       // Revert on failure
       setPrefs((prev) => prev ? { ...prev, [key]: !newValue } : prev);
     });
-  }, [prefs]);
+  }, [prefs, loadError]);
+
+  const openSettings = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -68,6 +95,9 @@ export default function NotificationsScreen() {
 
   if (!prefs) return null;
 
+  const permissionDenied = osPermission === 'denied';
+  const permissionUnsupported = osPermission === 'unsupported';
+
   const rows: Array<{ key: keyof NotifPrefs; label: string; emoji: string }> = [
     { key: 'daily', label: 'Daily scenario (9:00)', emoji: '\u2696\uFE0F' },
     { key: 'streak', label: 'Streak warning (20:00)', emoji: '\uD83D\uDD25' },
@@ -78,6 +108,23 @@ export default function NotificationsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
+      {permissionDenied && (
+        <TouchableOpacity
+          style={[styles.permissionBanner, { backgroundColor: colors.warning + '22' }]}
+          onPress={openSettings}
+        >
+          <Text style={[styles.permissionText, { color: colors.warning }]}>
+            Notifications are disabled in system settings. Tap to open settings.
+          </Text>
+        </TouchableOpacity>
+      )}
+      {permissionUnsupported && (
+        <View style={[styles.permissionBanner, { backgroundColor: colors.border }]}>
+          <Text style={[styles.permissionText, { color: colors.textSecondary }]}>
+            Push notifications are not available on this device.
+          </Text>
+        </View>
+      )}
       {rows.map((row) => (
         <View key={row.key} style={[styles.row, { borderBottomColor: colors.border }]}>
           <Text style={styles.emoji}>{row.emoji}</Text>
@@ -87,6 +134,7 @@ export default function NotificationsScreen() {
             onValueChange={() => toggle(row.key)}
             trackColor={{ false: colors.border, true: colors.primary }}
             thumbColor="#fff"
+            disabled={permissionDenied || permissionUnsupported}
           />
         </View>
       ))}
@@ -106,4 +154,16 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 20, marginRight: 12 },
   label: { fontSize: 15, flex: 1 },
   retryButton: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
+  permissionBanner: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 8,
+  },
+  permissionText: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });
