@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useScenarioStore } from '../../src/store/scenarioStore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -17,12 +18,14 @@ import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
 import { adMobInterstitial } from '../../src/services/adMob';
 import { ScenarioSkeleton } from '../../src/components/SkeletonLoader';
+import { DemographicFilters } from '../../src/components/DemographicFilters';
 
 const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const { todayScenario, scenarioNumber, hasVoted, hasPredicted, userVerdict, communityStats, voteResult, fetchToday, predict, vote, isLoading, isOffline } = useScenarioStore();
   const [predictionSkipped, setPredictionSkipped] = useState(false);
   const { user, fetchProfile } = useAuthStore();
@@ -185,6 +188,14 @@ export default function HomeScreen() {
 
             {communityStats && (
               <CommunityStats stats={communityStats} userVerdict={userVerdict} />
+            )}
+
+            {communityStats && todayScenario && (
+              <DemographicFilters
+                scenarioId={todayScenario.id}
+                isPremium={user?.isPremium ?? false}
+                onPremiumCta={() => router.push('/settings/premium')}
+              />
             )}
 
             {(todayScenario.expertAnalysis || voteResult?.expertAnalysis) && (
