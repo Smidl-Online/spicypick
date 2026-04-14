@@ -47,7 +47,7 @@ export default function PremiumScreen() {
         // Dev mode — use POST /subscribe with stub receipt
         await api('/api/premium/subscribe', {
           method: 'POST',
-          body: { receipt: 'dev-receipt', platform: result.platform },
+          body: { platform: result.platform },
         });
       }
 

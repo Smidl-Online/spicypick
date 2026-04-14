@@ -54,6 +54,10 @@ export async function purchasePremium(): Promise<{
   platform: 'ios' | 'android';
   customerInfo: CustomerInfo;
 } | null> {
+  // Ensure init completes before checking isConfigured — handles race when
+  // user opens Premium screen before async init finishes
+  await initRevenueCat();
+
   const platform: 'ios' | 'android' = Platform.OS === 'ios' ? 'ios' : 'android';
 
   if (!isConfigured) {

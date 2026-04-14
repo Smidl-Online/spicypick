@@ -15,19 +15,19 @@ export default function NotificationsScreen() {
   const { colors } = useTheme();
   const [prefs, setPrefs] = useState<NotifPrefs | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     api<NotifPrefs>('/api/users/me/notification-preferences')
       .then(setPrefs)
       .catch(() => {
-        // Fallback to all enabled if endpoint fails
-        setPrefs({ daily: true, streak: true, league: true, challenges: true, achievements: true });
+        setLoadError(true);
       })
       .finally(() => setLoading(false));
   }, []);
 
   const toggle = useCallback((key: keyof NotifPrefs) => {
-    if (!prefs) return;
+    if (!prefs || loadError) return;
     const newValue = !prefs[key];
     setPrefs({ ...prefs, [key]: newValue });
     api('/api/users/me/notification-preferences', {
@@ -37,12 +37,22 @@ export default function NotificationsScreen() {
       // Revert on failure
       setPrefs((prev) => prev ? { ...prev, [key]: !newValue } : prev);
     });
-  }, [prefs]);
+  }, [prefs, loadError]);
 
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.bg }]}>
         <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 40 }} />
+      </View>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.bg }]}>
+        <Text style={[styles.errorText, { color: colors.textMuted }]}>
+          Could not load notification preferences. Please try again later.
+        </Text>
       </View>
     );
   }
@@ -86,4 +96,5 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 20, marginRight: 12 },
   label: { fontSize: 15, flex: 1 },
+  errorText: { fontSize: 15, textAlign: 'center', marginTop: 40, paddingHorizontal: 20 },
 });
