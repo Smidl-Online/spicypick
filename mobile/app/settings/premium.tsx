@@ -6,7 +6,7 @@ import { colors } from '../../src/theme/colors';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
-import { purchasePremium, restorePurchases, checkPremiumStatus, isRevenueCatConfigured } from '../../src/services/revenueCat';
+import { purchasePremium, restorePurchases, checkPremiumStatus, checkRevenueCatConfigured } from '../../src/services/revenueCat';
 
 type PremiumStatus = {
   isPremium: boolean;
@@ -29,11 +29,13 @@ export default function PremiumScreen() {
   const [status, setStatus] = useState<PremiumStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [rcConfigured, setRcConfigured] = useState(false);
 
   useEffect(() => {
     api<PremiumStatus>('/api/premium/status')
       .then(setStatus)
       .catch(() => {});
+    checkRevenueCatConfigured().then(setRcConfigured);
   }, []);
 
   const handleSubscribe = async () => {
@@ -45,16 +47,13 @@ export default function PremiumScreen() {
         return;
       }
 
-      if (result.sdkConfigured) {
-        // RevenueCat SDK handled the purchase — just sync status from backend
-        await api<PremiumStatus>('/api/premium/status');
-      } else {
-        // Dev fallback — tell backend to auto-activate
-        await api('/api/premium/subscribe', {
-          method: 'POST',
-          body: { platform: result.platform },
-        });
-      }
+      // Always POST to /subscribe — backend verifies via RC status check
+      // with retry + receipt validation fallback for RC purchases,
+      // or auto-activates in dev mode when SDK not configured
+      await api('/api/premium/subscribe', {
+        method: 'POST',
+        body: { platform: result.platform },
+      });
 
       await fetchProfile();
       analytics.track('premium_subscribe', { platform: result.platform });
@@ -129,7 +128,7 @@ export default function PremiumScreen() {
             )}
           </TouchableOpacity>
 
-          {isRevenueCatConfigured && (
+          {rcConfigured && (
             <TouchableOpacity
               style={styles.restoreBtn}
               onPress={handleRestore}

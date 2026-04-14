@@ -12,6 +12,7 @@ vi.mock('../db/index.js', () => ({
 
 vi.mock('../services/revenueCat.js', () => ({
   getSubscriptionStatus: vi.fn(),
+  validateReceipt: vi.fn(),
 }));
 
 vi.mock('jsonwebtoken', () => ({
@@ -23,7 +24,7 @@ vi.mock('jsonwebtoken', () => ({
 process.env.JWT_SECRET = 'test-secret';
 
 import { db } from '../db/index.js';
-import { getSubscriptionStatus } from '../services/revenueCat.js';
+import { getSubscriptionStatus, validateReceipt } from '../services/revenueCat.js';
 
 describe('premium routes', () => {
   let app: Hono;
@@ -134,6 +135,29 @@ describe('premium routes', () => {
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.error).toBe('Subscription verification failed');
+    });
+
+    it('should recover via receipt when status check fails but receipt provided', async () => {
+      process.env.REVENUECAT_API_KEY = 'test-key';
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      // Status check returns inactive
+      (getSubscriptionStatus as any).mockResolvedValueOnce({
+        isActive: false, expiresAt: null, productId: null,
+      });
+      // Receipt validation succeeds
+      (validateReceipt as any).mockResolvedValueOnce({
+        isActive: true, expiresAt, productId: 'premium_monthly',
+      });
+
+      const res = await app.request('/api/premium/subscribe', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer mock-token', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ platform: 'ios', receipt: 'valid-receipt-token' }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.productId).toBe('premium_monthly');
+      expect(validateReceipt).toHaveBeenCalledWith('user-1', 'valid-receipt-token', 'ios');
     });
 
     it('should return 503 in production without REVENUECAT_API_KEY', async () => {
