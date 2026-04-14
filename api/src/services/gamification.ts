@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
-import { users, votes, scenarios, achievements, userAchievements, leagueMembers, scenarioSubmissions, challenges } from '../db/schema.js';
-import { eq, sql, and, count } from 'drizzle-orm';
+import { users, votes, scenarios, achievements, userAchievements, leagueMembers, scenarioSubmissions, challenges, predictions } from '../db/schema.js';
+import { eq, sql, and, count, desc } from 'drizzle-orm';
 
 export function xpForLevel(level: number): number {
   return Math.floor(50 * Math.pow(level, 1.5));
@@ -123,6 +123,25 @@ export async function checkAchievements(userId: string): Promise<string[]> {
     ),
   );
   if (wonChallenges[0].count >= 5) await tryUnlock('challenge_win_5');
+
+  // Prediction achievements
+  // Mind Reader — 50 correct predictions total
+  const [correctPredictions] = await db.select({ count: count() }).from(predictions).where(
+    and(eq(predictions.userId, userId), eq(predictions.isCorrect, true)),
+  );
+  if (correctPredictions.count >= 50) await tryUnlock('mind_reader_50');
+
+  // Oracle — 10 correct predictions in a row
+  if (!existingIds.has('oracle_10') && achievementMap.has('oracle_10')) {
+    const recentPredictions = await db.query.predictions.findMany({
+      where: and(eq(predictions.userId, userId), sql`${predictions.isCorrect} IS NOT NULL`),
+      orderBy: [desc(predictions.createdAt)],
+      limit: 10,
+    });
+    if (recentPredictions.length >= 10 && recentPredictions.every((p) => p.isCorrect === true)) {
+      await tryUnlock('oracle_10');
+    }
+  }
 
   // Update user level
   const updatedUser = await db.query.users.findFirst({ where: eq(users.id, userId) });

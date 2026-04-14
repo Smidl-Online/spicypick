@@ -20,6 +20,12 @@ type Scenario = {
   publishDate: string;
 };
 
+type PredictionResult = {
+  predictedVerdict: string;
+  isCorrect: boolean;
+  xpEarned: number;
+};
+
 type VoteResult = {
   xpEarned: number;
   totalXp: number;
@@ -29,13 +35,16 @@ type VoteResult = {
   newAchievements: string[];
   communityStats: CommunityStats;
   expertAnalysis: string | null;
+  prediction: PredictionResult | null;
 };
 
 type ScenarioState = {
   todayScenario: Scenario | null;
   scenarioNumber: number | null;
   hasVoted: boolean;
+  hasPredicted: boolean;
   userVerdict: string | null;
+  predictedVerdict: string | null;
   communityStats: CommunityStats | null;
   voteResult: VoteResult | null;
   isLoading: boolean;
@@ -43,6 +52,7 @@ type ScenarioState = {
   error: string | null;
 
   fetchToday: () => Promise<void>;
+  predict: (scenarioId: string, verdict: string) => Promise<void>;
   vote: (scenarioId: string, verdict: string) => Promise<VoteResult | null>;
   reset: () => void;
 };
@@ -51,15 +61,23 @@ type TodayResponse = {
   scenario: Scenario | null;
   scenarioNumber?: number;
   voted?: boolean;
+  predicted?: boolean;
   userVerdict?: string;
   communityStats?: CommunityStats;
+  prediction?: {
+    predictedVerdict: string;
+    isCorrect?: boolean;
+    xpEarned?: number;
+  } | null;
 };
 
 export const useScenarioStore = create<ScenarioState>((set) => ({
   todayScenario: null,
   scenarioNumber: null,
   hasVoted: false,
+  hasPredicted: false,
   userVerdict: null,
+  predictedVerdict: null,
   communityStats: null,
   voteResult: null,
   isLoading: false,
@@ -95,7 +113,9 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
         todayScenario: data.scenario,
         scenarioNumber: data.scenarioNumber || null,
         hasVoted: data.voted || false,
+        hasPredicted: data.predicted || !!data.prediction,
         userVerdict: data.userVerdict || null,
+        predictedVerdict: data.prediction?.predictedVerdict || null,
         communityStats: data.communityStats || null,
         isLoading: false,
         isOffline: false,
@@ -116,6 +136,21 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
       }
       set({ error: err.message, isLoading: false });
     }
+  },
+
+  predict: async (scenarioId, verdict) => {
+    const online = await isOnline();
+    if (!online) {
+      // Skip prediction when offline
+      set({ hasPredicted: true });
+      return;
+    }
+
+    await api<{ predictionId: string; predictedVerdict: string }>(`/api/scenarios/${scenarioId}/predict`, {
+      method: 'POST',
+      body: { verdict },
+    });
+    set({ hasPredicted: true, predictedVerdict: verdict });
   },
 
   vote: async (scenarioId, verdict) => {
@@ -159,7 +194,9 @@ export const useScenarioStore = create<ScenarioState>((set) => ({
     todayScenario: null,
     scenarioNumber: null,
     hasVoted: false,
+    hasPredicted: false,
     userVerdict: null,
+    predictedVerdict: null,
     communityStats: null,
     voteResult: null,
     isOffline: false,

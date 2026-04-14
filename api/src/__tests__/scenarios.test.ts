@@ -8,6 +8,7 @@ vi.mock('../db/index.js', () => ({
       users: { findFirst: vi.fn() },
       scenarios: { findFirst: vi.fn(), findMany: vi.fn() },
       votes: { findFirst: vi.fn() },
+      predictions: { findFirst: vi.fn(), findMany: vi.fn() },
     },
     insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn(() => [{ id: 'vote-1' }]) })) })),
     update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(() => ({ returning: vi.fn(() => [{ xp: 100 }]) })) })) })),
@@ -73,6 +74,7 @@ describe('scenario routes', () => {
       (db.query.users.findFirst as any).mockResolvedValueOnce({ id: 'user-1', timezone: 'UTC' });
       (db.query.scenarios.findFirst as any).mockResolvedValueOnce(mockScenario);
       (db.query.votes.findFirst as any).mockResolvedValueOnce(null);
+      (db.query.predictions.findFirst as any).mockResolvedValueOnce(null);
 
       const res = await app.request('/api/scenarios/today', {
         headers: { Authorization: 'Bearer mock-token' },
@@ -102,6 +104,7 @@ describe('scenario routes', () => {
       (db.query.users.findFirst as any).mockResolvedValueOnce({ id: 'user-1', timezone: 'UTC' });
       (db.query.scenarios.findFirst as any).mockResolvedValueOnce(mockScenario);
       (db.query.votes.findFirst as any).mockResolvedValueOnce({ verdict: 'guilty' });
+      (db.query.predictions.findFirst as any).mockResolvedValueOnce(null);
 
       const res = await app.request('/api/scenarios/today', {
         headers: { Authorization: 'Bearer mock-token' },

@@ -10,6 +10,8 @@ import { CountdownTimer } from '../../src/components/CountdownTimer';
 import { ShareCard } from '../../src/components/ShareCard';
 import { RevealAnimation } from '../../src/components/RevealAnimation';
 import { StreakBadge } from '../../src/components/StreakBadge';
+import { PredictionStep } from '../../src/components/PredictionStep';
+import { PredictionResult } from '../../src/components/PredictionResult';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { analytics } from '../../src/services/analytics';
@@ -21,7 +23,8 @@ const VERDICTS = ['guilty', 'not_guilty', 'complicated', 'both_wrong'] as const;
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { todayScenario, scenarioNumber, hasVoted, userVerdict, communityStats, voteResult, fetchToday, vote, isLoading, isOffline } = useScenarioStore();
+  const { todayScenario, scenarioNumber, hasVoted, hasPredicted, userVerdict, communityStats, voteResult, fetchToday, predict, vote, isLoading, isOffline } = useScenarioStore();
+  const [predictionSkipped, setPredictionSkipped] = useState(false);
   const { user, fetchProfile } = useAuthStore();
   const [voting, setVoting] = useState(false);
   const hasTrackedView = useRef(false);
@@ -172,6 +175,14 @@ export default function HomeScreen() {
               />
             )}
 
+            {voteResult?.prediction && (
+              <PredictionResult
+                isCorrect={voteResult.prediction.isCorrect}
+                xpEarned={voteResult.prediction.xpEarned}
+                predictedVerdict={voteResult.prediction.predictedVerdict}
+              />
+            )}
+
             {communityStats && (
               <CommunityStats stats={communityStats} userVerdict={userVerdict} />
             )}
@@ -197,6 +208,32 @@ export default function HomeScreen() {
             )}
 
             <CountdownTimer />
+          </Animated.View>
+        ) : !hasPredicted && !predictionSkipped ? (
+          <Animated.View entering={FadeInUp.duration(600)}>
+            <View style={[styles.scenarioCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+              <Text style={[styles.category, { color: colors.primary }]}>{todayScenario.category.toUpperCase()}</Text>
+              <Text style={[styles.scenarioTitle, { color: colors.text }]}>{todayScenario.title}</Text>
+              <Text style={[styles.scenarioBody, { color: colors.text }]}>{todayScenario.body}</Text>
+            </View>
+
+            <PredictionStep
+              onPredict={async (verdict) => {
+                analytics.track('prediction_submitted', {
+                  scenarioId: todayScenario.id,
+                  predictedVerdict: verdict,
+                  scenarioNumber,
+                });
+                await predict(todayScenario.id, verdict);
+              }}
+              onSkip={() => {
+                analytics.track('prediction_skipped', {
+                  scenarioId: todayScenario.id,
+                  scenarioNumber,
+                });
+                setPredictionSkipped(true);
+              }}
+            />
           </Animated.View>
         ) : (
           <Animated.View entering={FadeInUp.duration(600)}>

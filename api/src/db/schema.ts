@@ -99,6 +99,23 @@ export const votes = pgTable('votes', {
 ]);
 
 // ============================================
+// PREDICTIONS (prediction mode)
+// ============================================
+export const predictions = pgTable('predictions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  scenarioId: uuid('scenario_id').notNull().references(() => scenarios.id),
+  predictedVerdict: varchar('predicted_verdict', { length: 20 }).notNull(),
+  isCorrect: boolean('is_correct'),
+  xpEarned: integer('xp_earned').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_predictions_user_scenario').on(table.userId, table.scenarioId),
+  index('idx_predictions_user').on(table.userId),
+  index('idx_predictions_scenario').on(table.scenarioId),
+]);
+
+// ============================================
 // LEAGUES (weekly competition)
 // ============================================
 export const leagues = pgTable('leagues', {
@@ -289,6 +306,7 @@ export const experimentEvents = pgTable('experiment_events', {
 // ============================================
 export const usersRelations = relations(users, ({ many }) => ({
   votes: many(votes),
+  predictions: many(predictions),
   leagueMembers: many(leagueMembers),
   userAchievements: many(userAchievements),
   submissions: many(scenarioSubmissions),
@@ -300,11 +318,17 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
   votes: many(votes),
+  predictions: many(predictions),
 }));
 
 export const votesRelations = relations(votes, ({ one }) => ({
   user: one(users, { fields: [votes.userId], references: [users.id] }),
   scenario: one(scenarios, { fields: [votes.scenarioId], references: [scenarios.id] }),
+}));
+
+export const predictionsRelations = relations(predictions, ({ one }) => ({
+  user: one(users, { fields: [predictions.userId], references: [users.id] }),
+  scenario: one(scenarios, { fields: [predictions.scenarioId], references: [scenarios.id] }),
 }));
 
 export const leagueMembersRelations = relations(leagueMembers, ({ one }) => ({

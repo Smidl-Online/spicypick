@@ -167,6 +167,18 @@
     "error_join": "Échec de l'adhésion à la guilde",
     "error_leave": "Échec du départ de la guilde"
   },
+  "prediction": {
+    "title": "Prédire la majorité",
+    "subtitle": "Comment pensez-vous que la communauté a voté ?",
+    "correct": "Bien deviné ! +{{xp}} XP",
+    "incorrect": "Pas cette fois !",
+    "skip": "Passer la prédiction",
+    "stats_title": "Prédictions",
+    "stats_total": "{{count}} prédictions",
+    "stats_correct": "{{count}} correctes",
+    "stats_accuracy": "{{percent}}% de précision",
+    "stats_xp": "{{xp}} XP des prédictions"
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue",

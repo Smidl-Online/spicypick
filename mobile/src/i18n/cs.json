@@ -167,6 +167,18 @@
     "error_join": "Nepodarilo se pripojit ke guilde",
     "error_leave": "Nepodarilo se opustit guildu"
   },
+  "prediction": {
+    "title": "Tipni většinu",
+    "subtitle": "Jak myslíš, že hlasovala komunita?",
+    "correct": "Trefil ses! +{{xp}} XP",
+    "incorrect": "Tentokrát ne!",
+    "skip": "Přeskočit tip",
+    "stats_title": "Predikce",
+    "stats_total": "{{count}} predikcí",
+    "stats_correct": "{{count}} správných",
+    "stats_accuracy": "{{percent}}% úspěšnost",
+    "stats_xp": "{{xp}} XP z predikcí"
+  },
   "common": {
     "loading": "Načítání...",
     "error": "Něco se pokazilo",
