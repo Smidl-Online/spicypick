@@ -12,6 +12,7 @@ import { startNetworkListener } from '../src/services/offlineSync';
 import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { analytics } from '../src/services/analytics';
+import { usePushNotifications } from '../src/hooks/usePushNotifications';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -42,6 +43,9 @@ function RootLayoutInner() {
   const [ready, setReady] = useState(false);
   const fetchToday = useScenarioStore((s) => s.fetchToday);
   const router = useRouter();
+
+  // Register push token when authenticated
+  usePushNotifications(isAuthenticated);
 
   const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
     const data = response.notification.request.content.data;
@@ -91,14 +95,13 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // Only process if the notification was tapped recently (within 5 seconds)
+    // Use notification.date (Unix timestamp in seconds) to determine freshness
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
-        const tappedAt = response.actionIdentifier
-          ? Date.now()
-          : response.notification.date * 1000;
-        const age = Date.now() - tappedAt;
-        if (age < 5000) {
+        const notificationTime = response.notification.date * 1000;
+        const age = Date.now() - notificationTime;
+        // Only handle if notification is less than 30 seconds old (cold start can take time)
+        if (age < 30000) {
           setTimeout(() => handleNotificationResponse(response), 500);
         }
       }
