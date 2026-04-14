@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { scenarios, votes, users, predictions } from '../db/schema.js';
+import { scenarios, votes, users, predictions, demographicStats } from '../db/schema.js';
 import { eq, sql, and, desc, lte, isNotNull } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { calculateVoteXp, calculateLevel, checkAchievements } from '../services/gamification.js';
@@ -10,6 +10,7 @@ import { AppEnv } from '../types.js';
 import { VALID_CATEGORIES } from '../constants.js';
 import { analytics } from '../services/analytics.js';
 import { recalculateMoralProfile } from '../services/moralProfileCalculator.js';
+import { updateDemographicStats } from '../services/demographics.js';
 
 const scenarioRoutes = new Hono<AppEnv>();
 
@@ -446,6 +447,58 @@ scenarioRoutes.post('/:id/predict', authMiddleware, async (c) => {
   }
 });
 
+// GET /api/scenarios/:id/demographics — demographic breakdown of votes (premium only)
+scenarioRoutes.get('/:id/demographics', authMiddleware, async (c) => {
+  const scenarioId = c.req.param('id')!;
+  const userId = c.get('userId');
+  if (!uuidSchema.safeParse(scenarioId).success) {
+    return c.json({ error: 'Invalid scenario ID format' }, 400);
+  }
+
+  const typeParam = c.req.query('type');
+  const validTypes = ['age_group', 'country', 'gender'] as const;
+  if (!typeParam || !validTypes.includes(typeParam as typeof validTypes[number])) {
+    return c.json({ error: 'Invalid type. Must be: age_group, country, gender' }, 400);
+  }
+
+  // Check user has voted on this scenario
+  const userVote = await db.query.votes.findFirst({
+    where: and(eq(votes.userId, userId), eq(votes.scenarioId, scenarioId)),
+  });
+  if (!userVote) {
+    return c.json({ error: 'You must vote on this scenario first' }, 403);
+  }
+
+  // Premium check
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user || !user.isPremium) {
+    return c.json({ error: 'Premium subscription required' }, 403);
+  }
+
+  // Get demographic stats for this scenario and type
+  const stats = await db.select().from(demographicStats).where(
+    and(
+      eq(demographicStats.scenarioId, scenarioId),
+      eq(demographicStats.demographicType, typeParam),
+    ),
+  );
+
+  // Apply k-anonymity filter: hide groups with < 5 votes
+  const K_ANONYMITY_THRESHOLD = 5;
+  const groups = stats
+    .filter(s => s.totalVotes >= K_ANONYMITY_THRESHOLD)
+    .map(s => ({
+      value: s.demographicValue,
+      total: s.totalVotes,
+      guilty: s.votesGuilty,
+      notGuilty: s.votesNotGuilty,
+      complicated: s.votesComplicated,
+      bothWrong: s.votesBothWrong,
+    }));
+
+  return c.json({ type: typeParam, groups });
+});
+
 // POST /api/scenarios/:id/vote
 scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   const scenarioId = c.req.param('id')!;
@@ -675,6 +728,9 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
 
   // Async moral profile recalculation (fire and forget)
   recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
+
+  // Async demographic stats update (fire and forget)
+  updateDemographicStats(scenarioId, userId, verdict).catch(err => console.error('Demographic stats update failed:', err));
 
   return c.json({
     xpEarned: finalXpEarned,

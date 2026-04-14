@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { users, votes, scenarios, predictions, moralProfiles } from '../db/schema.js';
+import { users, votes, scenarios, predictions, moralProfiles, demographicStats } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
 import { MIN_VOTES, recalculateMoralProfile } from '../services/moralProfileCalculator.js';
+import { isValidBirthYear, isValidCountry, isValidGender } from '../services/demographics.js';
 
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
@@ -19,6 +20,9 @@ const updateProfileSchema = z.object({
     (tz) => VALID_TIMEZONES.has(tz),
     { message: 'Invalid IANA timezone' },
   ).optional(),
+  birthYear: z.number().int().refine(isValidBirthYear, { message: 'Invalid birth year' }).optional().nullable(),
+  country: z.string().length(2).refine(isValidCountry, { message: 'Invalid ISO 3166-1 alpha-2 country code' }).optional().nullable(),
+  gender: z.enum(['male', 'female', 'non_binary', 'prefer_not_to_say']).optional().nullable(),
 });
 
 // GET /api/users/me
@@ -45,6 +49,9 @@ userRoutes.get('/me', authMiddleware, async (c) => {
     premiumUntil: user.premiumUntil,
     locale: user.locale,
     timezone: user.timezone,
+    birthYear: user.birthYear,
+    country: user.country,
+    gender: user.gender,
     totalVotes: voteCount.count,
     createdAt: user.createdAt,
   });
@@ -75,6 +82,9 @@ userRoutes.patch('/me', authMiddleware, async (c) => {
   if (parsed.data.avatarUrl !== undefined) updates.avatarUrl = parsed.data.avatarUrl;
   if (parsed.data.locale !== undefined) updates.locale = parsed.data.locale;
   if (parsed.data.timezone !== undefined) updates.timezone = parsed.data.timezone;
+  if (parsed.data.birthYear !== undefined) updates.birthYear = parsed.data.birthYear;
+  if (parsed.data.country !== undefined) updates.country = parsed.data.country;
+  if (parsed.data.gender !== undefined) updates.gender = parsed.data.gender;
 
   await db.update(users).set(updates).where(eq(users.id, userId));
 
@@ -275,6 +285,20 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
     lastCalculatedAt: profile.lastCalculatedAt,
     votesUntilReady: 0,
   });
+});
+
+// DELETE /api/users/me/demographics — GDPR: delete demographic data without deleting account
+userRoutes.delete('/me/demographics', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  await db.update(users).set({
+    birthYear: null,
+    country: null,
+    gender: null,
+    updatedAt: new Date(),
+  }).where(eq(users.id, userId));
+
+  return c.json({ message: 'Demographic data deleted' });
 });
 
 // PUT /api/users/me/push-token
