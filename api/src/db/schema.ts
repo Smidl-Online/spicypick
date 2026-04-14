@@ -256,6 +256,25 @@ export const guildMembers = pgTable('guild_members', {
 ]);
 
 // ============================================
+// MORAL PROFILES (personalized moral dimensions)
+// ============================================
+export const moralProfiles = pgTable('moral_profiles', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  forgiving: integer('forgiving').default(50).notNull(),
+  pragmatic: integer('pragmatic').default(50).notNull(),
+  empathetic: integer('empathetic').default(50).notNull(),
+  confrontational: integer('confrontational').default(50).notNull(),
+  majorityAligned: integer('majority_aligned').default(50).notNull(),
+  consistent: integer('consistent').default(50).notNull(),
+  totalVotesAnalyzed: integer('total_votes_analyzed').default(0).notNull(),
+  lastCalculatedAt: timestamp('last_calculated_at'),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex('idx_moral_profiles_user').on(table.userId),
+]);
+
+// ============================================
 // EXPERIMENTS (A/B testing)
 // ============================================
 export const experiments = pgTable('experiments', {
@@ -304,7 +323,7 @@ export const experimentEvents = pgTable('experiment_events', {
 // ============================================
 // RELATIONS
 // ============================================
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   votes: many(votes),
   predictions: many(predictions),
   leagueMembers: many(leagueMembers),
@@ -314,6 +333,11 @@ export const usersRelations = relations(users, ({ many }) => ({
   challengesReceived: many(challenges, { relationName: 'challenged' }),
   guildMemberships: many(guildMembers),
   experimentAssignments: many(experimentAssignments),
+  moralProfile: one(moralProfiles),
+}));
+
+export const moralProfilesRelations = relations(moralProfiles, ({ one }) => ({
+  user: one(users, { fields: [moralProfiles.userId], references: [users.id] }),
 }));
 
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
