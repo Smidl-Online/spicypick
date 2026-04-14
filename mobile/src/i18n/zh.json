@@ -142,7 +142,26 @@
     "feature_expert": "详细专家分析",
     "feature_adfree": "无广告体验",
     "feature_freezes": "每月 3 次连续天数保护",
-    "active_until": "高级版有效期至 {{date}}"
+    "active_until": "高级版有效期至 {{date}}",
+    "unavailable_title": "不可用",
+    "unavailable_msg": "购买系统目前不可用。",
+    "activated_title": "高级版已激活！",
+    "activated_msg": "尽享所有高级功能。",
+    "restored_title": "已恢复！",
+    "restored_msg": "您的高级订阅已恢复。",
+    "no_purchase_title": "未找到购买记录",
+    "no_purchase_msg": "未找到可恢复的活跃订阅。",
+    "restore": "恢复购买"
+  },
+  "notifications": {
+    "daily": "每日场景（9:00）",
+    "streak": "连续签到提醒（20:00）",
+    "league": "联赛更新（周一）",
+    "challenges": "好友挑战",
+    "achievements": "成就",
+    "permission_denied": "通知已在系统设置中被禁用。点击打开设置。",
+    "permission_unsupported": "此设备不支持推送通知。",
+    "load_error": "无法加载通知偏好设置。"
   },
   "guild": {
     "title": "公会",

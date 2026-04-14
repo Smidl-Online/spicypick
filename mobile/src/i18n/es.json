@@ -143,7 +143,26 @@
     "feature_expert": "Análisis experto extendido",
     "feature_adfree": "Experiencia sin anuncios",
     "feature_freezes": "3 congelaciones de racha por mes",
-    "active_until": "Premium activo hasta {{date}}"
+    "active_until": "Premium activo hasta {{date}}",
+    "unavailable_title": "No disponible",
+    "unavailable_msg": "El sistema de compras no está disponible en este momento.",
+    "activated_title": "¡Premium activado!",
+    "activated_msg": "Disfruta de todas las funciones premium.",
+    "restored_title": "¡Restaurado!",
+    "restored_msg": "Tu suscripción premium ha sido restaurada.",
+    "no_purchase_title": "No se encontró compra",
+    "no_purchase_msg": "No se encontró ninguna suscripción activa para restaurar.",
+    "restore": "Restaurar compras"
+  },
+  "notifications": {
+    "daily": "Escenario diario (9:00)",
+    "streak": "Aviso de racha (20:00)",
+    "league": "Actualizaciones de liga (lunes)",
+    "challenges": "Desafíos de amigos",
+    "achievements": "Logros",
+    "permission_denied": "Las notificaciones están desactivadas en la configuración del sistema. Toca para abrir la configuración.",
+    "permission_unsupported": "Las notificaciones push no están disponibles en este dispositivo.",
+    "load_error": "No se pudieron cargar las preferencias de notificaciones."
   },
   "guild": {
     "title": "Gremios",
