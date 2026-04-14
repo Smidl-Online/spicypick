@@ -38,6 +38,11 @@ export const users = pgTable('users', {
   // Admin
   isAdmin: boolean('is_admin').default(false).notNull(),
 
+  // Demographics (optional)
+  birthYear: integer('birth_year'),
+  country: varchar('country', { length: 2 }),
+  gender: varchar('gender', { length: 20 }),
+
   // Meta
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   timezone: varchar('timezone', { length: 50 }).default('UTC').notNull(),
@@ -275,6 +280,25 @@ export const moralProfiles = pgTable('moral_profiles', {
 ]);
 
 // ============================================
+// DEMOGRAPHIC STATS (aggregated vote stats by demographic group)
+// ============================================
+export const demographicStats = pgTable('demographic_stats', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  scenarioId: uuid('scenario_id').notNull().references(() => scenarios.id, { onDelete: 'cascade' }),
+  demographicType: varchar('demographic_type', { length: 20 }).notNull(), // 'age_group' | 'country' | 'gender'
+  demographicValue: varchar('demographic_value', { length: 20 }).notNull(), // '18-24' | 'CZ' | 'male' etc.
+  totalVotes: integer('total_votes').default(0).notNull(),
+  votesGuilty: integer('votes_guilty').default(0).notNull(),
+  votesNotGuilty: integer('votes_not_guilty').default(0).notNull(),
+  votesComplicated: integer('votes_complicated').default(0).notNull(),
+  votesBothWrong: integer('votes_both_wrong').default(0).notNull(),
+}, (table) => [
+  uniqueIndex('idx_demo_stats_unique').on(table.scenarioId, table.demographicType, table.demographicValue),
+  index('idx_demo_stats_scenario').on(table.scenarioId),
+  index('idx_demo_stats_type').on(table.scenarioId, table.demographicType),
+]);
+
+// ============================================
 // EXPERIMENTS (A/B testing)
 // ============================================
 export const experiments = pgTable('experiments', {
@@ -343,6 +367,11 @@ export const moralProfilesRelations = relations(moralProfiles, ({ one }) => ({
 export const scenariosRelations = relations(scenarios, ({ many }) => ({
   votes: many(votes),
   predictions: many(predictions),
+  demographicStats: many(demographicStats),
+}));
+
+export const demographicStatsRelations = relations(demographicStats, ({ one }) => ({
+  scenario: one(scenarios, { fields: [demographicStats.scenarioId], references: [scenarios.id] }),
 }));
 
 export const votesRelations = relations(votes, ({ one }) => ({
