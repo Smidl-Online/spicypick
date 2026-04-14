@@ -15,6 +15,9 @@ type User = {
   lastPlayedAt: string | null;
   isPremium: boolean;
   totalVotes: number;
+  birthYear: number | null;
+  country: string | null;
+  gender: string | null;
 };
 
 type AuthState = {

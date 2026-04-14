@@ -78,7 +78,8 @@
     "appearance": "外観",
     "theme_light": "ライト",
     "theme_dark": "ダーク",
-    "theme_system": "システム"
+    "theme_system": "システム",
+    "demographics": "デモグラフィック"
   },
   "creator": {
     "title": "クリエイターモード",
@@ -203,6 +204,26 @@
     "share": "プロフィールを共有",
     "basedOn": "{{count}}票に基づく",
     "revealed": "モラルプロフィールが完成しました！"
+  },
+  "demographics": {
+    "title": "デモグラフィック",
+    "subtitle": "任意。異なるグループがどう投票したかを表示します。すべてのデータは匿名です。",
+    "tabs": { "all": "全体", "age": "年齢", "country": "国", "gender": "性別" },
+    "selectFilter": "フィルターを選択してデモグラフィックの内訳を表示",
+    "noData": "このグループにはまだ十分なデータがありません",
+    "voteRequired": "まずこのシナリオに投票してください",
+    "birthYear": "生年",
+    "birthYearPlaceholder": "例: 1995",
+    "country": "国",
+    "countryPlaceholder": "例: JP",
+    "gender": "性別",
+    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
+    "genders": { "male": "男性", "female": "女性", "non_binary": "ノンバイナリー", "prefer_not_to_say": "回答しない" },
+    "premium": { "required": "プレミアム登録が必要です", "cta": "プレミアムにアップグレードして、異なるグループの投票結果を見ましょう" },
+    "deleteTitle": "デモグラフィックデータを削除",
+    "deleteConfirm": "生年、国、性別が削除されます。投票には影響しません。",
+    "deleteData": "デモグラフィックデータを削除",
+    "privacyNote": "データは匿名のグループ統計にのみ使用されます。5票未満のグループは非表示になります。いつでもこのデータを削除できます。"
   },
   "common": {
     "loading": "読み込み中...",

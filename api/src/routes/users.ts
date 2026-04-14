@@ -1,9 +1,10 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db/index.js';
-import { users, votes, scenarios, predictions, moralProfiles } from '../db/schema.js';
+import { users, votes, scenarios, predictions, moralProfiles, demographicStats } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
 import { MIN_VOTES, recalculateMoralProfile } from '../services/moralProfileCalculator.js';
+import { isValidBirthYear, isValidCountry, isValidGender, recomputeUserDemographicStats, removeUserDemographicStats } from '../services/demographics.js';
 
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
@@ -19,6 +20,9 @@ const updateProfileSchema = z.object({
     (tz) => VALID_TIMEZONES.has(tz),
     { message: 'Invalid IANA timezone' },
   ).optional(),
+  birthYear: z.number().int().refine(isValidBirthYear, { message: 'Invalid birth year' }).optional().nullable(),
+  country: z.string().length(2).refine(isValidCountry, { message: 'Invalid ISO 3166-1 alpha-2 country code' }).optional().nullable(),
+  gender: z.enum(['male', 'female', 'non_binary', 'prefer_not_to_say']).optional().nullable(),
 });
 
 // GET /api/users/me
@@ -45,6 +49,9 @@ userRoutes.get('/me', authMiddleware, async (c) => {
     premiumUntil: user.premiumUntil,
     locale: user.locale,
     timezone: user.timezone,
+    birthYear: user.birthYear,
+    country: user.country,
+    gender: user.gender,
     totalVotes: voteCount.count,
     createdAt: user.createdAt,
   });
@@ -75,8 +82,39 @@ userRoutes.patch('/me', authMiddleware, async (c) => {
   if (parsed.data.avatarUrl !== undefined) updates.avatarUrl = parsed.data.avatarUrl;
   if (parsed.data.locale !== undefined) updates.locale = parsed.data.locale;
   if (parsed.data.timezone !== undefined) updates.timezone = parsed.data.timezone;
+  if (parsed.data.birthYear !== undefined) updates.birthYear = parsed.data.birthYear;
+  if (parsed.data.country !== undefined) updates.country = parsed.data.country;
+  if (parsed.data.gender !== undefined) updates.gender = parsed.data.gender;
+
+  // If demographics changed, recompute aggregated stats
+  const demographicsChanged = parsed.data.birthYear !== undefined
+    || parsed.data.country !== undefined
+    || parsed.data.gender !== undefined;
+
+  let oldDemographics: { birthYear: number | null; country: string | null; gender: string | null } | null = null;
+  if (demographicsChanged) {
+    const currentUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    if (currentUser) {
+      oldDemographics = {
+        birthYear: currentUser.birthYear,
+        country: currentUser.country,
+        gender: currentUser.gender,
+      };
+    }
+  }
 
   await db.update(users).set(updates).where(eq(users.id, userId));
+
+  // Async recompute demographic stats (fire and forget)
+  if (demographicsChanged && oldDemographics) {
+    const newDemographics = {
+      birthYear: parsed.data.birthYear !== undefined ? parsed.data.birthYear : oldDemographics.birthYear,
+      country: parsed.data.country !== undefined ? parsed.data.country : oldDemographics.country,
+      gender: parsed.data.gender !== undefined ? parsed.data.gender : oldDemographics.gender,
+    };
+    recomputeUserDemographicStats(userId, oldDemographics, newDemographics)
+      .catch(err => console.error('Demographic stats recompute failed:', err));
+  }
 
   return c.json({ message: 'Profile updated' });
 });
@@ -275,6 +313,32 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
     lastCalculatedAt: profile.lastCalculatedAt,
     votesUntilReady: 0,
   });
+});
+
+// DELETE /api/users/me/demographics — GDPR: delete demographic data without deleting account
+userRoutes.delete('/me/demographics', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  // Read current demographics before deletion to decrement aggregated stats
+  const currentUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const oldDemographics = currentUser
+    ? { birthYear: currentUser.birthYear, country: currentUser.country, gender: currentUser.gender }
+    : null;
+
+  await db.update(users).set({
+    birthYear: null,
+    country: null,
+    gender: null,
+    updatedAt: new Date(),
+  }).where(eq(users.id, userId));
+
+  // Async decrement aggregated demographic stats (fire and forget)
+  if (oldDemographics && (oldDemographics.birthYear || oldDemographics.country || oldDemographics.gender)) {
+    removeUserDemographicStats(userId, oldDemographics)
+      .catch(err => console.error('Demographic stats removal failed:', err));
+  }
+
+  return c.json({ message: 'Demographic data deleted' });
 });
 
 // PUT /api/users/me/push-token

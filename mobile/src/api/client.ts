@@ -91,7 +91,7 @@ export async function api<T = unknown>(
       });
       if (!retryRes.ok) {
         const error = await retryRes.json().catch(() => ({ error: 'Request failed' }));
-        throw new ApiError(retryRes.status, error.error || 'Request failed');
+        throw new ApiError(retryRes.status, error.error || 'Request failed', error);
       }
       return retryRes.json();
     }
@@ -100,16 +100,18 @@ export async function api<T = unknown>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new ApiError(res.status, error.error || 'Request failed');
+    throw new ApiError(res.status, error.error || 'Request failed', error);
   }
 
   return res.json();
 }
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  public body?: Record<string, unknown>;
+  constructor(public status: number, message: string, body?: Record<string, unknown>) {
     super(message);
     this.name = 'ApiError';
+    this.body = body;
   }
 }
 
