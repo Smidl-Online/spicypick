@@ -55,12 +55,26 @@ function RootLayoutInner() {
   // Sync RevenueCat user identity and subscription status when authenticated
   useEffect(() => {
     if (user?.id) {
-      loginRevenueCat(user.id)
-        .then(() =>
-          // Sync subscription status with backend — handles renewals/expirations while app was closed
-          api('/api/premium/status').then(() => fetchProfile()).catch(() => {}),
-        )
-        .catch((err) => console.warn('RevenueCat login failed:', err));
+      const syncRevenueCat = async () => {
+        // Retry RC login up to 3 times — login must succeed before any purchase
+        // to ensure entitlements are attached to the correct user
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            await loginRevenueCat(user.id);
+            // Sync subscription status with backend — handles renewals/expirations while app was closed
+            await api('/api/premium/status').then(() => fetchProfile()).catch(() => {});
+            return;
+          } catch (err) {
+            if (attempt === 3) {
+              console.warn('RevenueCat login failed after 3 attempts:', err);
+            } else {
+              // Wait before retry (1s, 2s)
+              await new Promise(r => setTimeout(r, attempt * 1000));
+            }
+          }
+        }
+      };
+      syncRevenueCat();
     }
   }, [user?.id]);
 

@@ -97,11 +97,11 @@ describe('premium routes', () => {
 
     it('should return 402 when subscription is not active', async () => {
       process.env.REVENUECAT_API_KEY = 'test-key';
-      (getSubscriptionStatus as any).mockResolvedValueOnce({
-        isActive: false,
-        expiresAt: null,
-        productId: null,
-      });
+      const inactiveResult = { isActive: false, expiresAt: null, productId: null };
+      // Mock both initial call and retry — both return inactive
+      (getSubscriptionStatus as any)
+        .mockResolvedValueOnce(inactiveResult)
+        .mockResolvedValueOnce(inactiveResult);
 
       const res = await app.request('/api/premium/subscribe', {
         method: 'POST',

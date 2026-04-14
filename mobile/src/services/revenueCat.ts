@@ -52,6 +52,9 @@ export async function purchasePremium(userId?: string): Promise<{
   platform: 'ios' | 'android';
   customerInfo: CustomerInfo;
 } | null> {
+  // Ensure SDK is initialized before checking config
+  await initRevenueCat();
+
   if (!isConfigured) {
     // Dev fallback — no SDK configured, use stub
     return {
@@ -88,18 +91,25 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
 }
 
 export async function checkPremiumStatus(): Promise<boolean> {
+  await initRevenueCat();
   if (!isConfigured) return false;
   const info = await Purchases.getCustomerInfo();
   return !!info.entitlements.active['premium'];
 }
 
 export async function restorePurchases(userId?: string): Promise<CustomerInfo | null> {
+  await initRevenueCat();
   if (!isConfigured) return null;
   // Ensure RC is logged in as the correct user before restore
   if (userId) {
     await Purchases.logIn(userId);
   }
   return Purchases.restorePurchases();
+}
+
+export async function checkRevenueCatConfigured(): Promise<boolean> {
+  await initRevenueCat();
+  return isConfigured;
 }
 
 export { isConfigured as isRevenueCatConfigured };

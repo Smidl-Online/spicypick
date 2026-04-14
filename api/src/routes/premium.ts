@@ -30,7 +30,13 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
   // If RevenueCat is configured, verify subscription status
   if (process.env.REVENUECAT_API_KEY) {
     try {
-      const result = await getSubscriptionStatus(userId);
+      let result = await getSubscriptionStatus(userId);
+
+      // Retry once after 2s — RC may have propagation delay after purchase
+      if (!result.isActive) {
+        await new Promise(r => setTimeout(r, 2000));
+        result = await getSubscriptionStatus(userId);
+      }
 
       if (!result.isActive || !result.expiresAt) {
         return c.json({ error: 'Subscription is not active' }, 402);
