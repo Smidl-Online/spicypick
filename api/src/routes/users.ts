@@ -190,11 +190,7 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
 
   const hasEnoughVotes = voteCount.count >= MIN_VOTES;
 
-  if (!profile || !hasEnoughVotes) {
-    // If user has enough votes but no profile yet, trigger recalculation
-    if (hasEnoughVotes && !profile) {
-      recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
-    }
+  if (!hasEnoughVotes) {
     return c.json({
       profile: null,
       totalVotesAnalyzed: 0,
@@ -202,6 +198,44 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
       isReady: false,
       lastCalculatedAt: null,
       votesUntilReady: Math.max(0, MIN_VOTES - voteCount.count),
+    });
+  }
+
+  // If user has enough votes but no profile yet, await recalculation
+  if (!profile) {
+    try {
+      await recalculateMoralProfile(userId);
+      const recalculated = await db.query.moralProfiles.findFirst({
+        where: eq(moralProfiles.userId, userId),
+      });
+      if (recalculated) {
+        return c.json({
+          profile: {
+            forgiving: recalculated.forgiving,
+            pragmatic: recalculated.pragmatic,
+            empathetic: recalculated.empathetic,
+            confrontational: recalculated.confrontational,
+            majorityAligned: recalculated.majorityAligned,
+            consistent: recalculated.consistent,
+          },
+          totalVotesAnalyzed: recalculated.totalVotesAnalyzed,
+          minimumVotesRequired: MIN_VOTES,
+          isReady: true,
+          lastCalculatedAt: recalculated.lastCalculatedAt,
+          votesUntilReady: 0,
+        });
+      }
+    } catch (err) {
+      console.error('Moral profile recalc failed:', err);
+    }
+    // Recalc failed or produced no result
+    return c.json({
+      profile: null,
+      totalVotesAnalyzed: 0,
+      minimumVotesRequired: MIN_VOTES,
+      isReady: false,
+      lastCalculatedAt: null,
+      votesUntilReady: 0,
     });
   }
 

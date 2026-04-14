@@ -155,9 +155,21 @@ describe('moral profile', () => {
         makeVote('guilty', 'family'),
       ];
       const result = calculateDimensions(votes);
-      // Workplace: dominant=1.0, Relationship: dominant=1.0, Family: dominant=0.4
-      // Mix means inconsistent in family => overall lower consistency
-      expect(result.consistent).toBeLessThan(100);
+      // Workplace: 100% guilty, Relationship: 100% not_guilty, Family: mixed
+      // Very different verdict distributions across categories => low consistency
+      expect(result.consistent).toBeLessThan(50);
+    });
+
+    it('should detect inconsistency when same dominance but opposite verdicts', () => {
+      // This was the bug: old algo measured dominance ratio only, so both categories
+      // at 100% dominance would score consistent=100 even with opposite verdicts
+      const votes: VoteWithScenario[] = [
+        ...Array(5).fill(null).map(() => makeVote('guilty', 'workplace')),
+        ...Array(5).fill(null).map(() => makeVote('not_guilty', 'relationship')),
+      ];
+      const result = calculateDimensions(votes);
+      // Completely opposite behavior => very low consistency
+      expect(result.consistent).toBeLessThan(30);
     });
   });
 

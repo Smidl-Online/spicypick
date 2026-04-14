@@ -68,7 +68,9 @@ function calculateDimensions(recentVotes: VoteWithScenario[]) {
   }
   const majorityAligned = clamp((majorityMatches / total) * 100);
 
-  // consistent = 100 - normalized std deviation of verdict distribution across categories
+  // consistent = similarity of verdict distributions across categories
+  // Compares full verdict distribution vectors (not just dominance ratio)
+  // so that e.g. 100% guilty in one category + 100% not_guilty in another = low consistency
   const categoryVerdictMap: Record<string, Record<string, number>> = {};
   for (const v of recentVotes) {
     if (!categoryVerdictMap[v.category]) {
@@ -77,20 +79,31 @@ function calculateDimensions(recentVotes: VoteWithScenario[]) {
     categoryVerdictMap[v.category][v.verdict]++;
   }
   const categories = Object.keys(categoryVerdictMap);
+  const verdictKeys = ['guilty', 'not_guilty', 'complicated', 'both_wrong'];
   let consistent: number;
   if (categories.length >= 2) {
-    const dominantRatios = categories.map(cat => {
+    // Build normalized distribution vector per category
+    const distributions = categories.map(cat => {
       const catVotes = categoryVerdictMap[cat];
       const catTotal = Object.values(catVotes).reduce((s, c) => s + c, 0);
-      if (catTotal === 0) return 0;
-      const maxVerdict = Math.max(...Object.values(catVotes));
-      return maxVerdict / catTotal;
+      if (catTotal === 0) return verdictKeys.map(() => 0.25);
+      return verdictKeys.map(v => (catVotes[v] || 0) / catTotal);
     });
-    const mean = dominantRatios.reduce((s, r) => s + r, 0) / dominantRatios.length;
-    const variance = dominantRatios.reduce((s, r) => s + (r - mean) ** 2, 0) / dominantRatios.length;
-    const stdDev = Math.sqrt(variance);
-    const normalizationFactor = 200;
-    consistent = clamp(100 - stdDev * normalizationFactor);
+    // Average pairwise L2 distance between distributions
+    let totalDistance = 0;
+    let pairs = 0;
+    for (let i = 0; i < distributions.length; i++) {
+      for (let j = i + 1; j < distributions.length; j++) {
+        const dist = Math.sqrt(
+          distributions[i].reduce((s, val, k) => s + (val - distributions[j][k]) ** 2, 0)
+        );
+        totalDistance += dist;
+        pairs++;
+      }
+    }
+    const avgDistance = pairs > 0 ? totalDistance / pairs : 0;
+    // Max L2 distance for 4-dim probability vectors is sqrt(2) ≈ 1.414
+    consistent = clamp(100 - (avgDistance / Math.SQRT2) * 100);
   } else {
     consistent = 50;
   }
