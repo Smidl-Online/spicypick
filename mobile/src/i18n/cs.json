@@ -216,6 +216,7 @@
     },
     "selectFilter": "Vyber filtr pro zobrazení demografického rozložení",
     "noData": "Pro tuto skupinu zatím není dostatek dat",
+    "voteRequired": "Nejprve musíte hlasovat v tomto scénáři",
     "birthYear": "Rok narození",
     "birthYearPlaceholder": "např. 1995",
     "country": "Země",

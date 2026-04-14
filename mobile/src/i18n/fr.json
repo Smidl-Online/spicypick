@@ -211,6 +211,7 @@
     "tabs": { "all": "Tous", "age": "Âge", "country": "Pays", "gender": "Genre" },
     "selectFilter": "Sélectionnez un filtre pour voir la répartition démographique",
     "noData": "Pas encore assez de données pour ce groupe",
+    "voteRequired": "Vous devez d'abord voter sur ce scénario",
     "birthYear": "Année de naissance",
     "birthYearPlaceholder": "ex. 1995",
     "country": "Pays",

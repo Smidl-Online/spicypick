@@ -466,13 +466,13 @@ scenarioRoutes.get('/:id/demographics', authMiddleware, async (c) => {
     where: and(eq(votes.userId, userId), eq(votes.scenarioId, scenarioId)),
   });
   if (!userVote) {
-    return c.json({ error: 'You must vote on this scenario first' }, 403);
+    return c.json({ error: 'You must vote on this scenario first', code: 'vote_required' }, 403);
   }
 
   // Premium check
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user || !user.isPremium) {
-    return c.json({ error: 'Premium subscription required' }, 403);
+    return c.json({ error: 'Premium subscription required', code: 'premium_required' }, 403);
   }
 
   // Get demographic stats for this scenario and type

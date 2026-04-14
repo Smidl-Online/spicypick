@@ -56,7 +56,11 @@ export function DemographicFilters({ scenarioId, isPremium, onPremiumCta }: Prop
       setData(prev => ({ ...prev, [type]: res.groups }));
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        setError(t('demographics.premium.required'));
+        if (err.body?.code === 'vote_required') {
+          setError(t('demographics.voteRequired'));
+        } else {
+          setError(t('demographics.premium.required'));
+        }
       } else {
         setError(t('common.error'));
       }

@@ -216,6 +216,7 @@
     },
     "selectFilter": "Select a filter to see demographic breakdown",
     "noData": "Not enough data for this group yet",
+    "voteRequired": "You must vote on this scenario first",
     "birthYear": "Birth Year",
     "birthYearPlaceholder": "e.g. 1995",
     "country": "Country",

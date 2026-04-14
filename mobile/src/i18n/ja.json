@@ -211,6 +211,7 @@
     "tabs": { "all": "全体", "age": "年齢", "country": "国", "gender": "性別" },
     "selectFilter": "フィルターを選択してデモグラフィックの内訳を表示",
     "noData": "このグループにはまだ十分なデータがありません",
+    "voteRequired": "まずこのシナリオに投票してください",
     "birthYear": "生年",
     "birthYearPlaceholder": "例: 1995",
     "country": "国",

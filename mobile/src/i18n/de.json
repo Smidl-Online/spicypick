@@ -211,6 +211,7 @@
     "tabs": { "all": "Alle", "age": "Alter", "country": "Land", "gender": "Geschlecht" },
     "selectFilter": "Wähle einen Filter für die demografische Aufschlüsselung",
     "noData": "Noch nicht genügend Daten für diese Gruppe",
+    "voteRequired": "Sie müssen zuerst über dieses Szenario abstimmen",
     "birthYear": "Geburtsjahr",
     "birthYearPlaceholder": "z.B. 1995",
     "country": "Land",
