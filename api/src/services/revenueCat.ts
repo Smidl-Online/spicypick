@@ -1,19 +1,17 @@
 const REVENUECAT_API_URL = 'https://api.revenuecat.com/v1';
 
-interface RevenueCatSubscription {
-  expires_date: string;
-  purchase_date: string;
-  product_identifier: string;
-  is_sandbox: boolean;
-}
-
 interface RevenueCatSubscriberResponse {
   subscriber: {
     entitlements: Record<string, {
       expires_date: string | null;
       product_identifier: string;
     }>;
-    subscriptions: Record<string, RevenueCatSubscription>;
+    subscriptions: Record<string, {
+      expires_date: string;
+      purchase_date: string;
+      product_identifier: string;
+      is_sandbox: boolean;
+    }>;
   };
 }
 
@@ -27,38 +25,6 @@ function getApiKey(): string {
   const key = process.env.REVENUECAT_API_KEY;
   if (!key) throw new Error('REVENUECAT_API_KEY is not configured');
   return key;
-}
-
-export async function validateReceipt(
-  userId: string,
-  receipt: string,
-  platform: 'ios' | 'android',
-): Promise<SubscriptionResult> {
-  const apiKey = getApiKey();
-
-  // Post receipt to RevenueCat
-  const response = await fetch(`${REVENUECAT_API_URL}/receipts`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'X-Platform': platform === 'ios' ? 'ios' : 'android',
-    },
-    body: JSON.stringify({
-      app_user_id: userId,
-      fetch_token: receipt,
-    }),
-    signal: AbortSignal.timeout(10_000),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('RevenueCat receipt validation failed:', response.status, errorText);
-    throw new Error('Receipt validation failed');
-  }
-
-  const data = await response.json() as RevenueCatSubscriberResponse;
-  return parseSubscriberData(data);
 }
 
 export async function getSubscriptionStatus(userId: string): Promise<SubscriptionResult> {

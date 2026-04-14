@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { api } from '../../src/api/client';
 import { useAuthStore } from '../../src/store/authStore';
 import { colors } from '../../src/theme/colors';
@@ -43,12 +43,16 @@ export default function PremiumScreen() {
         return;
       }
 
-      // Send receipt to backend for server-side validation
-      await api('/api/premium/subscribe', {
-        method: 'POST',
-        body: { receipt: result.receipt, platform: result.platform },
-      });
+      if (!result.sdkConfigured) {
+        // Dev mode — use POST /subscribe with stub receipt
+        await api('/api/premium/subscribe', {
+          method: 'POST',
+          body: { receipt: 'dev-receipt', platform: result.platform },
+        });
+      }
 
+      // Sync status from RevenueCat via backend (GET /status syncs RC → DB)
+      await api<PremiumStatus>('/api/premium/status');
       await fetchProfile();
       analytics.track('premium_subscribe', { platform: result.platform });
       Alert.alert(t('premium.activated_title', 'Premium activated!'), t('premium.activated_msg', 'Enjoy all premium features.'));
@@ -70,11 +74,7 @@ export default function PremiumScreen() {
       const isPremium = await checkPremiumStatus();
 
       if (isPremium) {
-        // Sync with backend
-        await api('/api/premium/subscribe', {
-          method: 'POST',
-          body: { receipt: 'restored', platform: Platform.OS === 'ios' ? 'ios' : 'android' },
-        });
+        // Backend verifies entitlement via RevenueCat API (status endpoint syncs DB)
         await fetchProfile();
         const updatedStatus = await api<PremiumStatus>('/api/premium/status');
         setStatus(updatedStatus);

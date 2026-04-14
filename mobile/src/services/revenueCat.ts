@@ -10,22 +10,30 @@ const RC_IOS_KEY = Constants.expoConfig?.extra?.revenueCatIosKey || '';
 const RC_ANDROID_KEY = Constants.expoConfig?.extra?.revenueCatAndroidKey || '';
 
 let isConfigured = false;
+let initPromise: Promise<void> | null = null;
 
 export async function initRevenueCat(): Promise<void> {
-  const apiKey = Platform.OS === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;
-  if (!apiKey) {
-    console.warn('RevenueCat API key not configured for', Platform.OS);
-    return;
-  }
+  if (initPromise) return initPromise;
 
-  if (isConfigured) return;
+  initPromise = (async () => {
+    const apiKey = Platform.OS === 'ios' ? RC_IOS_KEY : RC_ANDROID_KEY;
+    if (!apiKey) {
+      console.warn('RevenueCat API key not configured for', Platform.OS);
+      return;
+    }
 
-  Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
-  Purchases.configure({ apiKey });
-  isConfigured = true;
+    Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
+    Purchases.configure({ apiKey });
+    isConfigured = true;
+  })();
+
+  return initPromise;
 }
 
 export async function loginRevenueCat(userId: string): Promise<void> {
+  // Ensure init completes before login — handles cold start race when
+  // the [user.id] effect fires before the mount effect calls initRevenueCat()
+  await initRevenueCat();
   if (!isConfigured) return;
   await Purchases.logIn(userId);
 }
@@ -42,15 +50,17 @@ export async function getOfferings(): Promise<PurchasesPackage[]> {
 }
 
 export async function purchasePremium(): Promise<{
-  receipt: string;
+  sdkConfigured: boolean;
   platform: 'ios' | 'android';
   customerInfo: CustomerInfo;
 } | null> {
+  const platform: 'ios' | 'android' = Platform.OS === 'ios' ? 'ios' : 'android';
+
   if (!isConfigured) {
     // Dev fallback — no SDK configured, use stub
     return {
-      receipt: 'dev-receipt',
-      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+      sdkConfigured: false,
+      platform,
       customerInfo: {} as CustomerInfo,
     };
   }
@@ -61,15 +71,13 @@ export async function purchasePremium(): Promise<{
     throw new Error('No premium package available');
   }
 
+  // RevenueCat SDK automatically sends the receipt to RC servers upon purchase.
+  // No need to extract a receipt — the backend queries RC API via GET /status.
   const { customerInfo } = await Purchases.purchasePackage(premiumPackage);
 
-  // Get the receipt/transaction identifier for server validation
-  const activeEntitlement = customerInfo.entitlements.active['premium'];
-  const receipt = activeEntitlement?.productIdentifier || premiumPackage.product.identifier;
-
   return {
-    receipt,
-    platform: Platform.OS === 'ios' ? 'ios' : 'android',
+    sdkConfigured: true,
+    platform,
     customerInfo,
   };
 }
