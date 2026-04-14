@@ -63,6 +63,7 @@ export function MoralProfileSection({ isFirstReveal = false }: Props) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- isFirstReveal is a prop that won't change; shared values are stable refs
   }, []);
 
   const celebrationStyle = useAnimatedStyle(() => ({

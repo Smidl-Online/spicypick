@@ -1,6 +1,6 @@
 import { db } from '../db/index.js';
 import { votes, scenarios, moralProfiles } from '../db/schema.js';
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { VALID_CATEGORIES, type Category } from '../constants.js';
 
 const ROLLING_WINDOW = 100;
@@ -59,8 +59,10 @@ function calculateDimensions(recentVotes: VoteWithScenario[]) {
       complicated: v.votesComplicated,
       both_wrong: v.votesBothWrong,
     };
-    const maxCount = Math.max(...Object.values(counts));
-    if (counts[v.verdict] === maxCount) {
+    const values = Object.values(counts);
+    const maxCount = Math.max(...values);
+    const isTie = values.filter(c => c === maxCount).length > 1;
+    if (!isTie && counts[v.verdict] === maxCount) {
       majorityMatches++;
     }
   }
@@ -122,27 +124,22 @@ export async function recalculateMoralProfile(userId: string): Promise<void> {
   const dimensions = calculateDimensions(recentVotes);
   const now = new Date();
 
-  // Upsert moral profile
-  const existing = await db.query.moralProfiles.findFirst({
-    where: eq(moralProfiles.userId, userId),
+  // Upsert moral profile (atomic to avoid race conditions)
+  await db.insert(moralProfiles).values({
+    userId,
+    ...dimensions,
+    totalVotesAnalyzed: recentVotes.length,
+    lastCalculatedAt: now,
+    updatedAt: now,
+  }).onConflictDoUpdate({
+    target: moralProfiles.userId,
+    set: {
+      ...dimensions,
+      totalVotesAnalyzed: recentVotes.length,
+      lastCalculatedAt: now,
+      updatedAt: now,
+    },
   });
-
-  if (existing) {
-    await db.update(moralProfiles).set({
-      ...dimensions,
-      totalVotesAnalyzed: recentVotes.length,
-      lastCalculatedAt: now,
-      updatedAt: now,
-    }).where(eq(moralProfiles.userId, userId));
-  } else {
-    await db.insert(moralProfiles).values({
-      userId,
-      ...dimensions,
-      totalVotesAnalyzed: recentVotes.length,
-      lastCalculatedAt: now,
-      updatedAt: now,
-    });
-  }
 }
 
 export { MIN_VOTES, ROLLING_WINDOW, calculateDimensions };

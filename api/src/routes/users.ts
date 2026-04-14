@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../db/index.js';
 import { users, votes, scenarios, predictions, moralProfiles } from '../db/schema.js';
 import { eq, desc, and, sql, count } from 'drizzle-orm';
-import { MIN_VOTES } from '../services/moralProfileCalculator.js';
+import { MIN_VOTES, recalculateMoralProfile } from '../services/moralProfileCalculator.js';
 
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
@@ -188,7 +188,13 @@ userRoutes.get('/me/moral-profile', authMiddleware, async (c) => {
 
   const [voteCount] = await db.select({ count: count() }).from(votes).where(eq(votes.userId, userId));
 
-  if (!profile || voteCount.count < MIN_VOTES) {
+  const hasEnoughVotes = voteCount.count >= MIN_VOTES;
+
+  if (!profile || !hasEnoughVotes) {
+    // If user has enough votes but no profile yet, trigger recalculation
+    if (hasEnoughVotes && !profile) {
+      recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
+    }
     return c.json({
       profile: null,
       totalVotesAnalyzed: 0,

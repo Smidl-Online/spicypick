@@ -674,7 +674,7 @@ scenarioRoutes.post('/:id/vote', authMiddleware, async (c) => {
   }
 
   // Async moral profile recalculation (fire and forget)
-  recalculateMoralProfile(userId).catch(() => {});
+  recalculateMoralProfile(userId).catch(err => console.error('Moral profile recalc failed:', err));
 
   return c.json({
     xpEarned: finalXpEarned,
