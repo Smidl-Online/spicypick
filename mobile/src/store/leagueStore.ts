@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { offlineCache } from '../services/offlineCache';
 
 type LeaderboardEntry = {
@@ -57,9 +57,10 @@ export const useLeagueStore = create<LeagueState>((set) => ({
       set(state);
       // Cache league data for offline fallback
       await offlineCache.cacheLeague(data).catch(() => {});
-    } catch (err) {
+    } catch (err: any) {
       // Auth errors — don't serve stale cache, just stop loading
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      const status = err?.status;
+      if (status === 401 || status === 403) {
         set({ isLoading: false });
         return;
       }

@@ -83,6 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await clearTokens();
     await offlineCache.clearUserProfile().catch(() => {});
     await offlineCache.clearLeague().catch(() => {});
+    await offlineCache.clearPendingVotes().catch(() => {});
     useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
