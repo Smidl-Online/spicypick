@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/store/authStore';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { i18nReady } from '../src/i18n';
@@ -13,7 +14,10 @@ import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { analytics } from '../src/services/analytics';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
-import { initRevenueCat, loginRevenueCat } from '../src/services/revenueCat';
+import { initRevenueCat, loginRevenueCat, checkPremiumStatus } from '../src/services/revenueCat';
+import { api } from '../src/api/client';
+
+const LAST_HANDLED_NOTIF_KEY = 'lastHandledNotificationId';
 
 // Handle push notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -48,16 +52,19 @@ function RootLayoutInner() {
   // Register push token when authenticated
   usePushNotifications(isAuthenticated);
 
-  // Sync RevenueCat user identity when authenticated
+  // Sync RevenueCat user identity and subscription status when authenticated
   useEffect(() => {
     if (user?.id) {
-      loginRevenueCat(user.id).catch((err) =>
-        console.warn('RevenueCat login failed:', err),
-      );
+      loginRevenueCat(user.id)
+        .then(() =>
+          // Sync subscription status with backend — handles renewals/expirations while app was closed
+          api('/api/premium/status').then(() => fetchProfile()).catch(() => {}),
+        )
+        .catch((err) => console.warn('RevenueCat login failed:', err));
     }
   }, [user?.id]);
 
-  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
+  const handleNotificationResponse = React.useCallback((response: Notifications.NotificationResponse) => {
     const data = response.notification.request.content.data;
     if (data?.type === 'daily_scenario') {
       router.push('/');
@@ -68,7 +75,7 @@ function RootLayoutInner() {
     } else if (data?.type === 'achievement') {
       router.push('/(tabs)/profile');
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
@@ -106,10 +113,15 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // DEFAULT_ACTION_IDENTIFIER means user explicitly tapped — always handle regardless of age
-    Notifications.getLastNotificationResponseAsync().then((response) => {
+    // Track last handled notification ID to avoid re-navigating on subsequent cold starts
+    Notifications.getLastNotificationResponseAsync().then(async (response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        setTimeout(() => handleNotificationResponse(response), 500);
+        const notifId = response.notification.request.identifier;
+        const lastHandled = await AsyncStorage.getItem(LAST_HANDLED_NOTIF_KEY);
+        if (notifId !== lastHandled) {
+          await AsyncStorage.setItem(LAST_HANDLED_NOTIF_KEY, notifId);
+          setTimeout(() => handleNotificationResponse(response), 500);
+        }
       }
     });
 
@@ -118,7 +130,7 @@ function RootLayoutInner() {
       linkSub.remove();
       notifSub.remove();
     };
-  }, []);
+  }, [handleNotificationResponse]);
 
   if (!ready) return null;
 

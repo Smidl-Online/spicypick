@@ -62,7 +62,12 @@
     "username": "Benutzername",
     "forgot_password": "Passwort vergessen?",
     "no_account": "Noch kein Konto?",
-    "has_account": "Schon ein Konto?"
+    "has_account": "Schon ein Konto?",
+    "reset_password": "Passwort zurücksetzen",
+    "send_reset_link": "Link zum Zurücksetzen senden",
+    "back_to_login": "Zurück zur Anmeldung",
+    "check_email": "Überprüfe deine E-Mail",
+    "check_email_hint": "Falls ein Konto existiert, haben wir einen Link zum Zurücksetzen gesendet."
   },
   "settings": {
     "title": "Einstellungen",
@@ -132,7 +137,31 @@
       "3 Streak-Freezes pro Monat"
     ],
     "subscribe": "Abonnieren",
-    "active": "Premium aktiv bis {{date}}"
+    "feature_scenarios": "3 Szenarien pro Tag",
+    "feature_archive": "Vollständiges Szenario-Archiv",
+    "feature_expert": "Erweiterte Expertenanalyse",
+    "feature_adfree": "Werbefreies Erlebnis",
+    "feature_freezes": "3 Streak-Freezes pro Monat",
+    "active_until": "Premium aktiv bis {{date}}",
+    "unavailable_title": "Nicht verfügbar",
+    "unavailable_msg": "Das Kaufsystem ist derzeit nicht verfügbar.",
+    "activated_title": "Premium aktiviert!",
+    "activated_msg": "Genieße alle Premium-Funktionen.",
+    "restored_title": "Wiederhergestellt!",
+    "restored_msg": "Dein Premium-Abo wurde wiederhergestellt.",
+    "no_purchase_title": "Kein Kauf gefunden",
+    "no_purchase_msg": "Kein aktives Abo zum Wiederherstellen gefunden.",
+    "restore": "Käufe wiederherstellen"
+  },
+  "notifications": {
+    "daily": "Tägliches Szenario (9:00)",
+    "streak": "Streak-Warnung (20:00)",
+    "league": "Liga-Updates (Montag)",
+    "challenges": "Freundes-Herausforderungen",
+    "achievements": "Erfolge",
+    "permission_denied": "Benachrichtigungen sind in den Systemeinstellungen deaktiviert. Tippe, um die Einstellungen zu öffnen.",
+    "permission_unsupported": "Push-Benachrichtigungen sind auf diesem Gerät nicht verfügbar.",
+    "load_error": "Benachrichtigungseinstellungen konnten nicht geladen werden."
   },
   "guild": {
     "title": "Gilden",

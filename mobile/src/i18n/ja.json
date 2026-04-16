@@ -62,7 +62,12 @@
     "username": "ユーザー名",
     "forgot_password": "パスワードを忘れた？",
     "no_account": "アカウントをお持ちでない？",
-    "has_account": "すでにアカウントをお持ち？"
+    "has_account": "すでにアカウントをお持ち？",
+    "reset_password": "パスワードをリセット",
+    "send_reset_link": "リセットリンクを送信",
+    "back_to_login": "ログインに戻る",
+    "check_email": "メールを確認してください",
+    "check_email_hint": "アカウントが存在する場合、リセットリンクを送信しました。"
   },
   "settings": {
     "title": "設定",
@@ -132,7 +137,31 @@
       "月3回のストリークフリーズ"
     ],
     "subscribe": "購読する",
-    "active": "プレミアム有効期限: {{date}}"
+    "feature_scenarios": "1日3シナリオ",
+    "feature_archive": "シナリオアーカイブ全体",
+    "feature_expert": "拡張専門家分析",
+    "feature_adfree": "広告なし体験",
+    "feature_freezes": "月3回のストリークフリーズ",
+    "active_until": "プレミアム有効期限: {{date}}",
+    "unavailable_title": "利用不可",
+    "unavailable_msg": "購入システムは現在利用できません。",
+    "activated_title": "プレミアム有効化！",
+    "activated_msg": "すべてのプレミアム機能をお楽しみください。",
+    "restored_title": "復元完了！",
+    "restored_msg": "プレミアムサブスクリプションが復元されました。",
+    "no_purchase_title": "購入が見つかりません",
+    "no_purchase_msg": "復元するアクティブなサブスクリプションが見つかりません。",
+    "restore": "購入を復元"
+  },
+  "notifications": {
+    "daily": "デイリーシナリオ（9:00）",
+    "streak": "ストリーク警告（20:00）",
+    "league": "リーグ更新（月曜日）",
+    "challenges": "フレンドチャレンジ",
+    "achievements": "実績",
+    "permission_denied": "通知はシステム設定で無効になっています。タップして設定を開きます。",
+    "permission_unsupported": "このデバイスではプッシュ通知を利用できません。",
+    "load_error": "通知設定の読み込みに失敗しました。"
   },
   "guild": {
     "title": "ギルド",
