@@ -106,14 +106,10 @@ function RootLayoutInner() {
     });
 
     // Handle push notification tap on cold start
-    // Use actionIdentifier to detect explicit tap — if user tapped, always handle
-    // regardless of notification age. Only skip if there was no explicit interaction.
+    // DEFAULT_ACTION_IDENTIFIER means user explicitly tapped — always handle regardless of age
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response && response.actionIdentifier === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        const age = Date.now() - response.notification.date * 1000;
-        if (age < 30_000) {
-          setTimeout(() => handleNotificationResponse(response), 500);
-        }
+        setTimeout(() => handleNotificationResponse(response), 500);
       }
     });
 

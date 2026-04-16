@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Switch, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Switch, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { api } from '../../src/api/client';
 
@@ -17,7 +17,9 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const loadPrefs = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     api<NotifPrefs>('/api/users/me/notification-preferences')
       .then(setPrefs)
       .catch(() => {
@@ -25,6 +27,10 @@ export default function NotificationsScreen() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadPrefs();
+  }, [loadPrefs]);
 
   const toggle = useCallback((key: keyof NotifPrefs) => {
     if (!prefs || loadError) return;
@@ -49,10 +55,13 @@ export default function NotificationsScreen() {
 
   if (loadError) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.bg }]}>
-        <Text style={[styles.errorText, { color: colors.textMuted }]}>
-          Could not load notification preferences. Please try again later.
+      <View style={[styles.container, { backgroundColor: colors.bg, alignItems: 'center', paddingTop: 40 }]}>
+        <Text style={{ color: colors.textSecondary, fontSize: 15, marginBottom: 16 }}>
+          Failed to load notification preferences.
         </Text>
+        <TouchableOpacity onPress={loadPrefs} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
+          <Text style={{ color: '#fff', fontSize: 15, fontWeight: '600' }}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -96,5 +105,5 @@ const styles = StyleSheet.create({
   },
   emoji: { fontSize: 20, marginRight: 12 },
   label: { fontSize: 15, flex: 1 },
-  errorText: { fontSize: 15, textAlign: 'center' as const, marginTop: 40, paddingHorizontal: 20 },
+  retryButton: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
 });
