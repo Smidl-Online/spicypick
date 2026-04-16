@@ -43,7 +43,7 @@ export default function NotificationsScreen() {
       // Revert on failure
       setPrefs((prev) => prev ? { ...prev, [key]: !newValue } : prev);
     });
-  }, [prefs]);
+  }, [prefs, loadError]);
 
   if (loading) {
     return (
