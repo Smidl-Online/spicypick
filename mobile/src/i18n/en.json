@@ -137,6 +137,7 @@
       "3 streak freezes per month"
     ],
     "subscribe": "Subscribe",
+    "active": "Premium active until {{date}}",
     "feature_scenarios": "3 scenarios per day",
     "feature_archive": "Full scenario archive",
     "feature_expert": "Extended expert analysis",
@@ -144,7 +145,14 @@
     "feature_freezes": "3 streak freezes per month",
     "active_until": "Premium active until {{date}}",
     "unavailable_title": "Unavailable",
-    "unavailable_msg": "Purchase system is not available at the moment."
+    "unavailable_msg": "Purchase system is not available at the moment.",
+    "activated_title": "Premium activated!",
+    "activated_msg": "Enjoy all premium features.",
+    "restored_title": "Restored!",
+    "restored_msg": "Your premium subscription has been restored.",
+    "no_purchase_title": "No purchase found",
+    "no_purchase_msg": "No active subscription found to restore.",
+    "restore": "Restore purchases"
   },
   "notifications": {
     "daily": "Daily scenario (9:00)",

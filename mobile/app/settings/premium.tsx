@@ -46,10 +46,14 @@ export default function PremiumScreen() {
         return;
       }
 
-      await api('/api/premium/subscribe', {
-        method: 'POST',
-        body: { platform: result.platform },
-      });
+      if (result.sdkConfigured) {
+        await api<PremiumStatus>('/api/premium/status');
+      } else {
+        await api('/api/premium/subscribe', {
+          method: 'POST',
+          body: { platform: result.platform },
+        });
+      }
 
       await fetchProfile();
       analytics.track('premium_subscribe', { platform: result.platform });
@@ -122,19 +126,17 @@ export default function PremiumScreen() {
             )}
           </TouchableOpacity>
 
-          {rcConfigured && (
-            <TouchableOpacity
-              style={styles.restoreBtn}
-              onPress={handleRestore}
-              disabled={isLoading || isRestoring}
-            >
-              {isRestoring ? (
-                <ActivityIndicator color={colors.textSecondary} />
-              ) : (
-                <Text style={[styles.restoreBtnText, { color: colors.textSecondary }]}>{t('premium.restore')}</Text>
-              )}
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={styles.restoreBtn}
+            onPress={handleRestore}
+            disabled={isLoading || isRestoring}
+          >
+            {isRestoring ? (
+              <ActivityIndicator color={colors.textSecondary} />
+            ) : (
+              <Text style={[styles.restoreBtnText, { color: colors.textSecondary }]}>{t('premium.restore')}</Text>
+            )}
+          </TouchableOpacity>
         </View>
       )}
     </View>

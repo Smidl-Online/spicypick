@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
-import { logoutRevenueCat } from '../services/revenueCat';
 import { offlineCache } from '../services/offlineCache';
+import { logoutRevenueCat } from '../services/revenueCat';
 import { useExperimentStore } from './experimentStore';
 
 type User = {
@@ -83,6 +83,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await clearTokens();
     await offlineCache.clearUserProfile().catch(() => {});
     await offlineCache.clearLeague().catch(() => {});
+    await offlineCache.clearPendingVotes().catch(() => {});
     useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
