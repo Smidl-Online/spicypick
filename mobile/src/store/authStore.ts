@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { api, setTokens, clearTokens } from '../api/client';
 import { analytics } from '../services/analytics';
+import { offlineCache } from '../services/offlineCache';
 import { logoutRevenueCat } from '../services/revenueCat';
+import { useExperimentStore } from './experimentStore';
 
 type User = {
   id: string;
@@ -75,8 +77,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     analytics.track('user_logged_out');
     analytics.reset();
+    // Clear push token on server before clearing auth tokens
+    await api('/api/users/me/push-token', { method: 'DELETE' }).catch(() => {});
     await logoutRevenueCat().catch(() => {});
     await clearTokens();
+    await offlineCache.clearUserProfile().catch(() => {});
+    await offlineCache.clearLeague().catch(() => {});
+    await offlineCache.clearPendingVotes().catch(() => {});
+    useExperimentStore.getState().reset();
     set({ user: null, isAuthenticated: false });
   },
 
@@ -87,9 +95,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Re-identify on every profile fetch so app resume with existing session
       // correctly tags analytics events (not just login/register)
       analytics.identify(user.id);
-    } catch {
-      analytics.reset();
-      set({ user: null, isAuthenticated: false });
+      // Cache profile for offline fallback
+      await offlineCache.cacheUserProfile(user).catch(() => {});
+    } catch (err: any) {
+      // Auth errors (401/403) — always log out, don't use stale cache
+      const status = err?.status;
+      if (status === 401 || status === 403) {
+        await clearTokens().catch(() => {});
+        await offlineCache.clearUserProfile().catch(() => {});
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+        return;
+      }
+      // Network/other errors — try offline cache fallback
+      const cached = await offlineCache.getCachedUserProfile<User>().catch(() => null);
+      if (cached) {
+        set({ user: cached, isAuthenticated: true });
+      } else {
+        analytics.reset();
+        set({ user: null, isAuthenticated: false });
+      }
     }
   },
 
