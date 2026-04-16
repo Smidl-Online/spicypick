@@ -144,6 +144,8 @@
     "feature_adfree": "Bez reklam",
     "feature_freezes": "3 streak freeze měsíčně",
     "active_until": "Premium aktivní do {{date}}",
+    "unavailable_title": "Nedostupné",
+    "unavailable_msg": "Systém nákupů momentálně není dostupný.",
     "activated_title": "Premium aktivováno!",
     "activated_msg": "Užívej si všechny premium funkce.",
     "restored_title": "Obnoveno!",
@@ -151,6 +153,16 @@
     "no_purchase_title": "Nákup nenalezen",
     "no_purchase_msg": "Nebyl nalezen žádný aktivní předplatný plán k obnovení.",
     "restore": "Obnovit nákupy"
+  },
+  "notifications": {
+    "daily": "Denní scénář (9:00)",
+    "streak": "Upozornění na streak (20:00)",
+    "league": "Ligové novinky (pondělí)",
+    "challenges": "Výzvy od přátel",
+    "achievements": "Úspěchy",
+    "permission_denied": "Notifikace jsou zakázány v nastavení systému. Klepni pro otevření nastavení.",
+    "permission_unsupported": "Push notifikace nejsou na tomto zařízení dostupné.",
+    "load_error": "Nepodařilo se načíst předvolby notifikací."
   },
   "guild": {
     "title": "Guildy",

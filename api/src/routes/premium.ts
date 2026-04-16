@@ -5,13 +5,14 @@ import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { AppEnv } from '../types.js';
-import { getSubscriptionStatus } from '../services/revenueCat.js';
+import { getSubscriptionStatus, validateReceipt } from '../services/revenueCat.js';
 import { analytics } from '../services/analytics.js';
 
 const premiumRoutes = new Hono<AppEnv>();
 
 const subscribeSchema = z.object({
   platform: z.enum(['ios', 'android']),
+  receipt: z.string().optional(),
 });
 
 // POST /api/premium/subscribe
@@ -25,12 +26,18 @@ premiumRoutes.post('/subscribe', authMiddleware, async (c) => {
     return c.json({ error: 'Platform (ios/android) required' }, 400);
   }
 
-  const { platform } = parsed.data;
+  const { platform, receipt } = parsed.data;
 
   // If RevenueCat is configured, verify subscription status
   if (process.env.REVENUECAT_API_KEY) {
     try {
-      const result = await getSubscriptionStatus(userId);
+      let result = await getSubscriptionStatus(userId);
+
+      // If status check failed but client provided a receipt, try receipt validation
+      // This recovers purchases where RC identity wasn't linked before purchase
+      if (!result.isActive && receipt) {
+        result = await validateReceipt(userId, receipt, platform);
+      }
 
       if (!result.isActive || !result.expiresAt) {
         return c.json({ error: 'Subscription is not active' }, 402);

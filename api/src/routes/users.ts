@@ -360,7 +360,7 @@ userRoutes.put('/me/push-token', authMiddleware, async (c) => {
   return c.json({ message: 'Push token saved' });
 });
 
-// DELETE /api/users/me/push-token
+// DELETE /api/users/me/push-token — clear push token (e.g. on logout)
 userRoutes.delete('/me/push-token', authMiddleware, async (c) => {
   const userId = c.get('userId');
 

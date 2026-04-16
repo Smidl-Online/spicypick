@@ -144,6 +144,8 @@
     "feature_adfree": "Ad-free experience",
     "feature_freezes": "3 streak freezes per month",
     "active_until": "Premium active until {{date}}",
+    "unavailable_title": "Unavailable",
+    "unavailable_msg": "Purchase system is not available at the moment.",
     "activated_title": "Premium activated!",
     "activated_msg": "Enjoy all premium features.",
     "restored_title": "Restored!",
@@ -151,6 +153,16 @@
     "no_purchase_title": "No purchase found",
     "no_purchase_msg": "No active subscription found to restore.",
     "restore": "Restore purchases"
+  },
+  "notifications": {
+    "daily": "Daily scenario (9:00)",
+    "streak": "Streak warning (20:00)",
+    "league": "League updates (Monday)",
+    "challenges": "Friend challenges",
+    "achievements": "Achievements",
+    "permission_denied": "Notifications are disabled in system settings. Tap to open settings.",
+    "permission_unsupported": "Push notifications are not available on this device.",
+    "load_error": "Failed to load notification preferences."
   },
   "guild": {
     "title": "Guilds",

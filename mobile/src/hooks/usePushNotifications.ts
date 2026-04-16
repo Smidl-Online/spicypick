@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { useEffect, useRef, useCallback } from 'react';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
@@ -7,29 +7,41 @@ import { api } from '../api/client';
 
 /**
  * Requests push notification permissions, obtains Expo push token,
- * and registers it with the backend. Should be called when user is authenticated.
+ * and registers it with the backend. Re-registers on every app foreground
+ * to handle token changes (app updates, reinstalls).
  */
 export function usePushNotifications(isAuthenticated: boolean) {
-  const registered = useRef(false);
+  const lastToken = useRef<string | null>(null);
+
+  const register = useCallback(async () => {
+    const token = await registerForPushNotifications(lastToken.current);
+    if (token) {
+      lastToken.current = token;
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      // Reset on logout so next login re-registers the token
-      registered.current = false;
+      lastToken.current = null;
       return;
     }
 
-    if (registered.current) return;
+    register();
 
-    registerForPushNotifications().then((token) => {
-      if (token) {
-        registered.current = true;
+    // Re-register when app comes back to foreground (token may have changed)
+    const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active' && isAuthenticated) {
+        register();
       }
     });
-  }, [isAuthenticated]);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isAuthenticated, register]);
 }
 
-async function registerForPushNotifications(): Promise<string | null> {
+async function registerForPushNotifications(previousToken: string | null): Promise<string | null> {
   // Push notifications only work on physical devices
   if (!Device.isDevice) {
     console.log('[Push] Skipping — not a physical device');
@@ -68,6 +80,11 @@ async function registerForPushNotifications(): Promise<string | null> {
     });
     const token = tokenData.data;
 
+    // Skip server call if token hasn't changed
+    if (token === previousToken) {
+      return token;
+    }
+
     // Send token to backend
     await api('/api/users/me/push-token', {
       method: 'PUT',
@@ -79,5 +96,19 @@ async function registerForPushNotifications(): Promise<string | null> {
   } catch (error) {
     console.error('[Push] Registration failed:', error);
     return null;
+  }
+}
+
+/**
+ * Get current push notification permission status.
+ * Returns 'granted', 'denied', or 'undetermined'.
+ */
+export async function getPushPermissionStatus(): Promise<string> {
+  if (!Device.isDevice) return 'unsupported';
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    return status;
+  } catch {
+    return 'undetermined';
   }
 }
