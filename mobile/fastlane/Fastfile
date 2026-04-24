@@ -33,7 +33,7 @@ platform :ios do
 
   desc "Capture real screenshots via Maestro (requires running iOS simulator + Maestro CLI)"
   lane :capture_screenshots do
-    sh("maestro test ../e2e/screenshots.yaml")
+    sh("APP_ID=com.spicypick.app maestro test ../e2e/screenshots.yaml")
     UI.success("Maestro screenshots captured. Copy from ~/.maestro/tests/<run-id>/screenshots/ into fastlane/screenshots/ios/en-US/")
   end
 end
@@ -71,7 +71,7 @@ platform :android do
 
   desc "Capture real screenshots via Maestro (requires running Android emulator + Maestro CLI)"
   lane :capture_screenshots do
-    sh("maestro test ../e2e/screenshots.yaml")
+    sh("APP_ID=com.spicypick.app maestro test ../e2e/screenshots.yaml")
     UI.success("Maestro screenshots captured. Copy from ~/.maestro/tests/<run-id>/screenshots/ into fastlane/screenshots/android/en-US/phoneScreenshots/")
   end
 end
