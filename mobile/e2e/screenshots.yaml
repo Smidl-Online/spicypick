@@ -1,0 +1,68 @@
+appId: ${APP_ID}
+# SpicyPick App Store Screenshot Flow
+# Captures 5 key screens for App Store / Google Play submission.
+# Run via MacTester or locally: maestro test e2e/screenshots.yaml
+# Screenshots land in: ~/.maestro/tests/<run-id>/screenshots/
+
+---
+# ── Screen 1: Daily Scenario ──────────────────────────────────────────────────
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Make sure we're on the Today tab (main scenario screen)
+- tapOn:
+    text: "Today"
+    optional: true
+
+- waitForAnimationToEnd
+
+- takeScreenshot: "01_daily_scenario"
+
+# ── Screen 2: Vote Reveal ─────────────────────────────────────────────────────
+# Tap any verdict button to reveal community results
+- tapOn:
+    text: "Guilty"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: "02_vote_reveal"
+
+# ── Screen 3: Weekly League ───────────────────────────────────────────────────
+- tapOn:
+    text: "League"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: "03_league"
+
+# ── Screen 4: Profile & Achievements ─────────────────────────────────────────
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: "04_profile"
+
+# ── Screen 5: Premium / Archive ───────────────────────────────────────────────
+# Navigate to Premium screen (via Settings or dedicated tab)
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Premium"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- takeScreenshot: "05_premium"

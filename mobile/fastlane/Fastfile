@@ -1,5 +1,6 @@
 default_platform(:ios)
 
+# ─── iOS ──────────────────────────────────────────────────────────────────────
 platform :ios do
   desc "Upload metadata to App Store Connect"
   lane :metadata do
@@ -13,7 +14,7 @@ platform :ios do
     )
   end
 
-  desc "Upload screenshots only"
+  desc "Upload screenshots only to App Store Connect"
   lane :screenshots do
     deliver(
       skip_binary_upload: true,
@@ -22,8 +23,18 @@ platform :ios do
       force: true
     )
   end
+
+  desc "Generate screenshots via Maestro (requires running iOS simulator + Maestro CLI)"
+  lane :capture_screenshots do
+    # Regenerate designed placeholder screenshots via Python script
+    sh("python3 ../scripts/generate-screenshots.py")
+    UI.success("Screenshots generated in fastlane/screenshots/ios/")
+    UI.message("To capture real device screenshots, run: maestro test ../e2e/screenshots.yaml")
+    UI.message("Then copy ~/.maestro/tests/<run-id>/screenshots/ into fastlane/screenshots/ios/en-US/")
+  end
 end
 
+# ─── Android ──────────────────────────────────────────────────────────────────
 platform :android do
   desc "Upload metadata to Google Play"
   lane :metadata do
@@ -35,7 +46,7 @@ platform :android do
     )
   end
 
-  desc "Upload screenshots only"
+  desc "Upload screenshots only to Google Play"
   lane :screenshots do
     upload_to_play_store(
       skip_upload_apk: true,
@@ -46,4 +57,19 @@ platform :android do
       metadata_path: "./fastlane/metadata/android"
     )
   end
+
+  desc "Generate screenshots via Maestro (requires running Android emulator + Maestro CLI)"
+  lane :capture_screenshots do
+    sh("python3 ../scripts/generate-screenshots.py")
+    UI.success("Screenshots generated in fastlane/screenshots/android/")
+    UI.message("To capture real device screenshots, run: maestro test ../e2e/screenshots.yaml")
+    UI.message("Then copy ~/.maestro/tests/<run-id>/screenshots/ into fastlane/screenshots/android/en-US/phoneScreenshots/")
+  end
+end
+
+# ─── Shared ───────────────────────────────────────────────────────────────────
+desc "Regenerate all placeholder screenshots (iOS + Android)"
+lane :generate_screenshots do
+  sh("python3 ../scripts/generate-screenshots.py")
+  UI.success("All placeholder screenshots generated.")
 end
