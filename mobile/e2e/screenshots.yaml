@@ -19,6 +19,10 @@ appId: ${APP_ID}
 
 - waitForAnimationToEnd
 
+- assertVisible:
+    text: "Today"
+    optional: true
+
 - takeScreenshot: "01_daily_scenario"
 
 # ── Screen 2: Vote Reveal ─────────────────────────────────────────────────────
@@ -30,6 +34,10 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
+- assertVisible:
+    text: "Guilty|Not Guilty|Complicated|Both Wrong"
+    optional: true
+
 - takeScreenshot: "02_vote_reveal"
 
 # ── Screen 3: Weekly League ───────────────────────────────────────────────────
@@ -40,6 +48,10 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 3000
 
+- assertVisible:
+    text: "League"
+    optional: true
+
 - takeScreenshot: "03_league"
 
 # ── Screen 4: Profile & Achievements ─────────────────────────────────────────
@@ -49,6 +61,10 @@ appId: ${APP_ID}
 
 - waitForAnimationToEnd:
     timeout: 3000
+
+- assertVisible:
+    text: "Profile"
+    optional: true
 
 - takeScreenshot: "04_profile"
 
@@ -66,5 +82,9 @@ appId: ${APP_ID}
 
 - waitForAnimationToEnd:
     timeout: 3000
+
+- assertVisible:
+    text: "Premium"
+    optional: true
 
 - takeScreenshot: "05_premium"
