@@ -6,6 +6,7 @@ Run: python3 scripts/generate-screenshots.py
 Output: fastlane/screenshots/{ios,android}/en-US/
 """
 
+import argparse
 import os
 import math
 from PIL import Image, ImageDraw, ImageFont
@@ -51,7 +52,7 @@ def try_font(size):
         if os.path.exists(path):
             try:
                 return ImageFont.truetype(path, size)
-            except:
+            except Exception:
                 pass
     return ImageFont.load_default()
 
@@ -64,7 +65,7 @@ def try_font_regular(size):
         if os.path.exists(path):
             try:
                 return ImageFont.truetype(path, size)
-            except:
+            except Exception:
                 pass
     return ImageFont.load_default()
 
@@ -527,10 +528,15 @@ def save_screenshot(img, path):
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
+    parser = argparse.ArgumentParser(description="SpicyPick Screenshot Generator")
+    parser.add_argument("--locale", default="en-US", help="Locale code (e.g. en-US, cs)")
+    args = parser.parse_args()
+    locales = [args.locale]
+
     print("\n📸 SpicyPick Screenshot Generator")
     print("=" * 50)
 
-    for locale in ["en-US"]:
+    for locale in locales:
         print(f"\n── iOS {locale}")
         for size_name, (w, h) in IOS_SIZES.items():
             for slug, fn in SCREENSHOTS:
@@ -546,10 +552,9 @@ def main():
                 save_screenshot(img, path)
 
     print(f"\n✅ Done! Screenshots saved to fastlane/screenshots/")
-    print("   iOS:     fastlane/screenshots/ios/en-US/")
-    print("   Android: fastlane/screenshots/android/en-US/")
-    print("\nTo add Czech screenshots, run with locale=cs:")
-    print("   python3 scripts/generate-screenshots.py --locale cs")
+    for locale in locales:
+        print(f"   iOS:     fastlane/screenshots/ios/{locale}/")
+        print(f"   Android: fastlane/screenshots/android/{locale}/")
 
 if __name__ == "__main__":
     main()

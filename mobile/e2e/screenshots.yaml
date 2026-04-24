@@ -35,6 +35,7 @@ appId: ${APP_ID}
 # ── Screen 3: Weekly League ───────────────────────────────────────────────────
 - tapOn:
     text: "League"
+    optional: true
 
 - waitForAnimationToEnd:
     timeout: 3000
@@ -44,6 +45,7 @@ appId: ${APP_ID}
 # ── Screen 4: Profile & Achievements ─────────────────────────────────────────
 - tapOn:
     text: "Profile"
+    optional: true
 
 - waitForAnimationToEnd:
     timeout: 3000
