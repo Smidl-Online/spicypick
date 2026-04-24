@@ -26,6 +26,7 @@ platform :ios do
 
   desc "Generate placeholder screenshots via Python script"
   lane :generate_screenshots do
+    sh("pip3 install -q -r ../scripts/requirements.txt")
     sh("python3 ../scripts/generate-screenshots.py")
     UI.success("Placeholder screenshots generated in fastlane/screenshots/ios/")
   end
@@ -63,6 +64,7 @@ platform :android do
 
   desc "Generate placeholder screenshots via Python script"
   lane :generate_screenshots do
+    sh("pip3 install -q -r ../scripts/requirements.txt")
     sh("python3 ../scripts/generate-screenshots.py")
     UI.success("Placeholder screenshots generated in fastlane/screenshots/android/")
   end
@@ -77,6 +79,7 @@ end
 # ─── Shared ───────────────────────────────────────────────────────────────────
 desc "Regenerate all placeholder screenshots (iOS + Android) via Python script"
 lane :generate_screenshots do
+  sh("pip3 install -q -r ../scripts/requirements.txt")
   sh("python3 ../scripts/generate-screenshots.py")
   UI.success("All placeholder screenshots generated.")
 end

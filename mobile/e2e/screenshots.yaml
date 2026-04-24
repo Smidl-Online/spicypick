@@ -12,10 +12,9 @@ appId: ${APP_ID}
 - waitForAnimationToEnd:
     timeout: 5000
 
-# Make sure we're on the Today tab (main scenario screen)
+# Navigate to Today tab — required; fails fast if tab bar is absent
 - tapOn:
     text: "Today"
-    optional: true
 
 - waitForAnimationToEnd
 
@@ -26,7 +25,8 @@ appId: ${APP_ID}
 - takeScreenshot: "01_daily_scenario"
 
 # ── Screen 2: Vote Reveal ─────────────────────────────────────────────────────
-# Tap any verdict button to reveal community results
+# Tap any verdict button to reveal community results.
+# optional: true because the user may have already voted in this session.
 - tapOn:
     text: "Guilty"
     optional: true
@@ -41,9 +41,9 @@ appId: ${APP_ID}
 - takeScreenshot: "02_vote_reveal"
 
 # ── Screen 3: Weekly League ───────────────────────────────────────────────────
+# Navigate to League tab — required; fails fast if tab bar is absent
 - tapOn:
     text: "League"
-    optional: true
 
 - waitForAnimationToEnd:
     timeout: 3000
@@ -55,9 +55,9 @@ appId: ${APP_ID}
 - takeScreenshot: "03_league"
 
 # ── Screen 4: Profile & Achievements ─────────────────────────────────────────
+# Navigate to Profile tab — required; fails fast if tab bar is absent
 - tapOn:
     text: "Profile"
-    optional: true
 
 - waitForAnimationToEnd:
     timeout: 3000
@@ -69,7 +69,9 @@ appId: ${APP_ID}
 - takeScreenshot: "04_profile"
 
 # ── Screen 5: Premium / Archive ───────────────────────────────────────────────
-# Navigate to Premium screen (via Settings or dedicated tab)
+# Navigate to Settings then Premium.
+# Settings tap is optional (Premium may be accessible via different path).
+# Premium tap is optional (may not be visible on all accounts/states).
 - tapOn:
     text: "Settings"
     optional: true
