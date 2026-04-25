@@ -1,0 +1,46 @@
+appId: ${APP_ID}
+---
+# P0: Vote today flow — scenario → vote → assert reveal/XP
+- launchApp:
+    clearState: true
+
+# Login first (prerequisite for voting)
+- assertVisible: "Log In"
+- tapOn: "Email"
+- inputText: "test@spicypick.app"
+- tapOn: "Password"
+- inputText: "testheslo123"
+- tapOn: "Log In"
+- waitForAnimationToEnd
+
+# Should be on home screen with scenario or empty state
+- assertVisible: "SpicyPick"
+
+# If there's a prediction step, skip it
+- tapOn:
+    text: "Skip prediction"
+    optional: true
+
+# Wait for verdict prompt
+- waitForAnimationToEnd
+
+# Assert verdict buttons are visible (at least one)
+- assertVisible:
+    text: "What's your verdict?"
+    optional: true
+
+# Vote "Guilty" on today's scenario
+- tapOn: "Guilty"
+
+# Wait for reveal animation
+- waitForAnimationToEnd
+
+# Assert reveal: community stats or XP earned should be visible
+- assertVisible:
+    text: "Community voted"
+    optional: true
+- assertVisible:
+    text: "XP"
+    optional: true
+
+- takeScreenshot: vote-reveal

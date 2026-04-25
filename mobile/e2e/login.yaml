@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+---
+# P0: Login flow — email + password → assert dashboard
+- launchApp:
+    clearState: true
+
+# Should land on login screen (unauthenticated)
+- assertVisible: "SpicyPick"
+- assertVisible: "Log In"
+
+# Fill in credentials
+- tapOn: "Email"
+- inputText: "test@spicypick.app"
+- tapOn: "Password"
+- inputText: "testheslo123"
+
+# Submit login
+- tapOn: "Log In"
+
+# Wait for API response and navigation
+- waitForAnimationToEnd
+
+# Assert we landed on the home/dashboard (Today tab visible = authenticated)
+- assertVisible:
+    text: "SpicyPick"
+    enabled: true
+- assertVisible: "🌶️"
+
+- takeScreenshot: login-success

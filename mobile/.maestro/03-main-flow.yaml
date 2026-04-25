@@ -1,8 +1,6 @@
-appId: com.spicypick.app
+appId: ${APP_ID}
 ---
 - launchApp
 - waitForAnimationToEnd
-- assertVisible:
-    text: "Today"
-    optional: true
+- assertVisible: "SpicyPick"
 - takeScreenshot: main-screen
