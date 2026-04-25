@@ -10,9 +10,9 @@ appId: ${APP_ID}
 
 # Fill in credentials
 - tapOn: "Email"
-- inputText: "test@spicypick.app"
+- inputText: "${TEST_EMAIL}"
 - tapOn: "Password"
-- inputText: "testheslo123"
+- inputText: "${TEST_PASSWORD}"
 
 # Submit login
 - tapOn: "Log In"
