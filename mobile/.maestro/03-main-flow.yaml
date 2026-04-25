@@ -2,5 +2,5 @@ appId: ${APP_ID}
 ---
 - launchApp
 - waitForAnimationToEnd
-- assertVisible: "SpicyPick"
+- assertVisible: "Today"
 - takeScreenshot: main-screen

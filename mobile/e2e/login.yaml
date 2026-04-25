@@ -21,9 +21,7 @@ appId: ${APP_ID}
 - waitForAnimationToEnd
 
 # Assert we landed on the home/dashboard (Today tab visible = authenticated)
-- assertVisible:
-    text: "SpicyPick"
-    enabled: true
+- assertVisible: "Today"
 - assertVisible: "🌶️"
 
 - takeScreenshot: login-success
