@@ -1,16 +1,21 @@
 appId: ${APP_ID}
 ---
-# P0: Vote today flow — scenario → vote → assert reveal/XP
+# P0: Vote today flow — register fresh user → vote → assert reveal/XP
+# Uses unique account per run to avoid "already voted today" state
 - launchApp:
     clearState: true
 
-# Login first (prerequisite for voting)
+# Register a fresh account (avoids hardcoded user's daily vote state)
 - assertVisible: "Log In"
+- tapOn: "Sign Up"
+- assertVisible: "Join SpicyPick"
 - tapOn: "Email"
-- inputText: "test@spicypick.app"
+- inputText: "vote-${maestro.run_id}@test.spicypick.app"
+- tapOn: "Username"
+- inputText: "voter_${maestro.run_id}"
 - tapOn: "Password"
-- inputText: "testheslo123"
-- tapOn: "Log In"
+- inputText: "TestPass123!"
+- tapOn: "Sign Up"
 - waitForAnimationToEnd
 
 # Should be on authenticated home screen (Today tab visible)
