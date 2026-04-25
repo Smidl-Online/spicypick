@@ -1,0 +1,35 @@
+appId: ${APP_ID}
+---
+# P0: Register flow — new user → assert dashboard
+- launchApp:
+    clearState: true
+
+# Should land on login screen
+- assertVisible: "SpicyPick"
+- assertVisible: "Log In"
+
+# Navigate to register screen
+- tapOn: "Sign Up"
+
+# Assert register screen loaded
+- assertVisible: "Join SpicyPick"
+
+# Fill in registration form
+- tapOn: "Email"
+- inputText: "maestro-${maestro.run_id}@test.spicypick.app"
+- tapOn: "Username"
+- inputText: "tester_${maestro.run_id}"
+- tapOn: "Password"
+- inputText: "TestPass123!"
+
+# Submit registration
+- tapOn: "Sign Up"
+
+# Wait for API response and navigation
+- waitForAnimationToEnd
+
+# Assert we landed on the home/dashboard (authenticated state)
+- assertVisible: "🌶️"
+- assertVisible: "Today"
+
+- takeScreenshot: register-success

@@ -1,0 +1,6 @@
+# Default Maestro environment variables
+# Override via CLI: maestro test --env APP_ID=com.spicypick.dev ...
+env:
+  APP_ID: com.spicypick.app
+  TEST_EMAIL: test@spicypick.app
+  TEST_PASSWORD: testheslo123

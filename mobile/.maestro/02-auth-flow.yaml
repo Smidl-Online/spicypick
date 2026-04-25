@@ -1,11 +1,13 @@
-appId: com.spicypick.app
+appId: ${APP_ID}
 ---
+# Smoke test: verify auth screen elements are present
+# Uses optional checks to tolerate different startup states across builds
 - launchApp
 - assertVisible:
-    text: "Sign In"
+    text: "Log In"
     optional: true
 - tapOn:
-    text: "Sign In"
+    text: "Log In"
     optional: true
 - assertVisible:
     text: "Email"

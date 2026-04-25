@@ -1,0 +1,47 @@
+appId: ${APP_ID}
+---
+# P0: Vote today flow — register fresh user → vote → assert reveal/XP
+# Uses unique account per run to avoid "already voted today" state
+- launchApp:
+    clearState: true
+
+# Register a fresh account (avoids hardcoded user's daily vote state)
+- assertVisible: "Log In"
+- tapOn: "Sign Up"
+- assertVisible: "Join SpicyPick"
+- tapOn: "Email"
+- inputText: "vote-${maestro.run_id}@test.spicypick.app"
+- tapOn: "Username"
+- inputText: "voter_${maestro.run_id}"
+- tapOn: "Password"
+- inputText: "TestPass123!"
+- tapOn: "Sign Up"
+- waitForAnimationToEnd
+
+# Should be on authenticated home screen (Today tab visible)
+- assertVisible: "Today"
+
+# If there's a prediction step, skip it
+- tapOn:
+    text: "Skip prediction"
+    optional: true
+
+# Wait for verdict prompt
+- waitForAnimationToEnd
+
+# Scenario must be available for P0 vote test
+- assertVisible: "What's your verdict?"
+
+# Vote "Guilty" on today's scenario
+- tapOn: "Guilty"
+
+# Wait for reveal animation
+- waitForAnimationToEnd
+
+# Assert reveal: community stats must be visible after voting (proves vote succeeded)
+- assertVisible: "Community voted"
+- assertVisible:
+    text: "XP"
+    optional: true
+
+- takeScreenshot: vote-reveal
