@@ -1,0 +1,92 @@
+appId: ${APP_ID}
+# SpicyPick App Store Screenshot Flow
+# Captures 5 key screens for App Store / Google Play submission.
+# Run via MacTester or locally: maestro test e2e/screenshots.yaml
+# Screenshots land in: ~/.maestro/tests/<run-id>/screenshots/
+
+---
+# ── Screen 1: Daily Scenario ──────────────────────────────────────────────────
+- launchApp:
+    clearState: false
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to Today tab — required; fails fast if tab bar is absent
+- tapOn:
+    text: "Today"
+
+- waitForAnimationToEnd
+
+- assertVisible:
+    text: "Today"
+    optional: true
+
+- takeScreenshot: "01_daily_scenario"
+
+# ── Screen 2: Vote Reveal ─────────────────────────────────────────────────────
+# Tap any verdict button to reveal community results.
+# optional: true because the user may have already voted in this session.
+- tapOn:
+    text: "Guilty"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    text: "Guilty|Not Guilty|Complicated|Both Wrong"
+    optional: true
+
+- takeScreenshot: "02_vote_reveal"
+
+# ── Screen 3: Weekly League ───────────────────────────────────────────────────
+# Navigate to League tab — required; fails fast if tab bar is absent
+- tapOn:
+    text: "League"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    text: "League"
+    optional: true
+
+- takeScreenshot: "03_league"
+
+# ── Screen 4: Profile & Achievements ─────────────────────────────────────────
+# Navigate to Profile tab — required; fails fast if tab bar is absent
+- tapOn:
+    text: "Profile"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    text: "Profile"
+    optional: true
+
+- takeScreenshot: "04_profile"
+
+# ── Screen 5: Premium / Archive ───────────────────────────────────────────────
+# Navigate to Settings then Premium.
+# Settings tap is optional (Premium may be accessible via different path).
+# Premium tap is optional (may not be visible on all accounts/states).
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd
+
+- tapOn:
+    text: "Premium"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    text: "Premium"
+    optional: true
+
+- takeScreenshot: "05_premium"
