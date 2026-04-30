@@ -35,6 +35,7 @@ export default function RegisterScreen() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          testID="auth-email-input"
         />
         <TextInput
           style={styles.input}
@@ -43,6 +44,7 @@ export default function RegisterScreen() {
           value={username}
           onChangeText={setUsername}
           autoCapitalize="none"
+          testID="auth-username-input"
         />
         <TextInput
           style={styles.input}
@@ -51,15 +53,16 @@ export default function RegisterScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          testID="auth-password-input"
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isLoading}>
+        <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={isLoading} testID="auth-register-button">
           <Text style={styles.buttonText}>{isLoading ? '...' : t('auth.register')}</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>{t('auth.has_account')} </Text>
-          <Link href="/(auth)/login">
+          <Link href="/(auth)/login" testID="auth-login-link">
             <Text style={styles.linkText}>{t('auth.login')}</Text>
           </Link>
         </View>
