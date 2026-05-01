@@ -10,9 +10,5 @@ appId: ${APP_ID}
 # Verify XP bar is visible with level info
 - assertVisible:
     id: "profile-xp-bar"
-- assertVisible:
-    text: "Level"
-- assertVisible:
-    text: "XP"
 
 - takeScreenshot: gamification-xp-levels

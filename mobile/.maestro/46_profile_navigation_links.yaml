@@ -16,7 +16,6 @@ appId: ${APP_ID}
     id: "profile-settings-button"
 - waitForAnimationToEnd
 - assertVisible:
-    text: "Settings"
-    optional: true
+    id: "settings-screen"
 
 - takeScreenshot: profile-navigation-settings
