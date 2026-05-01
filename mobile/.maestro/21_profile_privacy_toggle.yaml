@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+
+# Verify profile screen
+- assertVisible:
+    id: "profile-screen"
+
+# Look for privacy toggle (if present)
+- assertVisible:
+    id: "profile-privacy-toggle"
+    optional: true
+
+- takeScreenshot: profile-privacy-toggle

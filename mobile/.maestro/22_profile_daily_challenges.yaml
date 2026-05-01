@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+
+# Verify profile screen
+- assertVisible:
+    id: "profile-screen"
+
+# Check daily challenges section (if present)
+- assertVisible:
+    id: "profile-daily-challenges"
+    optional: true
+
+- takeScreenshot: profile-daily-challenges

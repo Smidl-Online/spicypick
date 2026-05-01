@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+
+# Verify achievements section is visible
+- assertVisible:
+    id: "profile-achievements"
+
+# Scroll down to see all achievements
+- scrollUntilVisible:
+    element:
+      id: "profile-settings-button"
+    direction: DOWN
+
+- takeScreenshot: profile-achievements-detail

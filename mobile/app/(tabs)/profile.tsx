@@ -69,20 +69,20 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="profile-screen">
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Profile header */}
-        <View style={styles.profileHeader}>
+        <View style={styles.profileHeader} testID="profile-header">
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{user.username[0].toUpperCase()}</Text>
           </View>
           <Text style={styles.username}>{user.username}</Text>
           <Text style={styles.level}>{t('profile.level', { level: user.level })}</Text>
-          <XpBar xp={user.xp} level={user.level} />
+          <XpBar xp={user.xp} level={user.level} testID="profile-xp-bar" />
         </View>
 
         {/* Stats row */}
-        <View style={styles.statsRow}>
+        <View style={styles.statsRow} testID="profile-stats">
           <View style={styles.statItem}>
             <StreakBadge count={user.currentStreak} />
             <Text style={styles.statLabel}>{t('profile.longest_streak', { count: user.longestStreak })}</Text>
@@ -123,7 +123,7 @@ export default function ProfileScreen() {
 
         {/* Achievements */}
         <Text style={styles.sectionTitle}>{t('profile.achievements')}</Text>
-        <View style={styles.achievementsGrid}>
+        <View style={styles.achievementsGrid} testID="profile-achievements">
           {achievements.map((a) => (
             <View key={a.id} style={[styles.achievementItem, !a.unlocked && styles.locked]}>
               <Text style={styles.achievementIcon}>{a.icon}</Text>
@@ -134,7 +134,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Settings button */}
-        <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/settings')}>
+        <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/settings')} testID="profile-settings-button">
           <Text style={styles.settingsBtnText}>⚙️ {t('profile.settings')}</Text>
         </TouchableOpacity>
       </ScrollView>
