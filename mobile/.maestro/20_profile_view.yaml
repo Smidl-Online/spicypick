@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+
+# Verify profile screen loaded
+- assertVisible:
+    id: "profile-screen"
+- assertVisible:
+    id: "profile-header"
+- assertVisible:
+    id: "profile-stats"
+- assertVisible:
+    id: "profile-xp-bar"
+- assertVisible:
+    id: "profile-achievements"
+- assertVisible:
+    id: "profile-settings-button"
+
+- takeScreenshot: profile-view

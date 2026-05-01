@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Navigate to profile tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+
+# Verify achievements section is visible
+- assertVisible:
+    id: "profile-achievements"
+
+# Verify at least one achievement item is rendered (first_vote is always seeded)
+- assertVisible:
+    id: "profile-achievement-first_vote"
+
+# Scroll down to confirm all content is reachable
+- scrollUntilVisible:
+    element:
+      id: "profile-settings-button"
+    direction: DOWN
+
+- takeScreenshot: profile-achievements-detail
