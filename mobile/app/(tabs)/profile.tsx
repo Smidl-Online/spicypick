@@ -125,7 +125,7 @@ export default function ProfileScreen() {
         <Text style={styles.sectionTitle}>{t('profile.achievements')}</Text>
         <View style={styles.achievementsGrid} testID="profile-achievements">
           {achievements.map((a) => (
-            <View key={a.id} style={[styles.achievementItem, !a.unlocked && styles.locked]}>
+            <View key={a.id} style={[styles.achievementItem, !a.unlocked && styles.locked]} testID={`profile-achievement-${a.id}`}>
               <Text style={styles.achievementIcon}>{a.icon}</Text>
               <Text style={styles.achievementName}>{a.name}</Text>
               {!a.unlocked && <View style={styles.lockOverlay} />}

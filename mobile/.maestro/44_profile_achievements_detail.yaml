@@ -11,7 +11,11 @@ appId: ${APP_ID}
 - assertVisible:
     id: "profile-achievements"
 
-# Scroll down to see all achievements
+# Verify at least one achievement item is rendered (first_vote is always seeded)
+- assertVisible:
+    id: "profile-achievement-first_vote"
+
+# Scroll down to confirm all content is reachable
 - scrollUntilVisible:
     element:
       id: "profile-settings-button"

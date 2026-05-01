@@ -7,8 +7,16 @@ appId: ${APP_ID}
 - tapOn: "Profile"
 - waitForAnimationToEnd
 
-# Verify XP bar is visible with level info
+# Verify XP bar container is visible
 - assertVisible:
     id: "profile-xp-bar"
+
+# Verify level text is rendered inside XP bar
+- assertVisible:
+    id: "xp-bar-level-text"
+
+# Verify XP progress text is rendered (e.g. "0 / 71 XP")
+- assertVisible:
+    id: "xp-bar-xp-text"
 
 - takeScreenshot: gamification-xp-levels
