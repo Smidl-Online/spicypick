@@ -15,7 +15,8 @@ appId: ${APP_ID}
 - tapOn:
     id: "profile-settings-button"
 - waitForAnimationToEnd
-- assertVisible: "Settings"
+- assertVisible:
+    text: "Settings"
     optional: true
 
 - takeScreenshot: profile-navigation-settings
