@@ -24,6 +24,13 @@ const noopTrack: TrackFn = () => {};
 const noopScreen: ScreenFn = () => {};
 const noopIdentify: IdentifyFn = () => {};
 
+// Eagerly gate analytics from import time — before any React render or useEffect.
+// This guarantees child screens cannot fire track() before consent is loaded,
+// even if their own effects run before the parent layout's useEffect.
+analytics.track = noopTrack;
+analytics.screen = noopScreen;
+analytics.identify = noopIdentify;
+
 function enable(): void {
   analytics.track = originalTrack;
   analytics.screen = originalScreen;
