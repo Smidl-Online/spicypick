@@ -15,6 +15,10 @@ function getResend(): Resend {
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'SpicyPick <noreply@spicypick.com>';
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export async function sendPasswordResetEmail(email: string, resetToken: string, locale = 'en'): Promise<void> {
   const resetUrl = `${process.env.APP_URL || 'https://spicypick.app'}/reset-password?token=${resetToken}`;
   const strings = passwordReset[locale as keyof typeof passwordReset] || passwordReset.en;
@@ -35,6 +39,36 @@ export async function sendPasswordResetEmail(email: string, resetToken: string, 
 
   if (error) {
     console.error('Failed to send password reset email:', error);
+    throw new Error('Failed to send email');
+  }
+}
+
+export async function sendSupportEmail({ userId, userEmail, subject, message }: {
+  userId: string;
+  userEmail?: string;
+  subject: string;
+  message: string;
+}): Promise<void> {
+  const supportEmail = process.env.SUPPORT_EMAIL || 'support@spicypick.com';
+
+  const { error } = await getResend().emails.send({
+    from: FROM_EMAIL,
+    to: supportEmail,
+    subject: `[Support] ${escHtml(subject)}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #FF6B35;">SpicyPick Support Request</h2>
+        <p><strong>From:</strong> ${escHtml(userEmail || 'unknown')} (userId: ${escHtml(userId)})</p>
+        <p><strong>Subject:</strong> ${escHtml(subject)}</p>
+        <hr>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${escHtml(message)}</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error('Failed to send support email:', error);
     throw new Error('Failed to send email');
   }
 }
