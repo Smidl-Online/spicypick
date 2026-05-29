@@ -183,12 +183,12 @@ export default function SettingsScreen() {
         </View>
       </Modal>
 
-      <TouchableOpacity style={row} onPress={logout}>
+      <TouchableOpacity style={row} onPress={logout} testID="auth-logout-button">
         <Text style={styles.rowIcon}>🚪</Text>
         <Text style={[rowText, { color: colors.warning }]}>{t('settings.logout')}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={row} onPress={handleDeleteAccount}>
+      <TouchableOpacity style={row} onPress={handleDeleteAccount} testID="auth-delete-account-button">
         <Text style={styles.rowIcon}>⚠️</Text>
         <Text style={[rowText, { color: colors.error }]}>{t('settings.delete_account')}</Text>
       </TouchableOpacity>

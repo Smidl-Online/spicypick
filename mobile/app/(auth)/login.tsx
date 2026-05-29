@@ -36,6 +36,7 @@ export default function LoginScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+          testID="auth-email-input"
         />
         <TextInput
           style={styles.input}
@@ -44,19 +45,20 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          testID="auth-password-input"
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading}>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={isLoading} testID="auth-login-button">
           <Text style={styles.buttonText}>{isLoading ? '...' : t('auth.login')}</Text>
         </TouchableOpacity>
 
-        <Link href="/(auth)/forgot-password" style={styles.link}>
+        <Link href="/(auth)/forgot-password" style={styles.link} testID="auth-forgot-password-link">
           <Text style={styles.linkText}>{t('auth.forgot_password')}</Text>
         </Link>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>{t('auth.no_account')} </Text>
-          <Link href="/(auth)/register">
+          <Link href="/(auth)/register" testID="auth-register-link">
             <Text style={styles.linkText}>{t('auth.register')}</Text>
           </Link>
         </View>
