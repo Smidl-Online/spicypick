@@ -17,26 +17,13 @@ setInterval(() => {
 }, 300_000).unref();
 
 const contactSchema = z.object({
-  subject: z.string().min(1).max(200),
-  message: z.string().min(1).max(2000),
+  subject: z.string().trim().min(1).max(200),
+  message: z.string().trim().min(1).max(2000),
 });
 
 // POST /api/support/contact
 supportRoutes.post('/contact', authMiddleware, async (c) => {
   const userId = c.get('userId');
-
-  // Per-user rate limit: 3 requests/hour
-  const now = Date.now();
-  const entry = supportRateLimitStore.get(userId);
-  if (entry && now <= entry.resetAt) {
-    if (entry.count >= 3) {
-      return c.json({ error: 'Too many requests. Please wait before sending another message.' }, 429);
-    }
-    entry.count++;
-  } else {
-    supportRateLimitStore.delete(userId);
-    supportRateLimitStore.set(userId, { count: 1, resetAt: now + 3_600_000 });
-  }
 
   let body: unknown;
   try {
@@ -51,6 +38,19 @@ supportRoutes.post('/contact', authMiddleware, async (c) => {
   }
 
   const { subject, message } = parsed.data;
+
+  // Per-user rate limit: 3 requests/hour — checked after validation to avoid burning quota on bad input
+  const now = Date.now();
+  const entry = supportRateLimitStore.get(userId);
+  if (entry && now <= entry.resetAt) {
+    if (entry.count >= 3) {
+      return c.json({ error: 'Too many requests. Please wait before sending another message.' }, 429);
+    }
+    entry.count++;
+  } else {
+    supportRateLimitStore.delete(userId);
+    supportRateLimitStore.set(userId, { count: 1, resetAt: now + 3_600_000 });
+  }
   const userEmail = c.get('email') as string | undefined;
 
   try {
