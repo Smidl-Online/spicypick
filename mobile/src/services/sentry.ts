@@ -9,16 +9,17 @@ export function initSentry() {
 
   Sentry.init({
     dsn,
-    tracesSampleRate: 0.1,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: __DEV__ ? 0 : 0.2,
     enableAutoSessionTracking: true,
+    attachStacktrace: true,
+    // Performance: trace navigation
+    integrations: [Sentry.reactNativeTracingIntegration()],
   });
 }
 
 export function captureError(error: Error, context?: Record<string, unknown>) {
-  if (context) {
-    Sentry.setContext('extra', context);
-  }
-  Sentry.captureException(error);
+  Sentry.captureException(error, { extra: context });
 }
 
 export { Sentry };

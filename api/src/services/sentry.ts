@@ -10,15 +10,16 @@ export function initSentry() {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV || 'development',
-    tracesSampleRate: 0.1,
+    release: process.env.npm_package_version,
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 0,
+    integrations: [Sentry.httpIntegration()],
   });
 
   console.log('Sentry initialized');
 }
 
 export function captureError(error: Error, context?: Record<string, unknown>) {
-  if (context) {
-    Sentry.setContext('extra', context);
-  }
-  Sentry.captureException(error);
+  Sentry.captureException(error, { extra: context });
 }
+
+export { Sentry };
