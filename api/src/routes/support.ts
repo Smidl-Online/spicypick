@@ -42,12 +42,18 @@ supportRoutes.post('/contact', authMiddleware, async (c) => {
   const { subject, message } = parsed.data;
 
   // Per-user rate limit: 3 requests/hour — checked after validation to avoid burning quota on bad input.
-  // Rate limit is checked here but incremented only after a successful send, so failed sends
-  // (Resend down, misconfigured SUPPORT_EMAIL) do not consume the user's quota.
+  // Counter is incremented BEFORE the async send to prevent concurrent requests from bypassing the limit.
+  // If the send fails, the counter is decremented so transient errors don't consume the user's quota.
   const now = Date.now();
   const entry = supportRateLimitStore.get(userId);
-  if (entry && now <= entry.resetAt && entry.count >= 3) {
-    return c.json({ error: 'Too many requests. Please wait before sending another message.' }, 429);
+  if (entry && now <= entry.resetAt) {
+    if (entry.count >= 3) {
+      return c.json({ error: 'Too many requests. Please wait before sending another message.' }, 429);
+    }
+    entry.count++;
+  } else {
+    supportRateLimitStore.delete(userId);
+    supportRateLimitStore.set(userId, { count: 1, resetAt: now + 3_600_000 });
   }
 
   const userEmail = c.get('email') as string | undefined;
@@ -55,20 +61,17 @@ supportRoutes.post('/contact', authMiddleware, async (c) => {
   try {
     await sendSupportEmail({ userId, userEmail, subject, message });
   } catch (err: any) {
+    // Decrement counter on failure so transient errors don't waste the user's quota
+    const currentEntry = supportRateLimitStore.get(userId);
+    if (currentEntry && now <= currentEntry.resetAt) {
+      currentEntry.count = Math.max(0, currentEntry.count - 1);
+    }
     if (err?.message === 'SUPPORT_EMAIL is not configured') {
       console.error('SUPPORT_EMAIL is not configured');
       return c.json({ error: 'Support contact is not available' }, 503);
     }
     console.error('Failed to send support email:', err);
     return c.json({ error: 'Failed to send message. Please try again.' }, 500);
-  }
-
-  // Increment quota only after successful send
-  if (entry && now <= entry.resetAt) {
-    entry.count++;
-  } else {
-    supportRateLimitStore.delete(userId);
-    supportRateLimitStore.set(userId, { count: 1, resetAt: now + 3_600_000 });
   }
 
   return c.json({ message: 'Your message has been sent. We will get back to you soon.' });
