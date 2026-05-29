@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+# NOTE: This test submits a real support request via the API.
+# The backend enforces a 3-per-hour rate limit per user.
+# Run with a dedicated test account to avoid hitting the quota on repeated executions.
+- launchApp
+- tapOn: "Profile"
+- tapOn: "Settings"
+- scrollDown
+- tapOn: "Contact Support"
+- assertVisible: "Contact Support"
+- tapOn:
+    id: "subject-input"
+- inputText: "Test support message"
+- tapOn:
+    id: "message-input"
+- inputText: "This is a test message from E2E test"
+- tapOn: "Send Message"
+- assertVisible: "message has been sent"
