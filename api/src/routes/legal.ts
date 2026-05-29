@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 
 const legalRoutes = new Hono();
 
-const EFFECTIVE_DATE = '1 June 2026';
+const EFFECTIVE_DATE = '29 May 2026';
 const COMPANY_NAME = 'Šmídl Online (Jan Šmídl)';
 const CONTACT_EMAIL = 'privacy@spicypick.com';
 const APP_NAME = 'SpicyPick';

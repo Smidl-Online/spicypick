@@ -49,11 +49,11 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 // Well-known files (universal links / app links verification)
 app.route('/.well-known', wellknownRoutes);
 
+// Legal documents (Privacy Policy, Terms of Service) — must be before deeplink fallback
+app.route('/', legalRoutes);
+
 // Deep link fallback pages (scenario web preview + app store redirect)
 app.route('/', deeplinkRoutes);
-
-// Legal documents (Privacy Policy, Terms of Service)
-app.route('/', legalRoutes);
 
 // Routes
 app.route('/api/auth', authRoutes);
