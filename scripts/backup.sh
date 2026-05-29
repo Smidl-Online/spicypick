@@ -58,6 +58,9 @@ TIMESTAMP=$(date -u '+%Y%m%d_%H%M%S')
 BACKUP_FILE="spicypick_${TIMESTAMP}.sql.gz"
 TEMP_FILE="/tmp/${BACKUP_FILE}"
 
+# Restrict temp file permissions — dump contains full DB contents
+umask 077
+
 log "Starting backup: $BACKUP_FILE"
 
 # Step 1: pg_dump → gzip

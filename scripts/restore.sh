@@ -48,7 +48,9 @@ s3 cp "s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}" "$TEMP_FILE"
 
 echo ""
 echo "⚠️  WARNING: This will overwrite the current database!"
-echo "   DATABASE_URL: $DATABASE_URL"
+# Mask password in DATABASE_URL to avoid leaking credentials to terminal/logs
+MASKED_URL=$(echo "$DATABASE_URL" | sed 's|://[^:]*:[^@]*@|://***:***@|')
+echo "   DATABASE_URL: $MASKED_URL"
 echo ""
 read -r -p "Type 'yes' to continue: " CONFIRM
 if [ "$CONFIRM" != "yes" ]; then
@@ -58,7 +60,8 @@ if [ "$CONFIRM" != "yes" ]; then
 fi
 
 log "Restoring database..."
-gunzip -c "$TEMP_FILE" | psql "$DATABASE_URL"
+# -v ON_ERROR_STOP=1: abort on first SQL error so partial restores are not silently reported as success
+gunzip -c "$TEMP_FILE" | psql -v ON_ERROR_STOP=1 "$DATABASE_URL"
 rm -f "$TEMP_FILE"
 
 log "Restore completed successfully from: $BACKUP_FILE"
