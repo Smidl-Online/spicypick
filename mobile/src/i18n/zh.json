@@ -12,7 +12,10 @@
     "offline_hint": "你当前处于离线状态。重新连接后将同步你的投票。",
     "offline_voted": "你的投票已保存！恢复网络后将显示结果。",
     "share_my_pick": "我的选择",
-    "share_community": "社区"
+    "share_community": "社区",
+    "verify_email_prompt": "请验证您的电子邮件以开始投票。",
+    "verify_email_resend": "重新发送验证邮件",
+    "verify_email_sent": "邮件已发送 ✓"
   },
   "verdicts": {
     "guilty": "有罪",
@@ -223,5 +226,20 @@
     "minutes": "分",
     "seconds": "秒",
     "ok": "OK"
+  },
+  "onboarding": {
+    "skip": "跳过",
+    "next": "下一步",
+    "get_started": "开始使用",
+    "slide1_title": "每天思考的道德难题",
+    "slide1_subtitle": "每天一个新的道德场景。投票、思考，看看社区怎么想。",
+    "slide2_title": "投票并查看他人的想法",
+    "slide2_subtitle": "选择你的裁决——有罪、无罪、复杂，或双方都有错——立即查看分布。",
+    "slide3_title": "保持连胜，加入联赛",
+    "slide3_subtitle": "每天投票保持连胜，赚取经验值，攀升联赛，解锁成就。",
+    "slide4_title": "免费试用高级版7天",
+    "slide4_subtitle": "解锁专家分析、额外场景和无广告体验。",
+    "slide4_cta": "开始免费试用",
+    "slide4_skip": "免费继续"
   }
 }
