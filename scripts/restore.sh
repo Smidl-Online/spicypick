@@ -41,7 +41,11 @@ fi
 # Strip any directory components to prevent path traversal (e.g. ../../etc/cron.d/root)
 BACKUP_FILE=$(basename "$BACKUP_FILE")
 
+# Restrict temp file permissions to owner-only (like backup.sh) to prevent other local users from reading the dump
+umask 077
 TEMP_FILE="/tmp/${BACKUP_FILE}"
+# Ensure temp file is always removed on exit (success, failure, or signal)
+trap 'rm -f "$TEMP_FILE"' EXIT
 
 log "Downloading: s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}"
 s3 cp "s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}" "$TEMP_FILE"
@@ -55,13 +59,11 @@ echo ""
 read -r -p "Type 'yes' to continue: " CONFIRM
 if [ "$CONFIRM" != "yes" ]; then
   log "Restore cancelled."
-  rm -f "$TEMP_FILE"
   exit 0
 fi
 
 log "Restoring database..."
 # -v ON_ERROR_STOP=1: abort on first SQL error so partial restores are not silently reported as success
 gunzip -c "$TEMP_FILE" | psql -v ON_ERROR_STOP=1 "$DATABASE_URL"
-rm -f "$TEMP_FILE"
 
 log "Restore completed successfully from: $BACKUP_FILE"
