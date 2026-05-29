@@ -16,7 +16,7 @@ function getResend(): Resend {
 const FROM_EMAIL = process.env.FROM_EMAIL || 'SpicyPick <noreply@spicypick.com>';
 
 function escHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 export async function sendPasswordResetEmail(email: string, resetToken: string, locale = 'en'): Promise<void> {
@@ -49,11 +49,15 @@ export async function sendSupportEmail({ userId, userEmail, subject, message }: 
   subject: string;
   message: string;
 }): Promise<void> {
-  const supportEmail = process.env.SUPPORT_EMAIL || 'support@spicypick.com';
+  const supportEmail = process.env.SUPPORT_EMAIL;
+  if (!supportEmail) {
+    throw new Error('SUPPORT_EMAIL is not configured');
+  }
 
   const { error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: supportEmail,
+    replyTo: userEmail,
     subject: `[Support] ${escHtml(subject)}`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
