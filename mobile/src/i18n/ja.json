@@ -12,7 +12,10 @@
     "offline_hint": "オフラインです。再接続時に投票が同期されます。",
     "offline_voted": "投票が保存されました！オンラインに戻ると結果が表示されます。",
     "share_my_pick": "私の選択",
-    "share_community": "コミュニティ"
+    "share_community": "コミュニティ",
+    "verify_email_prompt": "メールアドレスを確認して投票を始めましょう。",
+    "verify_email_resend": "確認メールを再送",
+    "verify_email_sent": "送信完了 ✓"
   },
   "verdicts": {
     "guilty": "有罪",
@@ -237,7 +240,12 @@
   "demographics": {
     "title": "デモグラフィック",
     "subtitle": "任意。異なるグループがどう投票したかを表示します。すべてのデータは匿名です。",
-    "tabs": { "all": "全体", "age": "年齢", "country": "国", "gender": "性別" },
+    "tabs": {
+      "all": "全体",
+      "age": "年齢",
+      "country": "国",
+      "gender": "性別"
+    },
     "selectFilter": "フィルターを選択してデモグラフィックの内訳を表示",
     "noData": "このグループにはまだ十分なデータがありません",
     "voteRequired": "まずこのシナリオに投票してください",
@@ -246,13 +254,45 @@
     "country": "国",
     "countryPlaceholder": "例: JP",
     "gender": "性別",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "男性", "female": "女性", "non_binary": "ノンバイナリー", "prefer_not_to_say": "回答しない" },
-    "premium": { "required": "プレミアム登録が必要です", "cta": "プレミアムにアップグレードして、異なるグループの投票結果を見ましょう" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "男性",
+      "female": "女性",
+      "non_binary": "ノンバイナリー",
+      "prefer_not_to_say": "回答しない"
+    },
+    "premium": {
+      "required": "プレミアム登録が必要です",
+      "cta": "プレミアムにアップグレードして、異なるグループの投票結果を見ましょう"
+    },
     "deleteTitle": "デモグラフィックデータを削除",
     "deleteConfirm": "生年、国、性別が削除されます。投票には影響しません。",
     "deleteData": "デモグラフィックデータを削除",
     "privacyNote": "データは匿名のグループ統計にのみ使用されます。5票未満のグループは非表示になります。いつでもこのデータを削除できます。"
+  },
+  "support": {
+    "section_title": "ヘルプ＆サポート",
+    "contact_us": "サポートへ連絡",
+    "privacy_policy": "プライバシーポリシー",
+    "terms_of_service": "利用規約",
+    "subject_label": "件名",
+    "subject_placeholder": "何についてのご質問ですか？",
+    "message_label": "メッセージ",
+    "message_placeholder": "問題を詳しく説明してください...",
+    "send_button": "メッセージを送信",
+    "sending": "送信中...",
+    "success_title": "送信完了",
+    "success_message": "ありがとうございます！まもなくご連絡します。",
+    "error_message": "送信に失敗しました。もう一度お試しください。",
+    "fill_all_fields": "すべての項目を入力してください。"
   },
   "common": {
     "loading": "読み込み中...",

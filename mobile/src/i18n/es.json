@@ -12,7 +12,10 @@
     "offline_hint": "Estás sin conexión. Tu voto se sincronizará cuando te reconectes.",
     "offline_voted": "¡Tu voto ha sido guardado! Los resultados aparecerán cuando vuelvas a estar en línea.",
     "share_my_pick": "Mi elección",
-    "share_community": "Comunidad"
+    "share_community": "Comunidad",
+    "verify_email_prompt": "Por favor verifica tu email para poder votar.",
+    "verify_email_resend": "Reenviar verificación",
+    "verify_email_sent": "Email enviado ✓"
   },
   "verdicts": {
     "guilty": "Culpable",
@@ -237,7 +240,12 @@
   "demographics": {
     "title": "Demografía",
     "subtitle": "Opcional. Muestra cómo votaron diferentes grupos. Todos los datos son anónimos.",
-    "tabs": { "all": "Todos", "age": "Edad", "country": "País", "gender": "Género" },
+    "tabs": {
+      "all": "Todos",
+      "age": "Edad",
+      "country": "País",
+      "gender": "Género"
+    },
     "selectFilter": "Selecciona un filtro para ver el desglose demográfico",
     "noData": "Aún no hay suficientes datos para este grupo",
     "voteRequired": "Primero debes votar en este escenario",
@@ -246,13 +254,45 @@
     "country": "País",
     "countryPlaceholder": "ej. ES",
     "gender": "Género",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Masculino", "female": "Femenino", "non_binary": "No binario", "prefer_not_to_say": "Prefiero no decir" },
-    "premium": { "required": "Se requiere suscripción Premium", "cta": "Actualiza a Premium para ver cómo votaron diferentes grupos" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Masculino",
+      "female": "Femenino",
+      "non_binary": "No binario",
+      "prefer_not_to_say": "Prefiero no decir"
+    },
+    "premium": {
+      "required": "Se requiere suscripción Premium",
+      "cta": "Actualiza a Premium para ver cómo votaron diferentes grupos"
+    },
     "deleteTitle": "Eliminar datos demográficos",
     "deleteConfirm": "Esto eliminará tu año de nacimiento, país y género. Tus votos no se verán afectados.",
     "deleteData": "Eliminar mis datos demográficos",
     "privacyNote": "Tus datos solo se usan para estadísticas de grupo anónimas. Los grupos con menos de 5 votos están ocultos. Puedes eliminar estos datos en cualquier momento."
+  },
+  "support": {
+    "section_title": "Ayuda y soporte",
+    "contact_us": "Contactar soporte",
+    "privacy_policy": "Política de privacidad",
+    "terms_of_service": "Términos de servicio",
+    "subject_label": "Asunto",
+    "subject_placeholder": "¿Cuál es tu pregunta?",
+    "message_label": "Mensaje",
+    "message_placeholder": "Describe tu problema en detalle...",
+    "send_button": "Enviar mensaje",
+    "sending": "Enviando...",
+    "success_title": "Mensaje enviado",
+    "success_message": "¡Gracias! Te responderemos pronto.",
+    "error_message": "Error al enviar. Inténtalo de nuevo.",
+    "fill_all_fields": "Por favor, rellena todos los campos."
   },
   "common": {
     "loading": "Cargando...",

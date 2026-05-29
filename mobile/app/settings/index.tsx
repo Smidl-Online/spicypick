@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Modal, FlatList, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
 import { api } from '../../src/api/client';
@@ -131,7 +131,30 @@ export default function SettingsScreen() {
         <Text style={chevron}>›</Text>
       </TouchableOpacity>
 
-      <View style={{ height: 32 }} />
+      <View style={{ height: 16 }} />
+      <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, paddingHorizontal: 20, paddingBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        {t('support.section_title')}
+      </Text>
+
+      <TouchableOpacity style={row} onPress={() => router.push('/settings/contact')}>
+        <Text style={styles.rowIcon}>✉️</Text>
+        <Text style={rowText}>{t('support.contact_us')}</Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={row} onPress={() => Linking.openURL('https://spicypick.app/privacy')}>
+        <Text style={styles.rowIcon}>🔒</Text>
+        <Text style={rowText}>{t('support.privacy_policy')}</Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={row} onPress={() => Linking.openURL('https://spicypick.app/terms')}>
+        <Text style={styles.rowIcon}>📄</Text>
+        <Text style={rowText}>{t('support.terms_of_service')}</Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 16 }} />
 
       <Modal visible={themePickerVisible} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>

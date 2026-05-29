@@ -12,7 +12,10 @@
     "offline_hint": "Du bist offline. Deine Stimme wird synchronisiert, sobald du wieder verbunden bist.",
     "offline_voted": "Deine Stimme wurde gespeichert! Die Ergebnisse erscheinen, wenn du wieder online bist.",
     "share_my_pick": "Meine Wahl",
-    "share_community": "Community"
+    "share_community": "Community",
+    "verify_email_prompt": "Bitte bestätige deine E-Mail-Adresse, um abstimmen zu können.",
+    "verify_email_resend": "Erneut senden",
+    "verify_email_sent": "E-Mail gesendet ✓"
   },
   "verdicts": {
     "guilty": "Schuldig",
@@ -237,7 +240,12 @@
   "demographics": {
     "title": "Demografie",
     "subtitle": "Optional. Zeigt, wie verschiedene Gruppen abgestimmt haben. Alle Daten sind anonym.",
-    "tabs": { "all": "Alle", "age": "Alter", "country": "Land", "gender": "Geschlecht" },
+    "tabs": {
+      "all": "Alle",
+      "age": "Alter",
+      "country": "Land",
+      "gender": "Geschlecht"
+    },
     "selectFilter": "Wähle einen Filter für die demografische Aufschlüsselung",
     "noData": "Noch nicht genügend Daten für diese Gruppe",
     "voteRequired": "Sie müssen zuerst über dieses Szenario abstimmen",
@@ -246,13 +254,45 @@
     "country": "Land",
     "countryPlaceholder": "z.B. DE",
     "gender": "Geschlecht",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Männlich", "female": "Weiblich", "non_binary": "Nicht-binär", "prefer_not_to_say": "Keine Angabe" },
-    "premium": { "required": "Premium-Abo erforderlich", "cta": "Upgrade auf Premium um zu sehen, wie verschiedene Gruppen abgestimmt haben" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Männlich",
+      "female": "Weiblich",
+      "non_binary": "Nicht-binär",
+      "prefer_not_to_say": "Keine Angabe"
+    },
+    "premium": {
+      "required": "Premium-Abo erforderlich",
+      "cta": "Upgrade auf Premium um zu sehen, wie verschiedene Gruppen abgestimmt haben"
+    },
     "deleteTitle": "Demografische Daten löschen",
     "deleteConfirm": "Dadurch werden Geburtsjahr, Land und Geschlecht entfernt. Deine Stimmen sind nicht betroffen.",
     "deleteData": "Meine demografischen Daten löschen",
     "privacyNote": "Deine Daten werden nur für anonyme Gruppenstatistiken verwendet. Gruppen mit weniger als 5 Stimmen werden ausgeblendet. Du kannst diese Daten jederzeit löschen."
+  },
+  "support": {
+    "section_title": "Hilfe & Support",
+    "contact_us": "Support kontaktieren",
+    "privacy_policy": "Datenschutzrichtlinie",
+    "terms_of_service": "Nutzungsbedingungen",
+    "subject_label": "Betreff",
+    "subject_placeholder": "Worum geht es?",
+    "message_label": "Nachricht",
+    "message_placeholder": "Beschreiben Sie Ihr Problem...",
+    "send_button": "Nachricht senden",
+    "sending": "Wird gesendet...",
+    "success_title": "Nachricht gesendet",
+    "success_message": "Danke! Wir melden uns bald.",
+    "error_message": "Fehler beim Senden. Versuchen Sie es erneut.",
+    "fill_all_fields": "Bitte füllen Sie alle Felder aus."
   },
   "common": {
     "loading": "Laden...",
