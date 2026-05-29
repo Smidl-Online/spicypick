@@ -73,20 +73,17 @@ log "Backup created: $TEMP_FILE ($BACKUP_SIZE)"
 # Step 2: Upload to S3
 log "Uploading to S3: s3://$BACKUP_S3_BUCKET/backups/$BACKUP_FILE"
 
-AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" \
-AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
-aws s3 cp "$TEMP_FILE" \
-  "s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}" \
-  --endpoint-url "$BACKUP_S3_ENDPOINT" \
-  --storage-class STANDARD 2>&1 | while IFS= read -r line; do log "  s3: $line"; done
-
-UPLOAD_EXIT=${PIPESTATUS[0]}
-rm -f "$TEMP_FILE"
-
-if [ "$UPLOAD_EXIT" -ne 0 ]; then
-  notify_failure "S3 upload failed (exit $UPLOAD_EXIT)"
+if ! AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" \
+   AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
+   aws s3 cp "$TEMP_FILE" \
+     "s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}" \
+     --endpoint-url "$BACKUP_S3_ENDPOINT" \
+     --storage-class STANDARD; then
+  rm -f "$TEMP_FILE"
+  notify_failure "S3 upload failed"
   exit 1
 fi
+rm -f "$TEMP_FILE"
 
 log "Upload successful"
 
@@ -104,7 +101,7 @@ while IFS= read -r line; do
   if [[ "$LAST_MOD" < "$CUTOFF_DATE" ]]; then
     AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" \
     AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
-    aws s3 rm "s3://${BACKUP_S3_BUCKET}/${KEY}" \
+    aws s3 rm "s3://${BACKUP_S3_BUCKET}/backups/${KEY}" \
       --endpoint-url "$BACKUP_S3_ENDPOINT" > /dev/null 2>&1 && {
       log "  Deleted old backup: $KEY"
       DELETED=$((DELETED + 1))
