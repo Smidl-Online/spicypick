@@ -16,6 +16,9 @@ import { startNetworkListener } from '../src/services/offlineSync';
 import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { analytics } from '../src/services/analytics';
+import { applyAnalyticsConsent } from '../src/services/analyticsConsent';
+import { loadConsent } from '../src/services/consent';
+import { GdprConsentBanner } from '../src/components/GdprConsentBanner';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
 import { initRevenueCat, loginRevenueCat, checkPremiumStatus } from '../src/services/revenueCat';
 import { api } from '../src/api/client';
@@ -51,6 +54,8 @@ function RootLayoutInner() {
   const { isDark, colors } = useTheme();
   const [ready, setReady] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [consentResolved, setConsentResolved] = useState(false);
+  const [consentBannerVisible, setConsentBannerVisible] = useState(false);
   const fetchToday = useScenarioStore((s) => s.fetchToday);
   const router = useRouter();
 
@@ -93,8 +98,22 @@ function RootLayoutInner() {
 
   useEffect(() => {
     i18nReady.then(() => setReady(true)).catch(() => setReady(true));
-    analytics.init();
-    analytics.track('app_open');
+
+    // GDPR: gate analytics by stored consent. If no consent is stored yet,
+    // show the banner before any analytics fires.
+    loadConsent().then((existing) => {
+      if (!existing) {
+        setConsentBannerVisible(true);
+      } else {
+        setConsentResolved(true);
+      }
+      // applyAnalyticsConsent installs no-op stubs when consent != 'all'
+      // and calls analytics.init() when consent == 'all'.
+      applyAnalyticsConsent().then(() => {
+        analytics.track('app_open');
+      });
+    });
+
     fetchProfile();
     initRevenueCat().catch((err) => console.warn('RevenueCat init failed:', err));
     const unsubscribe = startNetworkListener(() => {
@@ -170,6 +189,13 @@ function RootLayoutInner() {
           </>
         )}
       </Stack>
+      <GdprConsentBanner
+        visible={consentBannerVisible && !consentResolved}
+        onResolved={() => {
+          setConsentBannerVisible(false);
+          setConsentResolved(true);
+        }}
+      />
     </SafeAreaProvider>
   );
 }
