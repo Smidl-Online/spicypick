@@ -61,8 +61,10 @@ TEMP_FILE="/tmp/${BACKUP_FILE}"
 log "Starting backup: $BACKUP_FILE"
 
 # Step 1: pg_dump → gzip
+# --clean --if-exists: adds DROP IF EXISTS before each CREATE so restore works on non-empty DB
 log "Running pg_dump..."
-if ! pg_dump "$DATABASE_URL" | gzip -9 > "$TEMP_FILE"; then
+if ! pg_dump --clean --if-exists "$DATABASE_URL" | gzip -9 > "$TEMP_FILE"; then
+  rm -f "$TEMP_FILE"
   notify_failure "pg_dump failed"
   exit 1
 fi
@@ -93,6 +95,17 @@ log "Cleaning up backups older than ${BACKUP_RETENTION_DAYS} days..."
 CUTOFF_DATE=$(date -u -d "${BACKUP_RETENTION_DAYS} days ago" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
   || date -u -v-"${BACKUP_RETENTION_DAYS}"d '+%Y-%m-%dT%H:%M:%SZ')  # macOS fallback
 
+S3_LIST_OUTPUT=$(
+  AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" \
+  AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
+  aws s3 ls "s3://${BACKUP_S3_BUCKET}/backups/" \
+    --endpoint-url "$BACKUP_S3_ENDPOINT" 2>&1
+) || {
+  log "WARN: Failed to list S3 backups for retention cleanup — skipping (backup upload was successful)"
+  log "Backup completed successfully: $BACKUP_FILE ($BACKUP_SIZE)"
+  exit 0
+}
+
 DELETED=0
 while IFS= read -r line; do
   KEY=$(echo "$line" | awk '{print $NF}')
@@ -107,12 +120,7 @@ while IFS= read -r line; do
       DELETED=$((DELETED + 1))
     }
   fi
-done < <(
-  AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY" \
-  AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_KEY" \
-  aws s3 ls "s3://${BACKUP_S3_BUCKET}/backups/" \
-    --endpoint-url "$BACKUP_S3_ENDPOINT" 2>/dev/null || true
-)
+done <<< "$S3_LIST_OUTPUT"
 
 log "Cleanup done: $DELETED old backup(s) deleted"
 log "Backup completed successfully: $BACKUP_FILE ($BACKUP_SIZE)"

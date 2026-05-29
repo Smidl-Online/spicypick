@@ -38,6 +38,9 @@ if [ -z "$BACKUP_FILE" ]; then
   read -r -p "Enter backup filename (e.g. spicypick_20240115_020000.sql.gz): " BACKUP_FILE
 fi
 
+# Strip any directory components to prevent path traversal (e.g. ../../etc/cron.d/root)
+BACKUP_FILE=$(basename "$BACKUP_FILE")
+
 TEMP_FILE="/tmp/${BACKUP_FILE}"
 
 log "Downloading: s3://${BACKUP_S3_BUCKET}/backups/${BACKUP_FILE}"
