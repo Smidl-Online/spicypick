@@ -47,6 +47,7 @@ userRoutes.get('/me', authMiddleware, async (c) => {
     lastPlayedAt: user.lastPlayedAt,
     isPremium: user.isPremium,
     premiumUntil: user.premiumUntil,
+    onboardingCompleted: user.onboardingCompleted,
     locale: user.locale,
     timezone: user.timezone,
     birthYear: user.birthYear,
@@ -428,6 +429,18 @@ userRoutes.patch('/me/notification-preferences', authMiddleware, async (c) => {
     challenges: user.notifChallenges,
     achievements: user.notifAchievements,
   });
+});
+
+// POST /api/users/me/onboarding-complete
+userRoutes.post('/me/onboarding-complete', authMiddleware, async (c) => {
+  const userId = c.get('userId');
+
+  await db.update(users).set({
+    onboardingCompleted: true,
+    updatedAt: new Date(),
+  }).where(eq(users.id, userId));
+
+  return c.json({ message: 'Onboarding completed' });
 });
 
 export default userRoutes;

@@ -38,6 +38,9 @@ export const users = pgTable('users', {
   // Admin
   isAdmin: boolean('is_admin').default(false).notNull(),
 
+  // Onboarding
+  onboardingCompleted: boolean('onboarding_completed').default(false).notNull(),
+
   // Demographics (optional)
   birthYear: integer('birth_year'),
   country: varchar('country', { length: 2 }),
