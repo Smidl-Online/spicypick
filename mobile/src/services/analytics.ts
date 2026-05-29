@@ -122,6 +122,20 @@ class AnalyticsService {
     await this.persistQueue();
   }
 
+  /**
+   * Stop the flush timer, discard all queued events, and reset initialized state.
+   * Called on consent revocation — does NOT flush to PostHog (GDPR requirement).
+   */
+  clearQueue(): void {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    this.initialized = false;
+    this.queue = [];
+    this.persistQueue();
+  }
+
   destroy(): void {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);

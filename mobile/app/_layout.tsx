@@ -194,6 +194,9 @@ function RootLayoutInner() {
         onResolved={() => {
           setConsentBannerVisible(false);
           setConsentResolved(true);
+          // Track app_open now that consent is resolved — no-op if user chose
+          // 'essential' only (analytics.track is replaced by a stub at that point).
+          analytics.track('app_open');
         }}
       />
     </SafeAreaProvider>

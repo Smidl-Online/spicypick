@@ -1,16 +1,13 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { analytics } from './analytics';
 import { hasAnalyticsConsent, loadConsent, subscribeConsent } from './consent';
 
 // Bridge between consent state and the analytics singleton.
 // Keeps `analytics.ts` untouched while enforcing GDPR: when the user has not
 // granted analytics consent, track/screen/identify become no-ops AND any
-// previously persisted queue is cleared.
+// previously queued events (in-memory + persisted) are immediately discarded.
 //
 // Call `applyAnalyticsConsent()` once at app startup (before any track call
 // fires) and it will also subscribe to future consent changes.
-
-const ANALYTICS_QUEUE_KEY = 'spicypick_analytics_queue';
 
 type TrackFn = typeof analytics.track;
 type ScreenFn = typeof analytics.screen;
@@ -39,14 +36,9 @@ function disable(): void {
   analytics.screen = noopScreen;
   analytics.identify = noopIdentify;
   consentActive = false;
-}
-
-async function clearPersistedQueue(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(ANALYTICS_QUEUE_KEY);
-  } catch {
-    // Ignore storage errors
-  }
+  // Stop flush timer + clear in-memory queue + persist empty queue.
+  // GDPR: consent revocation must be immediate — no pending events may be sent.
+  analytics.clearQueue();
 }
 
 export async function applyAnalyticsConsent(): Promise<void> {
@@ -61,7 +53,6 @@ export async function applyAnalyticsConsent(): Promise<void> {
         analytics.init().catch(() => {});
       } else {
         disable();
-        clearPersistedQueue();
       }
     });
   }
@@ -72,7 +63,6 @@ export async function applyAnalyticsConsent(): Promise<void> {
     await analytics.init();
   } else {
     disable();
-    await clearPersistedQueue();
   }
 }
 
