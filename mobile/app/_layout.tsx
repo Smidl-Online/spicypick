@@ -16,6 +16,7 @@ import { analytics } from '../src/services/analytics';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
 import { initRevenueCat, loginRevenueCat, checkPremiumStatus } from '../src/services/revenueCat';
 import { api } from '../src/api/client';
+import { shouldShowOnboarding } from './onboarding';
 
 const LAST_HANDLED_NOTIF_KEY = 'lastHandledNotificationId';
 
@@ -46,11 +47,21 @@ function RootLayoutInner() {
   const { fetchProfile, isAuthenticated, user } = useAuthStore();
   const { isDark, colors } = useTheme();
   const [ready, setReady] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const fetchToday = useScenarioStore((s) => s.fetchToday);
   const router = useRouter();
 
   // Register push token when authenticated
   usePushNotifications(isAuthenticated);
+
+  // Check if onboarding should be shown for new users
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      shouldShowOnboarding(user.onboardingCompleted).then(setShowOnboarding);
+    } else {
+      setShowOnboarding(false);
+    }
+  }, [isAuthenticated, user]);
 
   // Sync RevenueCat user identity and subscription status when authenticated
   useEffect(() => {
@@ -146,6 +157,8 @@ function RootLayoutInner() {
       >
         {!isAuthenticated ? (
           <Stack.Screen name="(auth)" />
+        ) : showOnboarding ? (
+          <Stack.Screen name="onboarding" />
         ) : (
           <>
             <Stack.Screen name="(tabs)" />

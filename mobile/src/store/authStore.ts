@@ -17,6 +17,7 @@ type User = {
   streakFreezes: number;
   lastPlayedAt: string | null;
   isPremium: boolean;
+  onboardingCompleted: boolean;
   totalVotes: number;
   birthYear: number | null;
   country: string | null;

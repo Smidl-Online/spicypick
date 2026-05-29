@@ -12,7 +12,10 @@
     "offline_hint": "Jsi offline. Tvůj hlas bude synchronizován po připojení.",
     "offline_voted": "Tvůj hlas byl uložen! Výsledky se zobrazí po připojení k internetu.",
     "share_my_pick": "Můj verdikt",
-    "share_community": "Komunita"
+    "share_community": "Komunita",
+    "verify_email_prompt": "Pro hlasování ověř svůj e-mail.",
+    "verify_email_resend": "Znovu odeslat",
+    "verify_email_sent": "Odesláno ✓"
   },
   "verdicts": {
     "guilty": "Vinen",
@@ -275,6 +278,37 @@
     "deleteConfirm": "Tímto smažeš svůj rok narození, zemi a pohlaví. Tvoje hlasy nebudou ovlivněny.",
     "deleteData": "Smazat moje demografická data",
     "privacyNote": "Tvoje data se používají pouze pro anonymní skupinové statistiky. Skupiny s méně než 5 hlasy jsou skryté. Data můžeš kdykoli smazat."
+  },
+  "support": {
+    "section_title": "Nápověda a podpora",
+    "contact_us": "Kontaktovat podporu",
+    "privacy_policy": "Zásady ochrany soukromí",
+    "terms_of_service": "Podmínky použití",
+    "subject_label": "Předmět",
+    "subject_placeholder": "O čem je vaše otázka?",
+    "message_label": "Zpráva",
+    "message_placeholder": "Popište svůj problém nebo otázku podrobně...",
+    "send_button": "Odeslat zprávu",
+    "sending": "Odesílám...",
+    "success_title": "Zpráva odeslána",
+    "success_message": "Děkujeme! Brzy se vám ozveme.",
+    "error_message": "Zprávu se nepodařilo odeslat. Zkuste to znovu.",
+    "fill_all_fields": "Vyplňte prosím všechna pole."
+  },
+  "onboarding": {
+    "skip": "Přeskočit",
+    "next": "Další",
+    "get_started": "Začít",
+    "slide1_title": "Každodenní dilemata, která tě donutí přemýšlet",
+    "slide1_subtitle": "Každý den nový morální scénář. Hlas, přemýšlej a zjisti, co si myslí komunita.",
+    "slide2_title": "Hlasuj a zjisti, co si myslí ostatní",
+    "slide2_subtitle": "Vyber svůj verdikt — Vinen, Nevinen, Je to složité, nebo Oba chybují — a okamžitě uvidíš rozložení.",
+    "slide3_title": "Buduj série, připoj se do ligy",
+    "slide3_subtitle": "Hlasuj každý den, udržuj svou sérii, získávej XP, postupuj v ligách a odemykej úspěchy.",
+    "slide4_title": "Vyzkoušej Premium zdarma na 7 dní",
+    "slide4_subtitle": "Odemkni expertní analýzy, bonusové scénáře a zážitek bez reklam.",
+    "slide4_cta": "Začít bezplatnou zkušební verzi",
+    "slide4_skip": "Pokračovat zdarma"
   },
   "common": {
     "loading": "Načítání...",

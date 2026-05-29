@@ -17,6 +17,7 @@ import experimentRoutes from './routes/experiments.js';
 import adminRoutes from './routes/admin.js';
 import wellknownRoutes from './routes/wellknown.js';
 import deeplinkRoutes from './routes/deeplink.js';
+import legalRoutes from './routes/legal.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
@@ -47,6 +48,9 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 
 // Well-known files (universal links / app links verification)
 app.route('/.well-known', wellknownRoutes);
+
+// Legal documents (Privacy Policy, Terms of Service) — must be before deeplink fallback
+app.route('/', legalRoutes);
 
 // Deep link fallback pages (scenario web preview + app store redirect)
 app.route('/', deeplinkRoutes);
