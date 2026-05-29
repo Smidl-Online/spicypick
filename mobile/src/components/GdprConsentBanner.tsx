@@ -23,14 +23,17 @@ export function GdprConsentBanner({ visible, onResolved }: Props) {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const [submitting, setSubmitting] = React.useState(false);
+  const [saveError, setSaveError] = React.useState(false);
 
   const choose = async (level: ConsentLevel) => {
     if (submitting) return;
     setSubmitting(true);
+    setSaveError(false);
     try {
       await saveConsent(level);
       onResolved(level);
-    } finally {
+    } catch {
+      setSaveError(true);
       setSubmitting(false);
     }
   };
@@ -63,6 +66,12 @@ export function GdprConsentBanner({ visible, onResolved }: Props) {
           >
             <Text style={[styles.link, { color: colors.primary }]}>{t('gdpr.privacy_link')}</Text>
           </TouchableOpacity>
+
+          {saveError && (
+            <Text style={[styles.errorText, { color: colors.error ?? '#EF4444' }]}>
+              {t('common.error')}
+            </Text>
+          )}
 
           <TouchableOpacity
             style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
@@ -151,5 +160,10 @@ const styles = StyleSheet.create({
   secondaryBtnText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorText: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

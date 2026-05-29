@@ -25,6 +25,7 @@ export default function PrivacyScreen() {
   const [consent, setConsent] = useState<ConsentState | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     loadConsent().then((c) => {
@@ -36,9 +37,12 @@ export default function PrivacyScreen() {
   const choose = async (level: ConsentLevel) => {
     if (saving) return;
     setSaving(true);
+    setSaveError(false);
     try {
       const next = await saveConsent(level);
       setConsent(next);
+    } catch {
+      setSaveError(true);
     } finally {
       setSaving(false);
     }
@@ -107,6 +111,12 @@ export default function PrivacyScreen() {
         )}
       </TouchableOpacity>
 
+      {saveError && (
+        <Text style={[styles.errorText, { color: colors.error ?? '#EF4444' }]}>
+          {t('common.error')}
+        </Text>
+      )}
+
       <TouchableOpacity
         onPress={() => Linking.openURL(PRIVACY_URL)}
         testID="privacy-link"
@@ -157,6 +167,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     marginTop: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   link: {
     fontSize: 14,
