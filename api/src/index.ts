@@ -17,6 +17,7 @@ import experimentRoutes from './routes/experiments.js';
 import adminRoutes from './routes/admin.js';
 import wellknownRoutes from './routes/wellknown.js';
 import deeplinkRoutes from './routes/deeplink.js';
+import legalRoutes from './routes/legal.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
@@ -50,6 +51,9 @@ app.route('/.well-known', wellknownRoutes);
 
 // Deep link fallback pages (scenario web preview + app store redirect)
 app.route('/', deeplinkRoutes);
+
+// Legal documents (Privacy Policy, Terms of Service)
+app.route('/', legalRoutes);
 
 // Routes
 app.route('/api/auth', authRoutes);

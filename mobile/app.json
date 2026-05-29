@@ -64,6 +64,8 @@
     "extra": {
       "revenueCatIosKey": "",
       "revenueCatAndroidKey": "",
+      "privacyPolicyUrl": "https://spicypick.app/privacy",
+      "termsOfServiceUrl": "https://spicypick.app/terms",
       "eas": {
         "projectId": ""
       }
