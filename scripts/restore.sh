@@ -8,11 +8,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/../api/.env}"
 
+# Safe parser: avoids executing shell metacharacters that may appear in passwords/URLs
 if [ -f "$ENV_FILE" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$ENV_FILE"
-  set +a
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    [[ "$_line" =~ ^[[:space:]]*# ]] && continue  # skip comments
+    [[ -z "${_line// }" ]] && continue              # skip blank lines
+    if [[ "$_line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      _k="${BASH_REMATCH[1]}"
+      _v="${BASH_REMATCH[2]}"
+      _v="${_v%\"}" ; _v="${_v#\"}"  # strip surrounding double quotes
+      _v="${_v%\'}" ; _v="${_v#\'}"  # strip surrounding single quotes
+      export "$_k=$_v"
+    fi
+  done < "$ENV_FILE"
+  unset _line _k _v
 fi
 
 DATABASE_URL="${DATABASE_URL:?DATABASE_URL is required}"
@@ -41,9 +50,10 @@ fi
 # Strip any directory components to prevent path traversal (e.g. ../../etc/cron.d/root)
 BACKUP_FILE=$(basename "$BACKUP_FILE")
 
-# Restrict temp file permissions to owner-only (like backup.sh) to prevent other local users from reading the dump
+# Restrict temp file permissions to owner-only to prevent other local users from reading the dump
+# mktemp creates an atomic, non-guessable path to prevent symlink attacks on predictable /tmp paths
 umask 077
-TEMP_FILE="/tmp/${BACKUP_FILE}"
+TEMP_FILE=$(mktemp /tmp/spicypick_XXXXXX.sql.gz)
 # Ensure temp file is always removed on exit (success, failure, or signal)
 trap 'rm -f "$TEMP_FILE"' EXIT
 

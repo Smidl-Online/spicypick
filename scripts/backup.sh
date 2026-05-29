@@ -10,11 +10,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-${SCRIPT_DIR}/../api/.env}"
 
 # Load env from api/.env if not already set (supports running via cron)
+# Safe parser: avoids executing shell metacharacters that may appear in passwords/URLs
 if [ -f "$ENV_FILE" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "$ENV_FILE"
-  set +a
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    [[ "$_line" =~ ^[[:space:]]*# ]] && continue  # skip comments
+    [[ -z "${_line// }" ]] && continue              # skip blank lines
+    if [[ "$_line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      _k="${BASH_REMATCH[1]}"
+      _v="${BASH_REMATCH[2]}"
+      _v="${_v%\"}" ; _v="${_v#\"}"  # strip surrounding double quotes
+      _v="${_v%\'}" ; _v="${_v#\'}"  # strip surrounding single quotes
+      export "$_k=$_v"
+    fi
+  done < "$ENV_FILE"
+  unset _line _k _v
 fi
 
 # Required vars
@@ -42,7 +51,8 @@ notify_failure() {
     return 0
   fi
 
-  curl -s -X POST "https://api.resend.com/emails" \
+  # -f: treat HTTP 4xx/5xx as errors so failed notifications are not silently swallowed
+  curl -sf -X POST "https://api.resend.com/emails" \
     -H "Authorization: Bearer $RESEND_API_KEY" \
     -H "Content-Type: application/json" \
     -d "{
@@ -56,10 +66,11 @@ notify_failure() {
 # ── Main ──────────────────────────────────────────────────────────────────────
 TIMESTAMP=$(date -u '+%Y%m%d_%H%M%S')
 BACKUP_FILE="spicypick_${TIMESTAMP}.sql.gz"
-TEMP_FILE="/tmp/${BACKUP_FILE}"
 
 # Restrict temp file permissions — dump contains full DB contents
+# mktemp creates an atomic, non-guessable path to prevent symlink attacks on predictable /tmp paths
 umask 077
+TEMP_FILE=$(mktemp /tmp/spicypick_XXXXXX.sql.gz)
 
 log "Starting backup: $BACKUP_FILE"
 
