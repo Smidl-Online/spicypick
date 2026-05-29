@@ -19,10 +19,14 @@ appId: ${APP_ID}
     id: "message-input"
 - inputText: "This is a test message from E2E test"
 - tapOn: "Send Message"
-# Accept success response OR rate-limit error — both indicate the endpoint is reachable and the UI flow works
+# Assert that SOME response appeared — success (200) or rate-limit error (429) are both valid outcomes.
+# Neither being visible would indicate a real regression (network failure, UI crash, etc.).
 - assertVisible:
     text: "message has been sent"
     optional: true
 - assertVisible:
     text: "Please try again"
     optional: true
+- assertTrue:
+    condition: ${visible("message has been sent") || visible("Please try again")}
+    label: "Support form must show either success or rate-limit response after submission"

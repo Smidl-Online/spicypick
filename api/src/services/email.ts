@@ -58,7 +58,7 @@ export async function sendSupportEmail({ userId, userEmail, subject, message }: 
     from: FROM_EMAIL,
     to: supportEmail,
     replyTo: userEmail,
-    subject: `[Support] ${escHtml(subject)}`,
+    subject: `[Support] ${subject}`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #FF6B35;">SpicyPick Support Request</h2>
