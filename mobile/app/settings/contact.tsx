@@ -25,7 +25,7 @@ export default function ContactSupportScreen() {
         body: { subject: subject.trim(), message: message.trim() },
       });
       Alert.alert(t('support.success_title'), t('support.success_message'), [
-        { text: 'OK', onPress: () => router.back() },
+        { text: t('common.ok'), onPress: () => router.back() },
       ]);
     } catch (err: any) {
       const msg = err?.message || t('support.error_message');

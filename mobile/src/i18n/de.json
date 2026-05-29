@@ -263,6 +263,7 @@
     "save": "Speichern",
     "hours": "Std",
     "minutes": "Min",
-    "seconds": "Sek"
+    "seconds": "Sek",
+    "ok": "OK"
   }
 }

@@ -263,6 +263,7 @@
     "save": "Enregistrer",
     "hours": "h",
     "minutes": "min",
-    "seconds": "s"
+    "seconds": "s",
+    "ok": "OK"
   }
 }

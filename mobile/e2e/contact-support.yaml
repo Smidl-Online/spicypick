@@ -21,12 +21,14 @@ appId: ${APP_ID}
 - tapOn: "Send Message"
 # Assert that SOME response appeared — success (200) or rate-limit error (429) are both valid outcomes.
 # Neither being visible would indicate a real regression (network failure, UI crash, etc.).
+# Success (200): Alert shows t('support.success_message') = "Thank you! We will get back to you soon."
+# Rate-limited (429): Alert shows err.message = "Too many requests. Please wait before sending another message."
 - assertVisible:
-    text: "message has been sent"
+    text: "Thank you"
     optional: true
 - assertVisible:
-    text: "Please try again"
+    text: "Too many requests"
     optional: true
 - assertTrue:
-    condition: ${visible("message has been sent") || visible("Please try again")}
+    condition: ${visible("Thank you") || visible("Too many requests")}
     label: "Support form must show either success or rate-limit response after submission"
