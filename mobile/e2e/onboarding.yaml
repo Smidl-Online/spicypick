@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+---
+# SpicyPick onboarding flow — verifikuje 4 slidy, skip tlačítko a navigaci po dokončení
+- launchApp:
+    clearState: true
+
+# Po čistém startu s nový účtem se zobrazí onboarding
+# (test předpokládá čerstvou instalaci / vymazaný AsyncStorage)
+- assertVisible: "Skip"
+
+# Slide 1 — hero
+- assertVisible: "Daily dilemmas that make you think"
+- tapOn: "Next"
+
+# Slide 2 — vote UI
+- assertVisible: "Vote & see what others think"
+- tapOn: "Next"
+
+# Slide 3 — gamification
+- assertVisible: "Build streaks, join leagues"
+- tapOn: "Next"
+
+# Slide 4 — premium
+- assertVisible: "Try Premium free for 7 days"
+- assertVisible: "Start Free Trial"
+- assertVisible: "Continue for free"
+
+# Tap "Continue for free" → jdi na home
+- tapOn: "Continue for free"
+- assertVisible: "Today's Scenario"

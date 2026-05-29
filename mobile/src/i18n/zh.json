@@ -196,6 +196,22 @@
     "error_join": "加入公会失败",
     "error_leave": "离开公会失败"
   },
+  "support": {
+    "section_title": "帮助与支持",
+    "contact_us": "联系支持",
+    "privacy_policy": "隐私政策",
+    "terms_of_service": "服务条款",
+    "subject_label": "主题",
+    "subject_placeholder": "您的问题是关于什么的？",
+    "message_label": "消息",
+    "message_placeholder": "请详细描述您的问题...",
+    "send_button": "发送消息",
+    "sending": "发送中...",
+    "success_title": "消息已发送",
+    "success_message": "谢谢！我们会尽快回复您。",
+    "error_message": "发送失败，请重试。",
+    "fill_all_fields": "请填写所有字段。"
+  },
   "common": {
     "loading": "加载中...",
     "error": "出了点问题",

@@ -314,5 +314,9 @@ const styles = StyleSheet.create({
   analysisTitle: { fontSize: 16, fontWeight: '700', marginBottom: 8 },
   analysisText: { fontSize: 14, lineHeight: 22 },
   offlineVotedBanner: { borderRadius: 12, padding: 16, alignItems: 'center', marginVertical: 8, borderWidth: 1 },
+  verificationBanner: { borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, gap: 12 },
+  verificationBannerText: { fontSize: 14, lineHeight: 20, textAlign: 'center' },
+  verificationBannerButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, alignSelf: 'center' },
+  verificationBannerButtonText: { color: 'white', fontWeight: '600', fontSize: 14 },
   offlineVotedText: { fontSize: 16, fontWeight: '600', textAlign: 'center' },
 });
