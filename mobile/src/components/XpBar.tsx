@@ -5,13 +5,14 @@ import { colors } from '../theme/colors';
 type Props = {
   xp: number;
   level: number;
+  testID?: string;
 };
 
 function xpForLevel(level: number): number {
   return Math.floor(50 * Math.pow(level, 1.5));
 }
 
-export function XpBar({ xp, level }: Props) {
+export function XpBar({ xp, level, testID }: Props) {
   const currentLevelXp = xpForLevel(level);
   const nextLevelXp = xpForLevel(level + 1);
   const progress = nextLevelXp > currentLevelXp
@@ -19,10 +20,10 @@ export function XpBar({ xp, level }: Props) {
     : 0;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID={testID}>
       <View style={styles.header}>
-        <Text style={styles.level}>Level {level}</Text>
-        <Text style={styles.xp}>{xp} / {nextLevelXp} XP</Text>
+        <Text style={styles.level} testID="xp-bar-level-text">Level {level}</Text>
+        <Text style={styles.xp} testID="xp-bar-xp-text">{xp} / {nextLevelXp} XP</Text>
       </View>
       <View style={styles.barBg}>
         <View style={[styles.barFill, { width: `${Math.min(progress * 100, 100)}%` }]} />

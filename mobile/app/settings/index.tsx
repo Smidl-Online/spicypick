@@ -73,7 +73,7 @@ export default function SettingsScreen() {
   const chevron = { fontSize: 20, color: colors.textMuted };
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: 8 }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: 8 }} testID="settings-screen">
       <TouchableOpacity style={row} onPress={() => router.push('/settings/notifications')}>
         <Text style={styles.rowIcon}>🔔</Text>
         <Text style={rowText}>{t('settings.notifications')}</Text>
