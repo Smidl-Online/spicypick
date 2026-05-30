@@ -49,10 +49,11 @@ function disable(): void {
 }
 
 export async function applyAnalyticsConsent(): Promise<void> {
-  // Default to disabled until we know consent state — prevents the first
-  // track('app_open') in _layout from leaking before loadConsent resolves.
+  // No-op stubs are already installed at module load time (lines 30-32) so
+  // analytics is gated before any React render. We must NOT call disable()
+  // here because that calls clearQueue() and would wipe persisted events from
+  // the previous session before we know whether the user has consent.
   if (!installed) {
-    disable();
     installed = true;
     subscribeConsent((state) => {
       if (state?.level === 'all') {
