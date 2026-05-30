@@ -14,6 +14,7 @@ vi.mock('../db/index.js', () => ({
       refreshTokens: { findFirst: vi.fn() },
     },
     insert: vi.fn(() => ({ values: vi.fn(() => ({ returning: vi.fn(() => [{ id: 'user-1', email: 'test@test.com', username: 'testuser' }]), onConflictDoNothing: vi.fn() })) })),
+    update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),
     delete: vi.fn(() => ({ where: vi.fn() })),
     select: vi.fn(() => ({ from: vi.fn() })),
   },
@@ -141,6 +142,48 @@ describe('auth routes', () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.message).toContain('password reset email sent');
+    });
+  });
+
+  describe('POST /api/auth/verify-email', () => {
+    it('should return 400 for missing token', async () => {
+      const res = await app.request('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('should return 400 for invalid or used token', async () => {
+      (db.query.users.findFirst as any).mockResolvedValueOnce(null);
+
+      const res = await app.request('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: 'invalid-token' }),
+      });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain('Invalid');
+    });
+
+    it('should return 200 for valid token', async () => {
+      (db.query.users.findFirst as any).mockResolvedValueOnce({
+        id: 'user-1',
+        email: 'test@test.com',
+        emailVerified: false,
+        emailVerificationToken: 'hashed-token',
+      });
+
+      const res = await app.request('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: 'valid-raw-token' }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.message).toContain('verified');
     });
   });
 

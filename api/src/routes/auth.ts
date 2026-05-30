@@ -35,6 +35,7 @@ const registerSchema = z.object({
   email: z.string().email().max(255),
   username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
   password: z.string().min(8).max(100),
+  locale: z.string().max(5).optional(),
 });
 
 const loginSchema = z.object({
@@ -65,7 +66,7 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
     return c.json({ error: 'Invalid input', details: parsed.error.flatten() }, 400);
   }
 
-  const { email, username, password } = parsed.data;
+  const { email, username, password, locale = 'en' } = parsed.data;
 
   // Check existing
   const existingEmail = await db.query.users.findFirst({ where: eq(users.email, email) });
@@ -99,7 +100,7 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
 
   // Send verification email async (non-blocking)
   if (process.env.RESEND_API_KEY) {
-    sendEmailVerificationEmail(email, rawVerificationToken, 'en').catch((err) => {
+    sendEmailVerificationEmail(email, rawVerificationToken, locale).catch((err) => {
       console.error('Failed to send verification email:', err);
     });
   }
@@ -306,6 +307,34 @@ auth.post('/reset-password', async (c) => {
   });
 
   return c.json({ message: 'Password reset successful. Please login with your new password.' });
+});
+
+// POST /api/auth/verify-email
+auth.post('/verify-email', async (c) => {
+  let reqBody: unknown;
+  try { reqBody = await c.req.json(); } catch { return c.json({ error: 'Invalid JSON' }, 400); }
+
+  const schema = z.object({ token: z.string().min(1) });
+  const parsed = schema.safeParse(reqBody);
+  if (!parsed.success) return c.json({ error: 'Invalid input' }, 400);
+
+  const { token } = parsed.data;
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await db.query.users.findFirst({
+    where: and(
+      eq(users.emailVerificationToken, tokenHash),
+      eq(users.emailVerified, false),
+    ),
+  });
+
+  if (!user) return c.json({ error: 'Invalid or already used verification token' }, 400);
+
+  await db.update(users)
+    .set({ emailVerified: true, emailVerificationToken: null, updatedAt: new Date() })
+    .where(eq(users.id, user.id));
+
+  return c.json({ message: 'Email verified successfully.' });
 });
 
 // GET /api/auth/export (GDPR data export)
