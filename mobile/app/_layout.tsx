@@ -8,7 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/store/authStore';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { i18nReady } from '../src/i18n';
-import { initSentry } from '../src/services/sentry';
+import { initSentry, Sentry } from '../src/services/sentry';
+
+// Initialize Sentry before any component renders for proper crash capture
+initSentry();
 import { startNetworkListener } from '../src/services/offlineSync';
 import { useScenarioStore } from '../src/store/scenarioStore';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
@@ -93,7 +96,6 @@ function RootLayoutInner() {
     analytics.init();
     analytics.track('app_open');
     fetchProfile();
-    initSentry();
     initRevenueCat().catch((err) => console.warn('RevenueCat init failed:', err));
     const unsubscribe = startNetworkListener(() => {
       fetchToday();
@@ -172,7 +174,7 @@ function RootLayoutInner() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
@@ -181,3 +183,6 @@ export default function RootLayout() {
     </ErrorBoundary>
   );
 }
+
+// Wrap with Sentry for automatic JS error capture and performance tracing
+export default Sentry.wrap(RootLayout);

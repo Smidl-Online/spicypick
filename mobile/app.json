@@ -59,7 +59,15 @@
           "color": "#e94560"
         }
       ],
-      "react-native-purchases"
+      "react-native-purchases",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "spicypick",
+          "organization": "smidl-online"
+        }
+      ]
     ],
     "extra": {
       "revenueCatIosKey": "",
