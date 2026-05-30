@@ -106,6 +106,51 @@ export const passwordReset = {
   },
 } as const;
 
+export const emailVerification = {
+  en: {
+    subject: 'Verify your SpicyPick email',
+    heading: 'Please verify your email address to start playing SpicyPick. Click the link below:',
+    button: 'Verify Email',
+    footer: "If you didn't create a SpicyPick account, ignore this email.",
+  },
+  cs: {
+    subject: 'Ověř svůj e-mail na SpicyPick',
+    heading: 'Ověř svou e-mailovou adresu, aby ses mohl zapojit do SpicyPick. Klikni na odkaz níže:',
+    button: 'Ověřit e-mail',
+    footer: 'Pokud jsi účet nevytvářel, tento e-mail ignoruj.',
+  },
+  de: {
+    subject: 'Bestätige deine SpicyPick-E-Mail',
+    heading: 'Bitte bestätige deine E-Mail-Adresse, um SpicyPick zu spielen. Klicke auf den Link:',
+    button: 'E-Mail bestätigen',
+    footer: 'Wenn du kein SpicyPick-Konto erstellt hast, ignoriere diese E-Mail.',
+  },
+  es: {
+    subject: 'Verifica tu correo de SpicyPick',
+    heading: 'Verifica tu dirección de correo para comenzar a jugar SpicyPick. Haz clic en el enlace:',
+    button: 'Verificar correo',
+    footer: 'Si no creaste una cuenta en SpicyPick, ignora este correo.',
+  },
+  fr: {
+    subject: 'Vérifiez votre adresse e-mail SpicyPick',
+    heading: 'Veuillez vérifier votre adresse e-mail pour commencer à jouer à SpicyPick. Cliquez sur le lien :',
+    button: "Vérifier l'e-mail",
+    footer: "Si vous n'avez pas créé de compte SpicyPick, ignorez cet e-mail.",
+  },
+  pt: {
+    subject: 'Verifique seu e-mail do SpicyPick',
+    heading: 'Por favor, verifique seu endereço de e-mail para começar a jogar SpicyPick. Clique no link:',
+    button: 'Verificar e-mail',
+    footer: 'Se você não criou uma conta no SpicyPick, ignore este e-mail.',
+  },
+  ja: {
+    subject: 'SpicyPickのメールアドレスを確認してください',
+    heading: 'SpicyPickをプレイするには、メールアドレスを確認してください。下のリンクをクリック：',
+    button: 'メールを確認する',
+    footer: 'SpicyPickのアカウントを作成していない場合は、このメールを無視してください。',
+  },
+} as const;
+
 /**
  * Resolve a localized notification string set, falling back to English.
  */

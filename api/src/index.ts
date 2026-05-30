@@ -18,6 +18,7 @@ import adminRoutes from './routes/admin.js';
 import wellknownRoutes from './routes/wellknown.js';
 import deeplinkRoutes from './routes/deeplink.js';
 import legalRoutes from './routes/legal.js';
+import supportRoutes from './routes/support.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { startCronJobs } from './cron/index.js';
 import { initSentry } from './services/sentry.js';
@@ -67,6 +68,7 @@ app.route('/api/premium', premiumRoutes);
 app.route('/api/reports', reportRoutes);
 app.route('/api/guilds', guildRoutes);
 app.route('/api/experiments', experimentRoutes);
+app.route('/api/support', supportRoutes);
 app.route('/admin', adminRoutes);
 
 // 404

@@ -46,6 +46,10 @@ export const users = pgTable('users', {
   country: varchar('country', { length: 2 }),
   gender: varchar('gender', { length: 20 }),
 
+  // Email verification
+  emailVerified: boolean('email_verified').default(false).notNull(),
+  emailVerificationToken: text('email_verification_token'),
+
   // Meta
   locale: varchar('locale', { length: 5 }).default('en').notNull(),
   timezone: varchar('timezone', { length: 50 }).default('UTC').notNull(),

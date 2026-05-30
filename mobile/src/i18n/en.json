@@ -319,6 +319,7 @@
     "save": "Save",
     "hours": "h",
     "minutes": "m",
-    "seconds": "s"
+    "seconds": "s",
+    "ok": "OK"
   }
 }

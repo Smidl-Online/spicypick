@@ -1,5 +1,7 @@
 # 🌶️ SpicyPick
 
+[![CI](https://github.com/Smidl-Online/spicypick/actions/workflows/ci.yml/badge.svg)](https://github.com/Smidl-Online/spicypick/actions/workflows/ci.yml)
+
 Daily social scenario judgment game. Read a real-life scenario, cast your verdict, see how the community voted, and climb the leaderboards.
 
 ## Stack
@@ -28,6 +30,19 @@ cd mobile
 npm install
 npx expo start
 ```
+
+## CI/CD
+
+GitHub Actions pipeline:
+
+- **CI** — spouští se na každý PR do `main`: testy (`npm test`) + TypeScript check (`tsc --noEmit`). Merge je blokovaný dokud CI neprošlo.
+- **Deploy** — spouští se po push do `main`: nejdřív CI, pak deploy na Coolify přes webhook.
+
+### GitHub Secrets (nastavit v Settings → Secrets → Actions)
+
+| Secret | Popis |
+|---|---|
+| `COOLIFY_DEPLOY_WEBHOOK` | Webhook URL pro trigger deploy (`/api/v1/deploy?uuid=<uuid>`) |
 
 ## Features
 

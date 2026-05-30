@@ -9,7 +9,7 @@ import { eq, or, and, ne, sql, lt } from 'drizzle-orm';
 import { authMiddleware } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { AppEnv } from '../types.js';
-import { sendPasswordResetEmail } from '../services/email.js';
+import { sendPasswordResetEmail, sendEmailVerificationEmail } from '../services/email.js';
 import { analytics } from '../services/analytics.js';
 
 const auth = new Hono<AppEnv>();
@@ -76,10 +76,16 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
+  // Generate email verification token
+  const rawVerificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenHash = crypto.createHash('sha256').update(rawVerificationToken).digest('hex');
+
   const [user] = await db.insert(users).values({
     email,
     username,
     passwordHash,
+    emailVerified: false,
+    emailVerificationToken: verificationTokenHash,
   }).returning();
 
   const tokens = generateTokens(user.id, user.email);
@@ -91,6 +97,13 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   });
 
+  // Send verification email async (non-blocking)
+  if (process.env.RESEND_API_KEY) {
+    sendEmailVerificationEmail(email, rawVerificationToken, 'en').catch((err) => {
+      console.error('Failed to send verification email:', err);
+    });
+  }
+
   const emailHash = crypto.createHash('sha256').update(user.email.toLowerCase()).digest('hex');
   analytics.identify(user.id, { email_hash: emailHash, username: user.username });
   analytics.track('user_registered', user.id, { method: 'email' });
@@ -100,6 +113,7 @@ auth.post('/register', rateLimit(10, 60_000, authRateLimitStore), async (c) => {
       id: user.id,
       email: user.email,
       username: user.username,
+      emailVerified: false,
     },
     ...tokens,
   }, 201);
