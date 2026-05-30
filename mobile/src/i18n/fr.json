@@ -294,6 +294,21 @@
     "error_message": "Échec d'envoi. Réessayez.",
     "fill_all_fields": "Veuillez remplir tous les champs."
   },
+  "onboarding": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "get_started": "Commencer",
+    "slide1_title": "Des dilemmes quotidiens qui font réfléchir",
+    "slide1_subtitle": "Chaque jour un nouveau scénario moral. Votez, réfléchissez et découvrez ce que pense la communauté.",
+    "slide2_title": "Votez et voyez ce que pensent les autres",
+    "slide2_subtitle": "Choisissez votre verdict — Coupable, Non coupable, Compliqué ou Les deux ont tort — et voyez immédiatement la répartition.",
+    "slide3_title": "Construisez des séries, rejoignez des ligues",
+    "slide3_subtitle": "Votez chaque jour pour maintenir votre série, gagnez de l'XP, montez dans les ligues et débloquez des succès.",
+    "slide4_title": "Essayez Premium gratuitement pendant 7 jours",
+    "slide4_subtitle": "Débloquez les analyses d'experts, les scénarios bonus et une expérience sans publicité.",
+    "slide4_cta": "Démarrer l'essai gratuit",
+    "slide4_skip": "Continuer gratuitement"
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Une erreur est survenue",

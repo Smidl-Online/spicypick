@@ -294,6 +294,21 @@
     "error_message": "Falha ao enviar. Tente novamente.",
     "fill_all_fields": "Por favor, preencha todos os campos."
   },
+  "onboarding": {
+    "skip": "Pular",
+    "next": "Próximo",
+    "get_started": "Começar",
+    "slide1_title": "Dilemas diários que fazem você pensar",
+    "slide1_subtitle": "Todo dia um novo cenário moral. Vote, reflita e descubra o que a comunidade pensa.",
+    "slide2_title": "Vote e veja o que os outros pensam",
+    "slide2_subtitle": "Escolha seu veredicto — Culpado, Não culpado, Complicado ou Ambos errados — e veja a divisão imediatamente.",
+    "slide3_title": "Construa sequências, entre em ligas",
+    "slide3_subtitle": "Vote diariamente para manter sua sequência, ganhe XP, suba nas ligas e desbloqueie conquistas.",
+    "slide4_title": "Experimente o Premium grátis por 7 dias",
+    "slide4_subtitle": "Desbloqueie análises especializadas, cenários bônus e experiência sem anúncios.",
+    "slide4_cta": "Iniciar teste gratuito",
+    "slide4_skip": "Continuar gratuitamente"
+  },
   "common": {
     "loading": "Carregando...",
     "error": "Algo deu errado",

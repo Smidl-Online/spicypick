@@ -294,6 +294,21 @@
     "error_message": "Fehler beim Senden. Versuchen Sie es erneut.",
     "fill_all_fields": "Bitte füllen Sie alle Felder aus."
   },
+  "onboarding": {
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "get_started": "Loslegen",
+    "slide1_title": "Tägliche Dilemmata, die zum Nachdenken anregen",
+    "slide1_subtitle": "Jeden Tag ein neues moralisches Szenario. Stimme ab, denke nach und erfahre, was die Community denkt.",
+    "slide2_title": "Stimme ab und sieh, was andere denken",
+    "slide2_subtitle": "Wähle dein Urteil — Schuldig, Nicht schuldig, Kompliziert oder Beide falsch — und sieh sofort die Verteilung.",
+    "slide3_title": "Bau Serien auf, tritt Ligen bei",
+    "slide3_subtitle": "Stimme täglich ab, halte deine Serie am Leben, sammle XP, klettere in Ligen und schalte Erfolge frei.",
+    "slide4_title": "Probiere Premium 7 Tage kostenlos",
+    "slide4_subtitle": "Schalte Expertenanalysen, Bonusszenarien und werbefreies Erlebnis frei.",
+    "slide4_cta": "Kostenlose Testversion starten",
+    "slide4_skip": "Kostenlos fortfahren"
+  },
   "common": {
     "loading": "Laden...",
     "error": "Etwas ist schiefgelaufen",

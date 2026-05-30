@@ -294,6 +294,21 @@
     "error_message": "Error al enviar. Inténtalo de nuevo.",
     "fill_all_fields": "Por favor, rellena todos los campos."
   },
+  "onboarding": {
+    "skip": "Omitir",
+    "next": "Siguiente",
+    "get_started": "Empezar",
+    "slide1_title": "Dilemas diarios que te hacen pensar",
+    "slide1_subtitle": "Cada día un nuevo escenario moral. Vota, reflexiona y descubre qué piensa la comunidad.",
+    "slide2_title": "Vota y ve qué piensan los demás",
+    "slide2_subtitle": "Elige tu veredicto — Culpable, No culpable, Complicado o Ambos equivocados — y ve al instante el desglose.",
+    "slide3_title": "Crea rachas, únete a ligas",
+    "slide3_subtitle": "Vota cada día para mantener tu racha, gana XP, sube en las ligas y desbloquea logros.",
+    "slide4_title": "Prueba Premium gratis 7 días",
+    "slide4_subtitle": "Desbloquea análisis de expertos, escenarios adicionales y experiencia sin anuncios.",
+    "slide4_cta": "Iniciar prueba gratuita",
+    "slide4_skip": "Continuar gratis"
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Algo salió mal",
