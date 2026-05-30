@@ -17,7 +17,6 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/theme/ThemeContext';
 import { api } from '../src/api/client';
 import { useAuthStore } from '../src/store/authStore';
-import { purchasePremium } from '../src/services/revenueCat';
 
 const { width } = Dimensions.get('window');
 const ONBOARDING_KEY = 'spicypick_onboarding_done';
@@ -52,7 +51,6 @@ export default function OnboardingScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
-  const user = useAuthStore((s) => s.user);
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -78,29 +76,6 @@ export default function OnboardingScreen() {
     await markOnboardingDone();
     await fetchProfile();
     router.replace('/(tabs)');
-  };
-
-  const handleStartTrial = async () => {
-    try {
-      const result = await purchasePremium(user?.id);
-      if (result) {
-        if (!result.sdkConfigured) {
-          // Dev fallback — no RC SDK configured, treat as successful
-          await api('/api/premium/subscribe', {
-            method: 'POST',
-            body: { platform: result.platform },
-          }).catch(() => {});
-        }
-      }
-    } catch (err: any) {
-      // User cancelled purchase — just finish onboarding normally
-      if (err?.userCancelled || err?.code === '1') {
-        await handleFinish();
-        return;
-      }
-      // Other errors — still proceed to home
-    }
-    await handleFinish();
   };
 
   const isLast = currentIndex === SLIDES.length - 1;
@@ -157,9 +132,9 @@ export default function OnboardingScreen() {
           <>
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: colors.primary }]}
-              onPress={handleStartTrial}
+              onPress={handleFinish}
             >
-              <Text style={styles.primaryButtonText}>{t('onboarding.slide4_cta')}</Text>
+              <Text style={styles.primaryButtonText}>{t('onboarding.get_started')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryButton} onPress={handleFinish}>
               <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>{t('onboarding.slide4_skip')}</Text>
