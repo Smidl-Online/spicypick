@@ -134,7 +134,7 @@ export default function OnboardingScreen() {
               style={[styles.primaryButton, { backgroundColor: colors.primary }]}
               onPress={handleFinish}
             >
-              <Text style={styles.primaryButtonText}>{t('onboarding.slide4_cta')}</Text>
+              <Text style={styles.primaryButtonText}>{t('onboarding.get_started')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryButton} onPress={handleFinish}>
               <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>{t('onboarding.slide4_skip')}</Text>

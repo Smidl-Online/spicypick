@@ -12,7 +12,10 @@
     "offline_hint": "Vous êtes hors ligne. Votre vote sera synchronisé lors de la reconnexion.",
     "offline_voted": "Votre vote a été enregistré ! Les résultats apparaîtront lorsque vous serez de nouveau en ligne.",
     "share_my_pick": "Mon choix",
-    "share_community": "Communauté"
+    "share_community": "Communauté",
+    "verify_email_prompt": "Veuillez vérifier votre email pour commencer à voter.",
+    "verify_email_resend": "Renvoyer la vérification",
+    "verify_email_sent": "Email envoyé ✓"
   },
   "verdicts": {
     "guilty": "Coupable",
@@ -237,7 +240,12 @@
   "demographics": {
     "title": "Démographie",
     "subtitle": "Optionnel. Montre comment les différents groupes ont voté. Toutes les données sont anonymes.",
-    "tabs": { "all": "Tous", "age": "Âge", "country": "Pays", "gender": "Genre" },
+    "tabs": {
+      "all": "Tous",
+      "age": "Âge",
+      "country": "Pays",
+      "gender": "Genre"
+    },
     "selectFilter": "Sélectionnez un filtre pour voir la répartition démographique",
     "noData": "Pas encore assez de données pour ce groupe",
     "voteRequired": "Vous devez d'abord voter sur ce scénario",
@@ -246,13 +254,60 @@
     "country": "Pays",
     "countryPlaceholder": "ex. FR",
     "gender": "Genre",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Homme", "female": "Femme", "non_binary": "Non-binaire", "prefer_not_to_say": "Je préfère ne pas dire" },
-    "premium": { "required": "Abonnement Premium requis", "cta": "Passez à Premium pour voir comment les différents groupes ont voté" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Homme",
+      "female": "Femme",
+      "non_binary": "Non-binaire",
+      "prefer_not_to_say": "Je préfère ne pas dire"
+    },
+    "premium": {
+      "required": "Abonnement Premium requis",
+      "cta": "Passez à Premium pour voir comment les différents groupes ont voté"
+    },
     "deleteTitle": "Supprimer les données démographiques",
     "deleteConfirm": "Cela supprimera votre année de naissance, pays et genre. Vos votes ne seront pas affectés.",
     "deleteData": "Supprimer mes données démographiques",
     "privacyNote": "Vos données ne sont utilisées que pour des statistiques de groupe anonymes. Les groupes avec moins de 5 votes sont masqués. Vous pouvez supprimer ces données à tout moment."
+  },
+  "support": {
+    "section_title": "Aide et support",
+    "contact_us": "Contacter le support",
+    "privacy_policy": "Politique de confidentialité",
+    "terms_of_service": "Conditions d'utilisation",
+    "subject_label": "Sujet",
+    "subject_placeholder": "De quoi s'agit-il ?",
+    "message_label": "Message",
+    "message_placeholder": "Décrivez votre problème en détail...",
+    "send_button": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "success_title": "Message envoyé",
+    "success_message": "Merci ! Nous vous répondrons bientôt.",
+    "error_message": "Échec d'envoi. Réessayez.",
+    "fill_all_fields": "Veuillez remplir tous les champs."
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "get_started": "Commencer",
+    "slide1_title": "Des dilemmes quotidiens qui font réfléchir",
+    "slide1_subtitle": "Chaque jour un nouveau scénario moral. Votez, réfléchissez et découvrez ce que pense la communauté.",
+    "slide2_title": "Votez et voyez ce que pensent les autres",
+    "slide2_subtitle": "Choisissez votre verdict — Coupable, Non coupable, Compliqué ou Les deux ont tort — et voyez immédiatement la répartition.",
+    "slide3_title": "Construisez des séries, rejoignez des ligues",
+    "slide3_subtitle": "Votez chaque jour pour maintenir votre série, gagnez de l'XP, montez dans les ligues et débloquez des succès.",
+    "slide4_title": "Essayez Premium gratuitement pendant 7 jours",
+    "slide4_subtitle": "Débloquez les analyses d'experts, les scénarios bonus et une expérience sans publicité.",
+    "slide4_cta": "Démarrer l'essai gratuit",
+    "slide4_skip": "Continuer gratuitement"
   },
   "common": {
     "loading": "Chargement...",

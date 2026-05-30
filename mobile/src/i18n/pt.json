@@ -12,7 +12,10 @@
     "offline_hint": "Você está offline. Seu voto será sincronizado quando reconectar.",
     "offline_voted": "Seu voto foi salvo! Os resultados aparecerão quando você estiver online novamente.",
     "share_my_pick": "Minha escolha",
-    "share_community": "Comunidade"
+    "share_community": "Comunidade",
+    "verify_email_prompt": "Por favor verifique seu email para começar a votar.",
+    "verify_email_resend": "Reenviar verificação",
+    "verify_email_sent": "Email enviado ✓"
   },
   "verdicts": {
     "guilty": "Culpado",
@@ -237,7 +240,12 @@
   "demographics": {
     "title": "Demografia",
     "subtitle": "Opcional. Mostra como diferentes grupos votaram. Todos os dados são anônimos.",
-    "tabs": { "all": "Todos", "age": "Idade", "country": "País", "gender": "Gênero" },
+    "tabs": {
+      "all": "Todos",
+      "age": "Idade",
+      "country": "País",
+      "gender": "Gênero"
+    },
     "selectFilter": "Selecione um filtro para ver a distribuição demográfica",
     "noData": "Dados insuficientes para este grupo ainda",
     "voteRequired": "Você precisa votar neste cenário primeiro",
@@ -246,13 +254,60 @@
     "country": "País",
     "countryPlaceholder": "ex. BR",
     "gender": "Gênero",
-    "ageGroups": { "13-17": "13–17", "18-24": "18–24", "25-34": "25–34", "35-44": "35–44", "45-54": "45–54", "55-64": "55–64", "65plus": "65+" },
-    "genders": { "male": "Masculino", "female": "Feminino", "non_binary": "Não-binário", "prefer_not_to_say": "Prefiro não dizer" },
-    "premium": { "required": "Assinatura Premium necessária", "cta": "Atualize para Premium para ver como diferentes grupos votaram" },
+    "ageGroups": {
+      "13-17": "13–17",
+      "18-24": "18–24",
+      "25-34": "25–34",
+      "35-44": "35–44",
+      "45-54": "45–54",
+      "55-64": "55–64",
+      "65plus": "65+"
+    },
+    "genders": {
+      "male": "Masculino",
+      "female": "Feminino",
+      "non_binary": "Não-binário",
+      "prefer_not_to_say": "Prefiro não dizer"
+    },
+    "premium": {
+      "required": "Assinatura Premium necessária",
+      "cta": "Atualize para Premium para ver como diferentes grupos votaram"
+    },
     "deleteTitle": "Excluir dados demográficos",
     "deleteConfirm": "Isso removerá seu ano de nascimento, país e gênero. Seus votos não serão afetados.",
     "deleteData": "Excluir meus dados demográficos",
     "privacyNote": "Seus dados são usados apenas para estatísticas de grupo anônimas. Grupos com menos de 5 votos ficam ocultos. Você pode excluir esses dados a qualquer momento."
+  },
+  "support": {
+    "section_title": "Ajuda e suporte",
+    "contact_us": "Contatar suporte",
+    "privacy_policy": "Política de privacidade",
+    "terms_of_service": "Termos de serviço",
+    "subject_label": "Assunto",
+    "subject_placeholder": "Qual é a sua dúvida?",
+    "message_label": "Mensagem",
+    "message_placeholder": "Descreva o seu problema em detalhes...",
+    "send_button": "Enviar mensagem",
+    "sending": "Enviando...",
+    "success_title": "Mensagem enviada",
+    "success_message": "Obrigado! Entraremos em contato em breve.",
+    "error_message": "Falha ao enviar. Tente novamente.",
+    "fill_all_fields": "Por favor, preencha todos os campos."
+  },
+  "onboarding": {
+    "skip": "Pular",
+    "next": "Próximo",
+    "get_started": "Começar",
+    "slide1_title": "Dilemas diários que fazem você pensar",
+    "slide1_subtitle": "Todo dia um novo cenário moral. Vote, reflita e descubra o que a comunidade pensa.",
+    "slide2_title": "Vote e veja o que os outros pensam",
+    "slide2_subtitle": "Escolha seu veredicto — Culpado, Não culpado, Complicado ou Ambos errados — e veja a divisão imediatamente.",
+    "slide3_title": "Construa sequências, entre em ligas",
+    "slide3_subtitle": "Vote diariamente para manter sua sequência, ganhe XP, suba nas ligas e desbloqueie conquistas.",
+    "slide4_title": "Experimente o Premium grátis por 7 dias",
+    "slide4_subtitle": "Desbloqueie análises especializadas, cenários bônus e experiência sem anúncios.",
+    "slide4_cta": "Iniciar teste gratuito",
+    "slide4_skip": "Continuar gratuitamente"
   },
   "common": {
     "loading": "Carregando...",
