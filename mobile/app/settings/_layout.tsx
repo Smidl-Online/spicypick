@@ -20,6 +20,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="premium" options={{ title: 'Premium' }} />
       <Stack.Screen name="creator-mode" options={{ title: 'Creator Mode', headerShown: false, animation: 'fade' }} />
       <Stack.Screen name="contact" options={{ title: t('support.contact_us') }} />
+      <Stack.Screen name="privacy" options={{ title: 'Privacy' }} />
     </Stack>
   );
 }

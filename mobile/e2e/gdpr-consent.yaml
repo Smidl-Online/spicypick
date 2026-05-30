@@ -1,0 +1,52 @@
+appId: ${APP_ID}
+---
+# P1: GDPR consent banner — first launch must show banner, then persist choice.
+
+# 1) Cold start with cleared state → banner must appear
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "gdpr-consent-banner"
+- assertVisible: "Your privacy"
+- assertVisible: "Accept All"
+- assertVisible: "Essential Only"
+- assertVisible: "Privacy Policy"
+
+# 2) Pick "Essential Only" → banner closes, app continues to login screen
+- tapOn:
+    id: "gdpr-essential-only"
+- waitForAnimationToEnd
+- assertNotVisible:
+    id: "gdpr-consent-banner"
+- assertVisible: "Log In"
+
+# 3) Restart without clearing state → banner must NOT appear again
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd
+- assertNotVisible:
+    id: "gdpr-consent-banner"
+
+# 4) Sign in, navigate to Settings → Privacy preferences row visible,
+#    open it and switch to "Accept All".
+- tapOn: "Log In"
+- tapOn: "Email"
+- inputText: "${TEST_EMAIL}"
+- tapOn: "Password"
+- inputText: "${TEST_PASSWORD}"
+- tapOn: "Log In"
+- waitForAnimationToEnd
+
+- tapOn: "Settings"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "settings-privacy-row"
+- tapOn:
+    id: "settings-privacy-row"
+- waitForAnimationToEnd
+- assertVisible:
+    id: "privacy-screen"
+- assertVisible: "Privacy preferences"
+- tapOn:
+    id: "privacy-option-all"
+- assertVisible: "✓ Active"

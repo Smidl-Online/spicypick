@@ -87,7 +87,21 @@
     "theme_light": "Světlý",
     "theme_dark": "Tmavý",
     "theme_system": "Systém",
-    "demographics": "Demografie"
+    "demographics": "Demografie",
+    "privacy": "Soukromí"
+  },
+  "gdpr": {
+    "title": "Vaše soukromí",
+    "body": "SpicyPick používá analytiku (PostHog) a hlášení pádů (Sentry), aby vylepšil váš zážitek.",
+    "bodyMuted": "Analytika je anonymní a pomáhá nám pochopit, které funkce fungují. Hlášení pádů nám pomáhá rychleji opravit chyby. Volbu můžete kdykoli změnit v Nastavení.",
+    "accept_all": "Přijmout vše",
+    "accept_all_desc": "Povolí anonymní analytiku (PostHog) a hlášení pádů (Sentry).",
+    "essential_only": "Pouze nezbytné",
+    "essential_only_desc": "Vypne analytiku. Hlášení pádů zůstane zapnuté, abychom mohli opravit chyby.",
+    "privacy_link": "Zásady ochrany osobních údajů",
+    "preferences_title": "Předvolby soukromí",
+    "preferences_body": "Zvolte, jak SpicyPick používá vaše data. Volbu můžete kdykoli změnit.",
+    "active": "Aktivní"
   },
   "creator": {
     "title": "Režim tvůrce",

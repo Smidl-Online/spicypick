@@ -131,6 +131,12 @@ export default function SettingsScreen() {
         <Text style={chevron}>›</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={row} onPress={() => router.push('/settings/privacy')} testID="settings-privacy-row">
+        <Text style={styles.rowIcon}>🔒</Text>
+        <Text style={rowText}>{t('settings.privacy')}</Text>
+        <Text style={chevron}>›</Text>
+      </TouchableOpacity>
+
       <View style={{ height: 32 }} />
 
       <Modal visible={themePickerVisible} transparent animationType="slide">

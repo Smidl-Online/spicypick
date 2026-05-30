@@ -87,7 +87,21 @@
     "theme_light": "Light",
     "theme_dark": "Dark",
     "theme_system": "System",
-    "demographics": "Demographics"
+    "demographics": "Demographics",
+    "privacy": "Privacy preferences"
+  },
+  "gdpr": {
+    "title": "Your privacy",
+    "body": "SpicyPick uses analytics (PostHog) and crash reporting (Sentry) to improve your experience.",
+    "bodyMuted": "Analytics are anonymous and help us understand which features work. Crash reports help us fix bugs faster. You can change this anytime in Settings.",
+    "accept_all": "Accept All",
+    "accept_all_desc": "Enables anonymous analytics (PostHog) and crash reporting (Sentry).",
+    "essential_only": "Essential Only",
+    "essential_only_desc": "Disables analytics. Crash reporting stays on so we can fix bugs.",
+    "privacy_link": "Privacy Policy",
+    "preferences_title": "Privacy preferences",
+    "preferences_body": "Choose how SpicyPick uses your data. You can change this anytime.",
+    "active": "Active"
   },
   "creator": {
     "title": "Creator Mode",
